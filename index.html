@@ -394,36 +394,39 @@
   .es-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
   @media (min-width: 1180px) { .es-grid { grid-template-columns: minmax(0, 1fr) 330px; align-items: start; } .es-grid > aside { position: sticky; top: 16px; } }
   .es-busca { width: auto; max-width: 220px; min-height: 36px; padding: 6px 10px; }
-  .es-head, .es-main { display: grid; gap: 8px; align-items: center;
-    grid-template-columns: minmax(0, 2.4fr) minmax(0, .8fr) minmax(0, .9fr) minmax(0, .9fr) minmax(0, .9fr) 64px 34px; }
-  .es-head { font-size: .78rem; color: var(--muted); padding: 0 10px 6px; }
-  .es-area + .es-area { margin-top: 22px; }
-  .es-area .area-title { margin-bottom: 0; }
-  .es-row { padding: 8px 8px 8px 10px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; }
+  .es-area + .es-area { margin-top: 24px; }
+  .es-row { padding: 12px 14px 10px; margin-top: 10px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 10px; }
   .es-row.low { background: var(--warn-soft); border-left-color: var(--warn); }
   .es-row.vencendo { border-left-color: var(--warn); }
   .es-row.vencido { background: var(--danger-soft); border-left-color: var(--danger); }
-  .es-row input, .es-row select { min-height: 36px; padding: 6px 8px; }
-  .es-row input:disabled, .es-row select:disabled { background: transparent; border-color: transparent; color: var(--ink); opacity: 1; }
-  .es-f { display: block; }
-  .es-buy { font-family: Merriweather, Georgia, serif; font-weight: 700; text-align: center; }
-  .es-row.low .es-buy { color: var(--warn); }
-  .es-del { justify-self: end; }
-  .es-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 6px; font-size: .85rem; color: var(--muted); }
-  .es-inline { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; }
-  .es-inline input, .es-inline select { width: auto; min-height: 30px; padding: 3px 6px; font-size: .85rem; }
+  .es-row input, .es-row select { min-height: 40px; }
+  .es-row input:disabled, .es-row select:disabled { background: transparent; border-color: transparent; color: var(--ink); opacity: 1; padding-left: 0; }
+  .es-top { display: flex; align-items: center; gap: 12px; }
+  .es-nome-input { flex: 1; min-width: 0; font-weight: 700; font-size: 1.02rem; }
+  label.es-un { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); white-space: nowrap; }
+  label.es-un input { width: 72px; }
+  .es-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(118px, .95fr); gap: 10px; margin-top: 12px; align-items: end; }
+  label.es-num { display: grid; gap: 4px; font-size: .82rem; color: var(--muted); min-width: 0; }
+  label.es-num.principal > span:first-child { color: var(--ink); font-weight: 700; }
+  label.es-num.principal input { border-color: var(--ink); }
+  .es-inp { position: relative; display: block; }
+  .es-inp input { width: 100%; padding-right: 42px; font-size: 1.05rem; }
+  .es-inp em { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: .85rem; color: var(--muted); pointer-events: none; }
+  .es-comprar { display: grid; align-content: center; justify-items: center; gap: 2px; min-height: 58px; padding: 6px 8px; border-radius: 8px; text-align: center; background: var(--ok-soft); color: var(--ok); }
+  .es-comprar span { font-size: .78rem; font-weight: 600; }
+  .es-comprar strong { font-family: Merriweather, Georgia, serif; font-size: 1rem; }
+  .es-comprar.sim { background: var(--warn); color: #fff; }
+  .es-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: .85rem; color: var(--muted); }
+  label.es-inline { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; }
+  .es-inline input, .es-inline select { width: auto; min-height: 32px !important; padding: 3px 6px; font-size: .85rem; }
   .es-inline .es-dias { width: 64px; }
   .es-status { margin-left: auto; }
-  .es-add { margin-top: 8px; }
-  .es-dica { margin-top: 14px; }
-  .m-label { display: none; }
+  .es-add { margin-top: 10px; }
+  .es-dica { margin: 0 0 6px; }
   @media (max-width: 700px) {
-    .es-head { display: none; }
-    .es-main { grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "n n d" "u e a" "m b b"; }
-    .es-main > :nth-child(1) { grid-area: n; } .es-main > :nth-child(2) { grid-area: u; } .es-main > :nth-child(3) { grid-area: e; }
-    .es-main > :nth-child(4) { grid-area: a; } .es-main > :nth-child(5) { grid-area: m; } .es-main > :nth-child(6) { grid-area: b; text-align: left; }
-    .es-main > :nth-child(7) { grid-area: d; }
-    .es-row .m-label { display: block; font-size: .75rem; color: var(--muted); font-family: "Source Sans 3", Arial, sans-serif; font-weight: 400; }
+    .es-nums { grid-template-columns: 1fr 1fr; }
+    .es-top { flex-wrap: wrap; }
+    .es-nome-input { flex-basis: calc(100% - 48px); }
     .es-status { margin-left: 0; }
   }
   .chat { background: var(--chat-bg, #E4DDD3); border-radius: 8px; padding: 14px 12px; max-height: 60vh; overflow: auto; }
@@ -748,9 +751,8 @@
             <h2>Produtos</h2>
             <input type="search" id="esBusca" class="es-busca" placeholder="Buscar produto" aria-label="Buscar produto">
           </div>
-          <div class="es-head" aria-hidden="true"><span>Produto</span><span>Unidade</span><span>Entrou</span><span>Estoque atual</span><span>Mínimo</span><span>Comprar</span><span></span></div>
+          <p class="muted-note es-dica">Na contagem da semana, preencha <b>Entrou na semana</b> e <b>Estoque atual</b>. O estoque mínimo, a validade e a área só mudam quando você quiser ajustar.</p>
           <div id="esLista"><p class="empty-state-msg">Carregando produtos…</p></div>
-          <p class="muted-note es-dica">Na contagem da semana, preencha o que entrou e o estoque atual. A validade é opcional: informe a data do item que vence primeiro e com quantos dias de antecedência o sistema deve avisar.</p>
           <p class="muted-note" id="esImportarBox" hidden>Tem produtos cadastrados no controle de estoque antigo? Use “Salvar cópia” nele e depois <button type="button" class="link-btn" id="esImportar">importe a cópia aqui</button>.
             <input type="file" id="esArquivo" accept=".json,application/json" hidden></p>
         </section>
@@ -3014,19 +3016,26 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function linhaProduto(p) {
     const dis = podeEditar ? '' : 'disabled';
     const q = aComprar(p), sv = statusValidade(p);
+    const u = (p.unidade || '').trim();
     const cls = ['es-row'];
     if ((p.nome || '').trim() && q > 0) cls.push('low');
     if (sv && sv.tipo !== 'ok') cls.push(sv.tipo);
     const areaOpts = AREAS.map((a) => `<option value="${a.nome}" ${a.nome === p.area ? 'selected' : ''}>${a.nome}</option>`).join('');
+    const num = (campo, rotulo, principal) => `
+        <label class="es-num${principal ? ' principal' : ''}"><span>${rotulo}</span>
+          <span class="es-inp"><input type="number" inputmode="decimal" min="0" step="any" data-campo="${campo}" value="${valInput(p[campo])}" placeholder="0" ${dis}><em data-un>${esc(u)}</em></span>
+        </label>`;
     return `<div class="${cls.join(' ')}" data-id="${p.id}">
-      <div class="es-main">
-        <label class="es-f es-nome"><span class="m-label">Produto</span><input type="text" data-campo="nome" value="${esc(p.nome)}" placeholder="Nome do produto" aria-label="Produto" ${dis}></label>
-        <label class="es-f"><span class="m-label">Unidade</span><input type="text" data-campo="unidade" value="${esc(p.unidade)}" placeholder="un" aria-label="Unidade" ${dis}></label>
-        <label class="es-f"><span class="m-label">Entrou</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="entrada" value="${valInput(p.entrada)}" placeholder="0" aria-label="Entrou na semana" ${dis}></label>
-        <label class="es-f"><span class="m-label">Estoque atual</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="atual" value="${valInput(p.atual)}" placeholder="0" aria-label="Estoque atual" ${dis}></label>
-        <label class="es-f"><span class="m-label">Mínimo</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="minimo" value="${valInput(p.minimo)}" placeholder="0" aria-label="Estoque mínimo" ${dis}></label>
-        <div class="es-buy" data-buy>${q > 0 ? '<span class="m-label">Comprar</span>' + fmtNum(q) : '–'}</div>
-        ${podeEditar ? `<button type="button" class="icon-btn es-del" data-acao="excluir" aria-label="Excluir produto"><svg class="i"><use href="#i-trash"/></svg></button>` : '<span></span>'}
+      <div class="es-top">
+        <input type="text" class="es-nome-input" data-campo="nome" value="${esc(p.nome)}" placeholder="Nome do produto" aria-label="Nome do produto" ${dis}>
+        <label class="es-un">Unidade <input type="text" data-campo="unidade" value="${esc(p.unidade)}" placeholder="un" ${dis}></label>
+        ${podeEditar ? `<button type="button" class="icon-btn es-del" data-acao="excluir" aria-label="Excluir produto"><svg class="i"><use href="#i-trash"/></svg></button>` : ''}
+      </div>
+      <div class="es-nums">
+        ${num('entrada', 'Entrou na semana', false)}
+        ${num('atual', 'Estoque atual', true)}
+        ${num('minimo', 'Estoque mínimo', false)}
+        <div class="es-comprar ${q > 0 ? 'sim' : ''}" data-buy>${caixaComprar(q, u)}</div>
       </div>
       <div class="es-extra">
         <label class="es-inline">Validade <input type="date" data-campo="validade" value="${p.validade || ''}" aria-label="Validade" ${dis}></label>
@@ -3035,6 +3044,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <span class="es-status" data-status>${sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : ''}</span>
       </div>
     </div>`;
+  }
+  function caixaComprar(q, u) {
+    return q > 0 ? `<span>Comprar</span><strong>${fmtNum(q)}${u ? ' ' + esc(u) : ''}</strong>` : '<span>Comprar</span><strong>Estoque ok</strong>';
   }
   function renderLista() {
     const box = $('esLista');
@@ -3066,7 +3078,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     row.classList.toggle('low', !!(p.nome || '').trim() && q > 0);
     row.classList.toggle('vencendo', !!sv && sv.tipo === 'vencendo');
     row.classList.toggle('vencido', !!sv && sv.tipo === 'vencido');
-    row.querySelector('[data-buy]').innerHTML = q > 0 ? '<span class="m-label">Comprar</span>' + fmtNum(q) : '–';
+    const u = (p.unidade || '').trim();
+    const buy = row.querySelector('[data-buy]'); buy.innerHTML = caixaComprar(q, u); buy.classList.toggle('sim', q > 0);
+    row.querySelectorAll('[data-un]').forEach((el) => { el.textContent = u; });
     row.querySelector('[data-status]').innerHTML = sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : '';
   }
 
