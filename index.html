@@ -441,6 +441,21 @@
   .es-config[open] summary { margin-bottom: 14px; }
   .es-hist { margin-bottom: 20px; }
   body.estoque-leitura #esRegistrar { display: none !important; }
+  body.es-com-pendencia .toast { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+  .es-previa { margin: 8px 0 0; font-size: .86rem; color: var(--ok); }
+  .es-previa:empty { display: none; }
+  .es-pendente { position: sticky; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 15; display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 10px 16px; margin-top: 16px; padding: 12px 16px; border-radius: 10px; background: var(--ouro); color: #2A2320;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .22); }
+  .es-pendente strong { display: block; }
+  .es-pendente #esPendenteTexto { margin-right: 4px; }
+  .es-pendente .btn { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+  .es-pendente .btn:hover { background: #8A0F16; }
+  @media (max-width: 560px) {
+    .es-pendente { flex-wrap: nowrap; padding: 10px 12px; gap: 10px; font-size: .88rem; }
+    .es-pendente .es-pend-extra { display: none; }
+    .es-pendente .btn { padding: 9px 12px; font-size: .9rem; white-space: nowrap; }
+  }
 
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
@@ -740,7 +755,7 @@
     <section data-tab="estoque" aria-labelledby="t-estoque" id="estoqueRoot">
       <div class="page-head">
         <div><h1 id="t-estoque">Controle de estoque</h1><p>Insumos do laboratório, dos almoxarifados e de embalagens: contagem semanal, validade e pedido de compra.</p></div>
-        <div class="actions"><button type="button" class="btn primary" id="esRegistrar">Registrar contagem da semana</button></div>
+        <div class="actions"><button type="button" class="btn primary" id="esRegistrar">Registrar Estoque</button></div>
       </div>
       <p class="test-note" id="esNota" hidden></p>
       <div class="ledger es-resumo" id="esResumo"></div>
@@ -751,7 +766,7 @@
             <h2>Produtos</h2>
             <input type="search" id="esBusca" class="es-busca" placeholder="Buscar produto" aria-label="Buscar produto">
           </div>
-          <p class="muted-note es-dica">Na contagem da semana, preencha <b>Entrou na semana</b> e <b>Estoque atual</b>. O estoque mínimo, a validade e a área só mudam quando você quiser ajustar.</p>
+          <p class="muted-note es-dica">Quando chegar produto, coloque a quantidade em <b>Entrada</b>. Quando conferir a prateleira, corrija o <b>Estoque atual</b>. Depois, clique em <b>Registrar Estoque</b>: a entrada é somada ao estoque atual e a mudança fica salva no histórico.</p>
           <div id="esLista"><p class="empty-state-msg">Carregando produtos…</p></div>
           <p class="muted-note" id="esImportarBox" hidden>Tem produtos cadastrados no controle de estoque antigo? Use “Salvar cópia” nele e depois <button type="button" class="link-btn" id="esImportar">importe a cópia aqui</button>.
             <input type="file" id="esArquivo" accept=".json,application/json" hidden></p>
@@ -780,10 +795,15 @@
       </div>
 
       <section class="panel es-hist">
-        <div class="panel-head panel-head-row"><h2>Consumo por semana</h2><button type="button" class="link-btn" id="esDesfazer" hidden>Apagar último registro</button></div>
-        <p class="muted-note" style="margin-bottom:12px">Consumo = estoque da contagem anterior + o que entrou − estoque atual. Mostra as últimas 8 semanas.</p>
+        <div class="panel-head panel-head-row"><h2>Consumo por semana</h2><button type="button" class="link-btn" id="esDesfazer" hidden>Desfazer último registro</button></div>
+        <p class="muted-note" style="margin-bottom:12px">Consumo = estoque do registro anterior + entradas − estoque atual, somando os registros de cada semana (de segunda a domingo). Mostra as últimas 8 semanas.</p>
         <div id="esHistorico"></div>
       </section>
+
+      <div class="es-pendente" id="esPendente" role="status" hidden>
+        <span><strong>⚠️ Alterações não registradas</strong><span id="esPendenteTexto"></span><span class="es-pend-extra"> Clique em Registrar Estoque para salvar.</span></span>
+        <button type="button" class="btn" id="esRegistrar2">Registrar Estoque</button>
+      </div>
     </section>
 
     <!-- ================= RESFRIADORES ================= -->
@@ -2908,6 +2928,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const fila = {};       // id -> { patch, timer }
   let filaConfig = null;
   let busca = '';
+  let alterouNestaSessao = false;
 
   /* ---------- Utilidades ---------- */
   function hojeISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -2921,7 +2942,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function n0(v) { return v == null ? 0 : Number(v) || 0; }
   function fmtNum(n) { return (Math.round(Number(n) * 100) / 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 }); }
   function valInput(n) { return n == null ? '' : String(Math.round(Number(n) * 1000) / 1000); }
-  function aComprar(p) { return Math.max(n0(p.minimo) - n0(p.atual), 0); }
+  function efetivo(p) { return n0(p.atual) + n0(p.entrada); }
+  function aComprar(p) { return Math.max(n0(p.minimo) - efetivo(p), 0); }
   function statusValidade(p) {
     if (!p.validade) return null;
     const d = diasAte(p.validade);
@@ -3032,11 +3054,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${podeEditar ? `<button type="button" class="icon-btn es-del" data-acao="excluir" aria-label="Excluir produto"><svg class="i"><use href="#i-trash"/></svg></button>` : ''}
       </div>
       <div class="es-nums">
-        ${num('entrada', 'Entrou na semana', false)}
+        ${num('entrada', 'Entrada', false)}
         ${num('atual', 'Estoque atual', true)}
         ${num('minimo', 'Estoque mínimo', false)}
         <div class="es-comprar ${q > 0 ? 'sim' : ''}" data-buy>${caixaComprar(q, u)}</div>
       </div>
+      <p class="es-previa" data-previa>${previa(p)}</p>
       <div class="es-extra">
         <label class="es-inline">Validade <input type="date" data-campo="validade" value="${p.validade || ''}" aria-label="Validade" ${dis}></label>
         <label class="es-inline">Avisar <input type="number" min="0" step="1" inputmode="numeric" data-campo="aviso_dias" value="${p.aviso_dias == null ? 30 : p.aviso_dias}" aria-label="Avisar com quantos dias de antecedência" class="es-dias" ${dis}> dias antes</label>
@@ -3048,6 +3071,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function caixaComprar(q, u) {
     return q > 0 ? `<span>Comprar</span><strong>${fmtNum(q)}${u ? ' ' + esc(u) : ''}</strong>` : '<span>Comprar</span><strong>Estoque ok</strong>';
   }
+  function textoArea(area) {
+    const itens = produtos.filter((p) => p.area === area);
+    const nq = itens.filter((p) => (p.nome || '').trim() && aComprar(p) > 0).length;
+    const nv = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo !== 'ok'; }).length;
+    const cont = [nq ? nq + ' para comprar' : '', nv ? nv + ' vencendo' : ''].filter(Boolean).join(' · ');
+    return { alerta: !!cont, texto: cont || (itens.length ? 'tudo ok' : 'sem produtos') };
+  }
   function renderLista() {
     const box = $('esLista');
     const foco = document.activeElement, fr = foco && foco.closest && foco.closest('.es-row');
@@ -3057,11 +3087,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const itens = produtos.filter((p) => p.area === a.nome);
       const visiveis = termo ? itens.filter((p) => (p.nome || '').toLowerCase().includes(termo)) : itens;
       if (termo && !visiveis.length) return '';
-      const nq = itens.filter((p) => (p.nome || '').trim() && aComprar(p) > 0).length;
-      const nv = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo !== 'ok'; }).length;
-      const cont = [nq ? nq + ' para comprar' : '', nv ? nv + ' vencendo' : ''].filter(Boolean).join(' · ');
+      const t = textoArea(a.nome);
       return `<div class="es-area" data-area="${a.nome}">
-        <div class="area-title"><h3>${a.icone} ${a.nome}</h3><span class="tag ${cont ? 'warn' : 'ok'}">${cont || (itens.length ? 'tudo ok' : 'sem produtos')}</span></div>
+        <div class="area-title"><h3>${a.icone} ${a.nome}</h3><span class="tag ${t.alerta ? 'warn' : 'ok'}" data-area-tag>${t.texto}</span></div>
         ${visiveis.map(linhaProduto).join('') || '<p class="empty-state-msg">Nenhum produto nesta área.</p>'}
         ${podeEditar && !termo ? `<button type="button" class="btn btn-ghost btn-small es-add" data-acao="adicionar" data-area="${a.nome}">+ Adicionar produto</button>` : ''}
       </div>`;
@@ -3081,14 +3109,46 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const u = (p.unidade || '').trim();
     const buy = row.querySelector('[data-buy]'); buy.innerHTML = caixaComprar(q, u); buy.classList.toggle('sim', q > 0);
     row.querySelectorAll('[data-un]').forEach((el) => { el.textContent = u; });
+    row.querySelector('[data-previa]').innerHTML = previa(p);
     row.querySelector('[data-status]').innerHTML = sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : '';
   }
 
   /* ---------- Mensagem do WhatsApp ---------- */
-  function consumoCols() { return contagens.slice(1).slice(-8); }
+  function inicioSemana(iso) {
+    const [a, m, d] = iso.split('-').map(Number); const dt = new Date(a, m - 1, d);
+    dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7));
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+  function semanas() {
+    const mapa = new Map();
+    contagens.forEach((c) => { const k = inicioSemana(c.data); if (!mapa.has(k)) mapa.set(k, []); mapa.get(k).push(c); });
+    return Array.from(mapa, ([inicio, lista]) => ({ inicio, lista }));
+  }
+  function consumoSemana(s, id) {
+    let t = null;
+    s.lista.forEach((c) => { const r = c.itens[id]; if (r && r.consumo != null) t = (t || 0) + Number(r.consumo); });
+    return t == null ? null : Math.round(t * 1000) / 1000;
+  }
+  function semanasComConsumo() {
+    return semanas().filter((s) => s.lista.some((c) => Object.values(c.itens).some((r) => r.consumo != null))).slice(-8);
+  }
   function mediaConsumo(id) {
-    const v = []; consumoCols().forEach((c) => { const r = c.itens[id]; if (r && r.consumo != null && r.consumo >= 0) v.push(r.consumo); });
+    const v = semanasComConsumo().map((s) => consumoSemana(s, id)).filter((x) => x != null && x >= 0);
     return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  }
+  function pendentes() {
+    const ult = contagens[contagens.length - 1];
+    return nomeados().filter((p) => {
+      if (n0(p.entrada) !== 0) return true;
+      const r = ult && ult.itens[p.id];
+      if (!r) return true;
+      return Math.abs(n0(p.atual) - n0(r.estoque)) > 0.0005;
+    });
+  }
+  function previa(p) {
+    const e = n0(p.entrada); if (!e) return '';
+    const u = (p.unidade || '').trim();
+    return 'Ao registrar: ' + fmtNum(n0(p.atual)) + ' + ' + fmtNum(e) + ' = <strong>' + fmtNum(n0(p.atual) + e) + (u ? ' ' + esc(u) : '') + '</strong> no estoque atual.';
   }
   function montarMensagem() {
     const itens = nomeados();
@@ -3107,8 +3167,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const m = config.mostrar_media ? mediaConsumo(p.id) : null;
         const ms = m != null ? ', consumo ' + fmtNum(m) + u + '/sem' : '';
         const vs = sv && sv.tipo !== 'ok' ? ' ⚠️ ' + textoValidade(sv).toLowerCase() : '';
-        if (q > 0) linhas.push('• *' + p.nome.trim() + '*: comprar ' + fmtNum(q) + u + ' _(tem ' + fmtNum(n0(p.atual)) + ', mín. ' + fmtNum(n0(p.minimo)) + ms + ')_' + vs);
-        else linhas.push('• ' + p.nome.trim() + ': ok _(tem ' + fmtNum(n0(p.atual)) + u + ms + ')_' + vs);
+        if (q > 0) linhas.push('• *' + p.nome.trim() + '*: comprar ' + fmtNum(q) + u + ' _(tem ' + fmtNum(efetivo(p)) + ', mín. ' + fmtNum(n0(p.minimo)) + ms + ')_' + vs);
+        else linhas.push('• ' + p.nome.trim() + ': ok _(tem ' + fmtNum(efetivo(p)) + u + ms + ')_' + vs);
       });
     });
     const soValidade = validade.filter((p) => !listados.includes(p));
@@ -3119,7 +3179,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       soValidade.forEach((p) => {
         const u = (p.unidade || '').trim() ? ' ' + p.unidade.trim() : '';
         const sv = statusValidade(p);
-        linhas.push('• *' + p.nome.trim() + '*: ' + textoValidade(sv).toLowerCase() + ' (' + fmtData(p.validade) + ') _(tem ' + fmtNum(n0(p.atual)) + u + ')_');
+        linhas.push('• *' + p.nome.trim() + '*: ' + textoValidade(sv).toLowerCase() + ' (' + fmtData(p.validade) + ') _(tem ' + fmtNum(efetivo(p)) + u + ')_');
       });
     }
     if (primeiro) linhas.push(config.somente_comprar ? 'Nenhum item para comprar esta semana ✅' : 'Nenhum produto cadastrado.');
@@ -3147,7 +3207,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <div><span>Para comprar</span><strong class="${comprar ? 'es-warn' : ''}">${comprar} ${comprar === 1 ? 'item' : 'itens'}</strong></div>
       <div><span>Vencendo</span><strong class="${vencendo ? 'es-warn' : ''}">${vencendo}</strong></div>
       <div><span>Vencidos</span><strong class="${vencidos ? 'es-danger' : ''}">${vencidos}</strong></div>
-      <div><span>Última contagem</span><strong>${ult ? fmtData(ult.data).slice(0, 5) : '–'}</strong>${ult && ult.criado_por && nomes[ult.criado_por] ? `<small>por ${esc(nomes[ult.criado_por])}</small>` : ''}</div>`;
+      <div><span>Último registro</span><strong>${ult ? fmtData(ult.data).slice(0, 5) : '–'}</strong>${ult && ult.criado_por && nomes[ult.criado_por] ? `<small>por ${esc(nomes[ult.criado_por])}</small>` : ''}</div>`;
     const texto = montarMensagem();
     const agora = new Date();
     $('esPreview').innerHTML = formatarWa(texto) + '<span class="time">' + String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0') + '</span>';
@@ -3155,35 +3215,43 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('esEnviar').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(texto);
     $('esEnviar').lastChild.textContent = tel ? 'Enviar no WhatsApp' : 'Enviar no WhatsApp (escolher contato)';
     $('esImportarBox').hidden = !(podeEditar && carregado.produtos && produtos.length === 0);
+    const pend = podeEditar && carregado.produtos && carregado.contagens ? pendentes() : [];
+    $('esPendente').hidden = !pend.length;
+    document.body.classList.toggle('es-com-pendencia', pend.length > 0);
+    if (pend.length) $('esPendenteTexto').textContent = pend.length === 1 ? '1 produto mudou desde o último registro.' : pend.length + ' produtos mudaram desde o último registro.';
+    $('esLista').querySelectorAll('.es-area').forEach((el) => {
+      const tag = el.querySelector('[data-area-tag]'); if (!tag) return;
+      const t = textoArea(el.dataset.area); tag.textContent = t.texto; tag.classList.toggle('warn', t.alerta); tag.classList.toggle('ok', !t.alerta);
+    });
     document.dispatchEvent(new CustomEvent('estoque:resumo', { detail: { carregado: carregado.produtos, total: itens.length, comprar, vencendo, vencidos } }));
   }
   function renderHistorico() {
     const box = $('esHistorico');
     $('esDesfazer').hidden = !(podeEditar && contagens.length);
-    if (contagens.length < 2) {
+    const cols = semanasComConsumo();
+    if (!cols.length) {
       box.innerHTML = `<p class="empty-state-msg">${contagens.length
-        ? 'Primeira contagem registrada em ' + fmtData(contagens[0].data) + '. O consumo aparece a partir da próxima contagem registrada.'
-        : 'Nenhuma contagem registrada ainda. No fim de cada semana, preencha as quantidades e toque em “Registrar contagem da semana”.'}</p>`;
+        ? 'Último registro em ' + fmtData(contagens[contagens.length - 1].data) + '. O consumo aparece a partir do próximo registro.'
+        : 'Nenhum registro ainda. Depois de lançar entradas ou atualizar o estoque, clique em “Registrar Estoque”.'}</p>`;
       return;
     }
-    const cols = consumoCols();
     let corpo = '';
     AREAS.forEach((a) => {
       const its = nomeados().filter((p) => p.area === a.nome); if (!its.length) return;
       corpo += `<tr class="grp"><td colspan="${cols.length + 2}">${a.icone} ${esc(a.nome)}</td></tr>`;
       its.forEach((p) => {
         corpo += '<tr><td>' + esc(p.nome) + '</td>';
-        cols.forEach((c) => {
-          const r = c.itens[p.id];
-          if (!r || r.consumo == null) corpo += '<td>–</td>';
-          else if (r.consumo < 0) corpo += `<td class="neg" title="O estoque aumentou mais do que a entrada registrada">${fmtNum(r.consumo)}</td>`;
-          else corpo += '<td>' + fmtNum(r.consumo) + '</td>';
+        cols.forEach((s) => {
+          const v = consumoSemana(s, p.id);
+          if (v == null) corpo += '<td>–</td>';
+          else if (v < 0) corpo += `<td class="neg" title="O estoque aumentou mais do que as entradas registradas">${fmtNum(v)}</td>`;
+          else corpo += '<td>' + fmtNum(v) + '</td>';
         });
         const m = mediaConsumo(p.id);
         corpo += '<td class="avg">' + (m == null ? '–' : fmtNum(m) + ((p.unidade || '').trim() ? ' ' + esc(p.unidade.trim()) : '')) + '</td></tr>';
       });
     });
-    box.innerHTML = `<div class="hist-wrap"><table class="hist"><thead><tr><th>Produto</th>${cols.map((c) => '<th>' + fmtData(c.data).slice(0, 5) + '</th>').join('')}<th>Média</th></tr></thead><tbody>${corpo}</tbody></table></div>`;
+    box.innerHTML = `<div class="hist-wrap"><table class="hist"><thead><tr><th>Produto</th>${cols.map((s) => '<th title="Semana que começa em ' + fmtData(s.inicio) + '">' + fmtData(s.inicio).slice(0, 5) + '</th>').join('')}<th>Média</th></tr></thead><tbody>${corpo}</tbody></table></div>`;
   }
 
   /* ---------- Configuração da mensagem ---------- */
@@ -3215,48 +3283,39 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     SN.ui.confirmar({ titulo: 'Excluir produto', mensagem: `Excluir "${p.nome}" do controle de estoque? O histórico de consumo dele deixa de aparecer.`, botao: 'Excluir', perigo: true, acao: apagar });
   }
   async function registrar() {
-    const itens = nomeados();
-    if (!itens.length) { toast('Cadastre produtos antes de registrar a contagem.'); return; }
-    await salvarTudo();
-    const data = hojeISO(), ult = contagens[contagens.length - 1];
-    const substituir = !!(ult && ult.data === data);
-    const executar = async () => {
-      const anterior = substituir ? contagens[contagens.length - 2] : ult;
-      const snap = {};
-      itens.forEach((p) => {
-        const estoque = n0(p.atual);
-        const entrada = (substituir && p.entrada == null && ult.itens[p.id]) ? ult.itens[p.id].entrada : n0(p.entrada);
-        const ant = anterior && anterior.itens[p.id];
-        snap[p.id] = { nome: p.nome.trim(), area: p.area, unidade: (p.unidade || '').trim(), estoque, entrada,
-          consumo: ant ? Math.round((ant.estoque + entrada - estoque) * 1000) / 1000 : null, validade: p.validade || null };
-      });
-      const r = substituir
-        ? await sb.from('estoque_contagens').update({ itens: snap }).eq('id', ult.id).select('id')
-        : await sb.from('estoque_contagens').insert({ data, itens: snap }).select('id');
-      if (r.error || !r.data || !r.data.length) { console.error(r.error); toast('Não foi possível registrar a contagem.'); return; }
-      const r2 = await sb.from('estoque_produtos').update({ entrada: null }).not('entrada', 'is', null).select('id');
-      if (r2.error) console.error(r2.error);
-      produtos.forEach((p) => { p.entrada = null; });
-      if (SN.ui) SN.ui.closeModal();
-      renderLista(); await buscar('contagens');
-      toast('Contagem de ' + fmtData(data) + ' registrada.');
-    };
-    if (substituir) SN.ui.confirmar({ titulo: 'Registrar contagem', mensagem: 'Já existe uma contagem registrada hoje. Substituir pela contagem atual?', botao: 'Substituir', acao: executar });
-    else executar();
+    if (!nomeados().length) { toast('Cadastre produtos antes de registrar o estoque.'); return; }
+    const botoes = [$('esRegistrar'), $('esRegistrar2')];
+    botoes.forEach((b) => { b.disabled = true; });
+    try {
+      await salvarTudo();
+      const { error } = await sb.rpc('estoque_registrar', { p_data: hojeISO() });
+      if (error) throw error;
+      alterouNestaSessao = false;
+      produtos.forEach((p) => { if ((p.nome || '').trim() && p.entrada != null) { p.atual = n0(p.atual) + n0(p.entrada); p.entrada = null; } });
+      await Promise.all([buscar('produtos'), buscar('contagens')]);
+      renderLista(); renderDerivados();
+      toast('Estoque registrado.');
+    } catch (e) {
+      console.error(e);
+      toast(String(e && e.message || '').includes('permissão') ? 'Você não tem permissão para registrar o estoque.' : 'Não foi possível registrar. Verifique a conexão e tente de novo.');
+    } finally {
+      botoes.forEach((b) => { b.disabled = false; });
+    }
   }
   function desfazer() {
     const ult = contagens[contagens.length - 1]; if (!ult) return;
     SN.ui.confirmar({
-      titulo: 'Apagar último registro', mensagem: `Apagar a contagem de ${fmtData(ult.data)}? O consumo dessa semana deixa de aparecer, e as entradas registradas nela voltam para a coluna "Entrou".`,
-      botao: 'Apagar', perigo: true,
+      titulo: 'Desfazer último registro',
+      mensagem: `Desfazer o registro de ${fmtData(ult.data)}? As entradas somadas nele saem do estoque atual e voltam para o campo "Entrada".`,
+      botao: 'Desfazer', perigo: true,
       acao: async () => {
-        const { data, error } = await sb.from('estoque_contagens').delete().eq('id', ult.id).select('id');
-        if (error || !data || !data.length) { toast('Não foi possível apagar.'); return; }
-        for (const p of produtos) {
-          const r = ult.itens[p.id];
-          if (r && p.entrada == null && r.entrada) { p.entrada = r.entrada; await sb.from('estoque_produtos').update({ entrada: r.entrada }).eq('id', p.id); }
-        }
-        SN.ui.closeModal(); renderLista(); await buscar('contagens'); toast('Registro apagado.');
+        await salvarTudo();
+        const { error } = await sb.rpc('estoque_desfazer_ultimo');
+        if (error) { console.error(error); toast('Não foi possível desfazer.'); return; }
+        SN.ui.closeModal();
+        await Promise.all([buscar('produtos'), buscar('contagens')]);
+        renderLista(); renderDerivados();
+        toast('Registro desfeito.');
       }
     });
   }
@@ -3311,6 +3370,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       else if (campo === 'aviso_dias') { valor = parseInt(valor, 10); if (isNaN(valor) || valor < 0) return; }
       else if (campo === 'validade') valor = valor || null;
       p[campo] = valor;
+      if (['entrada', 'atual', 'nome'].includes(campo)) alterouNestaSessao = true;
       agendarSalvar(id, campo, valor);
       atualizarLinha(id); renderDerivados();
     });
@@ -3329,6 +3389,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     });
     $('esBusca').addEventListener('input', (e) => { busca = e.target.value; renderLista(); });
     $('esRegistrar').addEventListener('click', registrar);
+    $('esRegistrar2').addEventListener('click', registrar);
+    window.addEventListener('beforeunload', (e) => {
+      if (podeEditar && (alterouNestaSessao || Object.keys(fila).length) && pendentes().length) { e.preventDefault(); e.returnValue = ''; }
+    });
     $('esDesfazer').addEventListener('click', desfazer);
     $('esCopiar').addEventListener('click', async () => {
       const t = montarMensagem();
