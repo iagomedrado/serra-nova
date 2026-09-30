@@ -382,6 +382,63 @@
   body.livro-leitura [data-action="edit"], body.livro-leitura [data-action="delete"], body.livro-leitura [data-action="pay"],
   body.livro-leitura [data-action="adjust"], body.livro-leitura [data-action="undo"] { display: none !important; }
 
+  /* =====================================================
+     CONTROLE DE ESTOQUE
+     ===================================================== */
+  .es-resumo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .es-resumo small { display: block; color: var(--muted); font-size: .82rem; }
+  .es-resumo .es-warn { color: var(--warn); }
+  .es-resumo .es-danger { color: var(--danger); }
+  @media (max-width: 760px) { .es-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); } .es-resumo div:nth-child(3) { border-left: 0; } .es-resumo div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+  @media (max-width: 560px) { .es-resumo div { display: block !important; } }
+  .es-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
+  @media (min-width: 1180px) { .es-grid { grid-template-columns: minmax(0, 1fr) 330px; align-items: start; } .es-grid > aside { position: sticky; top: 16px; } }
+  .es-busca { width: auto; max-width: 220px; min-height: 36px; padding: 6px 10px; }
+  .es-head, .es-main { display: grid; gap: 8px; align-items: center;
+    grid-template-columns: minmax(0, 2.4fr) minmax(0, .8fr) minmax(0, .9fr) minmax(0, .9fr) minmax(0, .9fr) 64px 34px; }
+  .es-head { font-size: .78rem; color: var(--muted); padding: 0 10px 6px; }
+  .es-area + .es-area { margin-top: 22px; }
+  .es-area .area-title { margin-bottom: 0; }
+  .es-row { padding: 8px 8px 8px 10px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; }
+  .es-row.low { background: var(--warn-soft); border-left-color: var(--warn); }
+  .es-row.vencendo { border-left-color: var(--warn); }
+  .es-row.vencido { background: var(--danger-soft); border-left-color: var(--danger); }
+  .es-row input, .es-row select { min-height: 36px; padding: 6px 8px; }
+  .es-row input:disabled, .es-row select:disabled { background: transparent; border-color: transparent; color: var(--ink); opacity: 1; }
+  .es-f { display: block; }
+  .es-buy { font-family: Merriweather, Georgia, serif; font-weight: 700; text-align: center; }
+  .es-row.low .es-buy { color: var(--warn); }
+  .es-del { justify-self: end; }
+  .es-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 6px; font-size: .85rem; color: var(--muted); }
+  .es-inline { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; }
+  .es-inline input, .es-inline select { width: auto; min-height: 30px; padding: 3px 6px; font-size: .85rem; }
+  .es-inline .es-dias { width: 64px; }
+  .es-status { margin-left: auto; }
+  .es-add { margin-top: 8px; }
+  .es-dica { margin-top: 14px; }
+  .m-label { display: none; }
+  @media (max-width: 700px) {
+    .es-head { display: none; }
+    .es-main { grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "n n d" "u e a" "m b b"; }
+    .es-main > :nth-child(1) { grid-area: n; } .es-main > :nth-child(2) { grid-area: u; } .es-main > :nth-child(3) { grid-area: e; }
+    .es-main > :nth-child(4) { grid-area: a; } .es-main > :nth-child(5) { grid-area: m; } .es-main > :nth-child(6) { grid-area: b; text-align: left; }
+    .es-main > :nth-child(7) { grid-area: d; }
+    .es-row .m-label { display: block; font-size: .75rem; color: var(--muted); font-family: "Source Sans 3", Arial, sans-serif; font-weight: 400; }
+    .es-status { margin-left: 0; }
+  }
+  .chat { background: var(--chat-bg, #E4DDD3); border-radius: 8px; padding: 14px 12px; max-height: 60vh; overflow: auto; }
+  .bubble { background: var(--bubble, #D9FDD3); color: #1b1b1b; border-radius: 8px 0 8px 8px; padding: 8px 10px 18px; margin-left: 8%; position: relative;
+    white-space: pre-wrap; overflow-wrap: anywhere; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: .92rem; line-height: 1.4; box-shadow: 0 1px .5px rgba(0,0,0,.13); }
+  .bubble .time { position: absolute; right: 8px; bottom: 3px; font-size: .7rem; color: #667; }
+  .es-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .es-acoes .btn.primary { flex: 1 1 180px; }
+  .es-config .form { grid-template-columns: minmax(0, 1fr); }
+  .es-config label, .es-config input, .es-config textarea { min-width: 0; }
+  .es-config summary { cursor: pointer; font-family: Merriweather, Georgia, serif; font-weight: 700; }
+  .es-config[open] summary { margin-bottom: 14px; }
+  .es-hist { margin-bottom: 20px; }
+  body.estoque-leitura #esRegistrar { display: none !important; }
+
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
   @media print {
@@ -487,7 +544,7 @@
           <ul class="attention">
             <li id="attLivro" hidden></li>
             <li data-modulo="resfriadores"><span class="dot"></span><span><strong>Tanque 2 a 5,1 °C</strong><span class="muted">Acima da faixa de 4 °C desde 07:40.</span></span><a href="#resfriadores">Ver</a></li>
-            <li data-modulo="estoque"><span class="dot"></span><span><strong>7 insumos abaixo do mínimo</strong><span class="muted">O pedido desta semana ainda não foi enviado.</span></span><a href="#estoque">Ver</a></li>
+            <li id="attEstoque" hidden></li>
             <li data-modulo="queijos"><span class="dot"></span><span><strong>Lote MUS-0922 vence em 4 dias</strong><span class="muted">38 kg de mussarela.</span></span><a href="#queijos">Ver</a></li>
             <li data-modulo="producao"><span class="dot ok"></span><span><strong>Produção de hoje registrada</strong><span class="muted">3.800 L processados.</span></span><a href="#producao">Ver</a></li>
           </ul>
@@ -499,7 +556,7 @@
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig">21.450 L<small>2.214 kg produzidos</small></span></a></li>
             <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Em câmara fria</span></span><span class="fig">1.386 kg<small>5 tipos</small></span></a></li>
-            <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig">7 itens<small>de 48 cadastrados</small></span></a></li>
+            <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Leituras de hoje</span></span><span class="fig">1 alerta<small>3 equipamentos</small></span></a></li>
           </ul>
         </div>
@@ -677,44 +734,54 @@
     </section>
 
     <!-- ================= CONTROLE DE ESTOQUE ================= -->
-    <section data-tab="estoque" aria-labelledby="t-estoque">
+    <section data-tab="estoque" aria-labelledby="t-estoque" id="estoqueRoot">
       <div class="page-head">
-        <div><h1 id="t-estoque">Controle de estoque</h1><p>Insumos do laboratório, dos almoxarifados e de embalagens. A contagem é semanal.</p></div>
-        <div class="actions">
-          <button class="btn" type="button">Fazer contagem da semana</button>
-          <button class="btn primary" type="button"><svg class="i"><use href="#i-whats"/></svg>Enviar pedido no WhatsApp</button>
-        </div>
+        <div><h1 id="t-estoque">Controle de estoque</h1><p>Insumos do laboratório, dos almoxarifados e de embalagens: contagem semanal, validade e pedido de compra.</p></div>
+        <div class="actions"><button type="button" class="btn primary" id="esRegistrar">Registrar contagem da semana</button></div>
       </div>
-      <div class="panel">
-        <h2>Itens para comprar nesta semana</h2>
-        <div class="area-block">
-          <div class="area-title"><h3>Laboratório</h3><span class="tag warn">2 de 11 itens</span></div>
-          <div class="table-wrap"><table><tbody>
-            <tr><td class="wrap">Luvas nitrílicas M</td><td class="num">tem 1 cx</td><td class="num">mín. 6 cx</td><td class="num"><b>comprar 5 cx</b></td></tr>
-            <tr><td class="wrap">Reagente alizarol</td><td class="num">tem 0,5 L</td><td class="num">mín. 2 L</td><td class="num"><b>comprar 1,5 L</b></td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="area-block">
-          <div class="area-title"><h3>Almoxarifado químico</h3><span class="tag warn">1 de 9 itens</span></div>
-          <div class="table-wrap"><table><tbody>
-            <tr><td class="wrap">Detergente alcalino clorado</td><td class="num">tem 10 L</td><td class="num">mín. 40 L</td><td class="num"><b>comprar 30 L</b></td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="area-block">
-          <div class="area-title"><h3>Embalagens e rótulos</h3><span class="tag warn">3 de 16 itens</span></div>
-          <div class="table-wrap"><table><tbody>
-            <tr><td class="wrap">Saco a vácuo 20x30</td><td class="num">tem 400 un</td><td class="num">mín. 2.000 un</td><td class="num"><b>comprar 1.600 un</b></td></tr>
-            <tr><td class="wrap">Rótulo mussarela 4 kg</td><td class="num">tem 150 un</td><td class="num">mín. 500 un</td><td class="num"><b>comprar 350 un</b></td></tr>
-            <tr><td class="wrap">Pote requeijão 200 g</td><td class="num">tem 900 un</td><td class="num">mín. 3.000 un</td><td class="num"><b>comprar 2.100 un</b></td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="area-block">
-          <div class="area-title"><h3>Almoxarifado</h3><span class="tag warn">1 de 12 itens</span></div>
-          <div class="table-wrap"><table><tbody>
-            <tr><td class="wrap">Bota de PVC branca 41</td><td class="num">tem 0 par</td><td class="num">mín. 2 par</td><td class="num"><b>comprar 2 par</b></td></tr>
-          </tbody></table></div>
-        </div>
+      <p class="test-note" id="esNota" hidden></p>
+      <div class="ledger es-resumo" id="esResumo"></div>
+
+      <div class="es-grid">
+        <section class="panel">
+          <div class="panel-head panel-head-row">
+            <h2>Produtos</h2>
+            <input type="search" id="esBusca" class="es-busca" placeholder="Buscar produto" aria-label="Buscar produto">
+          </div>
+          <div class="es-head" aria-hidden="true"><span>Produto</span><span>Unidade</span><span>Entrou</span><span>Estoque atual</span><span>Mínimo</span><span>Comprar</span><span></span></div>
+          <div id="esLista"><p class="empty-state-msg">Carregando produtos…</p></div>
+          <p class="muted-note es-dica">Na contagem da semana, preencha o que entrou e o estoque atual. A validade é opcional: informe a data do item que vence primeiro e com quantos dias de antecedência o sistema deve avisar.</p>
+          <p class="muted-note" id="esImportarBox" hidden>Tem produtos cadastrados no controle de estoque antigo? Use “Salvar cópia” nele e depois <button type="button" class="link-btn" id="esImportar">importe a cópia aqui</button>.
+            <input type="file" id="esArquivo" accept=".json,application/json" hidden></p>
+        </section>
+
+        <aside class="stack">
+          <section class="panel">
+            <h2>Pedido de compra</h2>
+            <div class="chat"><div class="bubble" id="esPreview"></div></div>
+            <div class="es-acoes">
+              <a class="btn primary" id="esEnviar" href="#" target="_blank" rel="noopener"><svg class="i"><use href="#i-whats"/></svg>Enviar no WhatsApp</a>
+              <button type="button" class="btn" id="esCopiar">Copiar texto</button>
+            </div>
+          </section>
+          <details class="panel es-config">
+            <summary>Configurar mensagem</summary>
+            <div class="form">
+              <label>WhatsApp do responsável pelas compras (com DDD)<input type="tel" id="esTelefone" inputmode="tel" placeholder="Ex.: 33 99999-9999"></label>
+              <label>Título da mensagem<input type="text" id="esTitulo" placeholder="Pedido de compra"></label>
+              <label>Observação (vai no fim da mensagem)<textarea id="esObs" rows="2" placeholder="Ex.: entregar até sexta"></textarea></label>
+              <label class="check"><input type="checkbox" id="esSomenteComprar"> Enviar só os itens que precisam de compra</label>
+              <label class="check"><input type="checkbox" id="esMostrarMedia"> Incluir o consumo médio semanal</label>
+            </div>
+          </details>
+        </aside>
       </div>
+
+      <section class="panel es-hist">
+        <div class="panel-head panel-head-row"><h2>Consumo por semana</h2><button type="button" class="link-btn" id="esDesfazer" hidden>Apagar último registro</button></div>
+        <p class="muted-note" style="margin-bottom:12px">Consumo = estoque da contagem anterior + o que entrou − estoque atual. Mostra as últimas 8 semanas.</p>
+        <div id="esHistorico"></div>
+      </section>
     </section>
 
     <!-- ================= RESFRIADORES ================= -->
@@ -858,7 +925,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -885,6 +952,22 @@
     } else if (r.vencendoCount > 0) {
       att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.vencendoCount, "parcela vence", "parcelas vencem") +
         ' nos próximos 7 dias</strong><span class="muted">' + brl.format(r.vencendo) + ' a pagar.</span></span><a href="#livro">Ver</a>';
+      att.hidden = false;
+    } else { att.hidden = true; }
+  });
+
+  document.addEventListener("estoque:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    $("homeEstoqueFig").innerHTML = pl(r.comprar, "item", "itens") + "<small>de " + r.total + " cadastrados</small>";
+    const att = $("attEstoque");
+    if (r.comprar || r.vencendo || r.vencidos) {
+      const val = [];
+      if (r.vencidos) val.push(pl(r.vencidos, "vencido", "vencidos"));
+      if (r.vencendo) val.push(r.vencendo + " vencendo");
+      att.innerHTML = '<span class="dot"></span><span><strong>' +
+        (r.comprar ? pl(r.comprar, "insumo abaixo do mínimo", "insumos abaixo do mínimo") : "Insumos com validade próxima") +
+        '</strong><span class="muted">' + (val.length ? "Validade: " + val.join(", ") + "." : "Confira o pedido de compra da semana.") +
+        '</span></span><a href="#estoque">Ver</a>';
       att.hidden = false;
     } else { att.hidden = true; }
   });
@@ -990,6 +1073,7 @@
     $("app").hidden = false;
     show();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
     if (perfil.admin) Usuarios.carregar();
   }
   function aplicarPermissoes() {
@@ -1007,7 +1091,7 @@
     $("t-inicio").textContent = (h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite") + ", " + nome.trim().split(/\s+/)[0];
   }
   async function sair() {
-    try { await SN.sb.auth.signOut(); } catch (e) { /* segue para recarregar */ }
+    try { await SN.sb.auth.signOut({ scope: "local" }); } catch (e) { /* segue para recarregar */ }
     location.hash = "";
     location.reload();
   }
@@ -2795,6 +2879,480 @@ async function init(ctx) {
 let iniciado = false;
 window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(ctx); } };
 
+})();
+</script>
+<script>
+/* =====================================================
+   CONTROLE DE ESTOQUE (insumos)
+   ===================================================== */
+(function () {
+  const AREAS = [
+    { nome: 'LABORATÓRIO', icone: '🧪' },
+    { nome: 'ALMOXARIFADO QUÍMICO', icone: '⚗️' },
+    { nome: 'EMBALAGENS E RÓTULOS', icone: '🏷️' },
+    { nome: 'ALMOXARIFADO', icone: '🗄️' }
+  ];
+  const CAMPOS_NUM = ['minimo', 'atual', 'entrada'];
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let sb = null, podeEditar = false;
+  let produtos = [];
+  let config = { telefone: '', titulo: 'Pedido de compra', observacao: '', somente_comprar: true, mostrar_media: false };
+  let contagens = [];
+  const carregado = { produtos: false, config: false, contagens: false };
+  const nomes = {};
+  const sujos = {};      // id -> { campo: versão } edições locais ainda não confirmadas
+  const fila = {};       // id -> { patch, timer }
+  let filaConfig = null;
+  let busca = '';
+
+  /* ---------- Utilidades ---------- */
+  function hojeISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function fmtData(iso) { if (!iso) return ''; const [a, m, d] = iso.split('-'); return d + '/' + m + '/' + a; }
+  function diasAte(iso) {
+    const [a, m, d] = iso.split('-').map(Number);
+    const alvo = new Date(a, m - 1, d); const h = new Date(); const hoje = new Date(h.getFullYear(), h.getMonth(), h.getDate());
+    return Math.round((alvo - hoje) / 86400000);
+  }
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+  function n0(v) { return v == null ? 0 : Number(v) || 0; }
+  function fmtNum(n) { return (Math.round(Number(n) * 100) / 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 }); }
+  function valInput(n) { return n == null ? '' : String(Math.round(Number(n) * 1000) / 1000); }
+  function aComprar(p) { return Math.max(n0(p.minimo) - n0(p.atual), 0); }
+  function statusValidade(p) {
+    if (!p.validade) return null;
+    const d = diasAte(p.validade);
+    const aviso = p.aviso_dias == null ? 30 : p.aviso_dias;
+    if (d < 0) return { tipo: 'vencido', dias: d };
+    if (d <= aviso) return { tipo: 'vencendo', dias: d };
+    return { tipo: 'ok', dias: d };
+  }
+  function textoValidade(s) {
+    if (s.tipo === 'vencido') return s.dias === -1 ? 'Venceu ontem' : 'Vencido há ' + (-s.dias) + ' dias';
+    if (s.dias === 0) return 'Vence hoje';
+    if (s.dias === 1) return 'Vence amanhã';
+    return 'Vence em ' + s.dias + ' dias';
+  }
+  function nomeados() { return produtos.filter((p) => (p.nome || '').trim()); }
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+
+  /* ---------- Dados ---------- */
+  function mesclar(novos) {
+    const locais = {}; produtos.forEach((p) => { locais[p.id] = p; });
+    produtos = novos.map((row) => {
+      const l = locais[row.id], s = sujos[row.id];
+      if (l && s) Object.keys(s).forEach((c) => { row[c] = l[c]; });
+      CAMPOS_NUM.forEach((c) => { if (row[c] != null) row[c] = Number(row[c]); });
+      return row;
+    });
+  }
+  function assinatura() {
+    return JSON.stringify(produtos.map((p) => [p.id, p.area, p.nome, p.unidade, p.minimo, p.atual, p.entrada, p.validade, p.aviso_dias]));
+  }
+  async function buscar(tabela) {
+    if (tabela === 'produtos') {
+      const { data, error } = await sb.from('estoque_produtos').select('*').order('criado_em');
+      if (error) throw error;
+      const antes = assinatura();
+      mesclar(data || []);
+      if (!carregado.produtos || assinatura() !== antes) renderLista();
+      carregado.produtos = true;
+    } else if (tabela === 'config') {
+      const { data, error } = await sb.from('estoque_config').select('*').eq('id', 1).maybeSingle();
+      if (error) throw error;
+      if (data && !filaConfig) { config = data; preencherConfig(); }
+      carregado.config = true;
+    } else {
+      const { data, error } = await sb.from('estoque_contagens').select('*').order('data');
+      if (error) throw error;
+      contagens = data || []; carregado.contagens = true; renderHistorico();
+    }
+    renderDerivados();
+  }
+  const timers = {};
+  function atualizar(tabela) {
+    clearTimeout(timers[tabela]);
+    timers[tabela] = setTimeout(() => buscar(tabela).catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); }), 150);
+  }
+
+  function agendarSalvar(id, campo, valor) {
+    const f = fila[id] || (fila[id] = { patch: {}, timer: null });
+    f.patch[campo] = valor;
+    (sujos[id] = sujos[id] || {})[campo] = (sujos[id][campo] || 0) + 1;
+    clearTimeout(f.timer);
+    f.timer = setTimeout(() => salvar(id), 600);
+  }
+  async function salvar(id) {
+    const f = fila[id]; if (!f) return;
+    delete fila[id]; clearTimeout(f.timer);
+    const versoes = {}; Object.keys(f.patch).forEach((c) => { versoes[c] = sujos[id] && sujos[id][c]; });
+    const { data, error } = await sb.from('estoque_produtos').update(f.patch).eq('id', id).select('id');
+    if (error || !data || !data.length) { console.error(error); toast('Não foi possível salvar uma alteração. Verifique a conexão.'); }
+    Object.keys(versoes).forEach((c) => { if (sujos[id] && sujos[id][c] === versoes[c]) delete sujos[id][c]; });
+    if (sujos[id] && !Object.keys(sujos[id]).length) delete sujos[id];
+  }
+  async function salvarTudo() {
+    await Promise.all(Object.keys(fila).map(salvar));
+    if (filaConfig) await salvarConfig();
+  }
+  function agendarConfig(campo, valor) {
+    config[campo] = valor;
+    filaConfig = filaConfig || { patch: {}, timer: null };
+    filaConfig.patch[campo] = valor;
+    clearTimeout(filaConfig.timer);
+    filaConfig.timer = setTimeout(salvarConfig, 700);
+  }
+  async function salvarConfig() {
+    const f = filaConfig; if (!f) return;
+    filaConfig = null; clearTimeout(f.timer);
+    const { error } = await sb.from('estoque_config').update(f.patch).eq('id', 1);
+    if (error) { console.error(error); toast('Não foi possível salvar a configuração da mensagem.'); }
+  }
+
+  /* ---------- Lista de produtos ---------- */
+  function linhaProduto(p) {
+    const dis = podeEditar ? '' : 'disabled';
+    const q = aComprar(p), sv = statusValidade(p);
+    const cls = ['es-row'];
+    if ((p.nome || '').trim() && q > 0) cls.push('low');
+    if (sv && sv.tipo !== 'ok') cls.push(sv.tipo);
+    const areaOpts = AREAS.map((a) => `<option value="${a.nome}" ${a.nome === p.area ? 'selected' : ''}>${a.nome}</option>`).join('');
+    return `<div class="${cls.join(' ')}" data-id="${p.id}">
+      <div class="es-main">
+        <label class="es-f es-nome"><span class="m-label">Produto</span><input type="text" data-campo="nome" value="${esc(p.nome)}" placeholder="Nome do produto" aria-label="Produto" ${dis}></label>
+        <label class="es-f"><span class="m-label">Unidade</span><input type="text" data-campo="unidade" value="${esc(p.unidade)}" placeholder="un" aria-label="Unidade" ${dis}></label>
+        <label class="es-f"><span class="m-label">Entrou</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="entrada" value="${valInput(p.entrada)}" placeholder="0" aria-label="Entrou na semana" ${dis}></label>
+        <label class="es-f"><span class="m-label">Estoque atual</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="atual" value="${valInput(p.atual)}" placeholder="0" aria-label="Estoque atual" ${dis}></label>
+        <label class="es-f"><span class="m-label">Mínimo</span><input type="number" inputmode="decimal" min="0" step="any" data-campo="minimo" value="${valInput(p.minimo)}" placeholder="0" aria-label="Estoque mínimo" ${dis}></label>
+        <div class="es-buy" data-buy>${q > 0 ? '<span class="m-label">Comprar</span>' + fmtNum(q) : '–'}</div>
+        ${podeEditar ? `<button type="button" class="icon-btn es-del" data-acao="excluir" aria-label="Excluir produto"><svg class="i"><use href="#i-trash"/></svg></button>` : '<span></span>'}
+      </div>
+      <div class="es-extra">
+        <label class="es-inline">Validade <input type="date" data-campo="validade" value="${p.validade || ''}" aria-label="Validade" ${dis}></label>
+        <label class="es-inline">Avisar <input type="number" min="0" step="1" inputmode="numeric" data-campo="aviso_dias" value="${p.aviso_dias == null ? 30 : p.aviso_dias}" aria-label="Avisar com quantos dias de antecedência" class="es-dias" ${dis}> dias antes</label>
+        <label class="es-inline">Área <select data-campo="area" aria-label="Área" ${dis}>${areaOpts}</select></label>
+        <span class="es-status" data-status>${sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : ''}</span>
+      </div>
+    </div>`;
+  }
+  function renderLista() {
+    const box = $('esLista');
+    const foco = document.activeElement, fr = foco && foco.closest && foco.closest('.es-row');
+    const focoInfo = fr && box.contains(fr) ? { id: fr.dataset.id, campo: foco.dataset.campo, ini: foco.selectionStart, fim: foco.selectionEnd } : null;
+    const termo = busca.trim().toLowerCase();
+    box.innerHTML = AREAS.map((a) => {
+      const itens = produtos.filter((p) => p.area === a.nome);
+      const visiveis = termo ? itens.filter((p) => (p.nome || '').toLowerCase().includes(termo)) : itens;
+      if (termo && !visiveis.length) return '';
+      const nq = itens.filter((p) => (p.nome || '').trim() && aComprar(p) > 0).length;
+      const nv = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo !== 'ok'; }).length;
+      const cont = [nq ? nq + ' para comprar' : '', nv ? nv + ' vencendo' : ''].filter(Boolean).join(' · ');
+      return `<div class="es-area" data-area="${a.nome}">
+        <div class="area-title"><h3>${a.icone} ${a.nome}</h3><span class="tag ${cont ? 'warn' : 'ok'}">${cont || (itens.length ? 'tudo ok' : 'sem produtos')}</span></div>
+        ${visiveis.map(linhaProduto).join('') || '<p class="empty-state-msg">Nenhum produto nesta área.</p>'}
+        ${podeEditar && !termo ? `<button type="button" class="btn btn-ghost btn-small es-add" data-acao="adicionar" data-area="${a.nome}">+ Adicionar produto</button>` : ''}
+      </div>`;
+    }).join('') || '<p class="empty-state-msg">Nenhum produto encontrado.</p>';
+    if (focoInfo) {
+      const el = box.querySelector(`.es-row[data-id="${focoInfo.id}"] [data-campo="${focoInfo.campo}"]`);
+      if (el) { el.focus(); try { if (focoInfo.ini != null) el.setSelectionRange(focoInfo.ini, focoInfo.fim); } catch (e) { /* campos numéricos não têm seleção */ } }
+    }
+  }
+  function atualizarLinha(id) {
+    const row = $('esLista').querySelector(`.es-row[data-id="${id}"]`); const p = produtos.find((x) => x.id === id);
+    if (!row || !p) return;
+    const q = aComprar(p), sv = statusValidade(p);
+    row.classList.toggle('low', !!(p.nome || '').trim() && q > 0);
+    row.classList.toggle('vencendo', !!sv && sv.tipo === 'vencendo');
+    row.classList.toggle('vencido', !!sv && sv.tipo === 'vencido');
+    row.querySelector('[data-buy]').innerHTML = q > 0 ? '<span class="m-label">Comprar</span>' + fmtNum(q) : '–';
+    row.querySelector('[data-status]').innerHTML = sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : '';
+  }
+
+  /* ---------- Mensagem do WhatsApp ---------- */
+  function consumoCols() { return contagens.slice(1).slice(-8); }
+  function mediaConsumo(id) {
+    const v = []; consumoCols().forEach((c) => { const r = c.itens[id]; if (r && r.consumo != null && r.consumo >= 0) v.push(r.consumo); });
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  }
+  function montarMensagem() {
+    const itens = nomeados();
+    const comprar = itens.filter((p) => aComprar(p) > 0);
+    const validade = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo !== 'ok'; });
+    const listados = config.somente_comprar ? comprar : itens;
+    const linhas = ['*📦 ' + ((config.titulo || '').trim() || 'Pedido de compra') + ' – ' + fmtData(hojeISO()) + '*', ''];
+    let primeiro = true;
+    AREAS.forEach((a) => {
+      const g = listados.filter((p) => p.area === a.nome); if (!g.length) return;
+      if (!primeiro) linhas.push(''); primeiro = false;
+      linhas.push('*' + a.icone + ' ' + a.nome + '*');
+      g.forEach((p) => {
+        const u = (p.unidade || '').trim() ? ' ' + p.unidade.trim() : '';
+        const q = aComprar(p), sv = statusValidade(p);
+        const m = config.mostrar_media ? mediaConsumo(p.id) : null;
+        const ms = m != null ? ', consumo ' + fmtNum(m) + u + '/sem' : '';
+        const vs = sv && sv.tipo !== 'ok' ? ' ⚠️ ' + textoValidade(sv).toLowerCase() : '';
+        if (q > 0) linhas.push('• *' + p.nome.trim() + '*: comprar ' + fmtNum(q) + u + ' _(tem ' + fmtNum(n0(p.atual)) + ', mín. ' + fmtNum(n0(p.minimo)) + ms + ')_' + vs);
+        else linhas.push('• ' + p.nome.trim() + ': ok _(tem ' + fmtNum(n0(p.atual)) + u + ms + ')_' + vs);
+      });
+    });
+    const soValidade = validade.filter((p) => !listados.includes(p));
+    if (soValidade.length) {
+      if (!primeiro) linhas.push('');
+      primeiro = false;
+      linhas.push('*⏳ VENCENDO EM BREVE (comprar reposição)*');
+      soValidade.forEach((p) => {
+        const u = (p.unidade || '').trim() ? ' ' + p.unidade.trim() : '';
+        const sv = statusValidade(p);
+        linhas.push('• *' + p.nome.trim() + '*: ' + textoValidade(sv).toLowerCase() + ' (' + fmtData(p.validade) + ') _(tem ' + fmtNum(n0(p.atual)) + u + ')_');
+      });
+    }
+    if (primeiro) linhas.push(config.somente_comprar ? 'Nenhum item para comprar esta semana ✅' : 'Nenhum produto cadastrado.');
+    else {
+      const partes = [comprar.length + (comprar.length === 1 ? ' item para comprar' : ' itens para comprar')];
+      if (validade.length) partes.push(validade.length + (validade.length === 1 ? ' vencendo' : ' vencendo'));
+      linhas.push('', 'Total: ' + partes.join(' e '));
+    }
+    if ((config.observacao || '').trim()) linhas.push('', '_Obs.: ' + config.observacao.trim() + '_');
+    return linhas.join('\n');
+  }
+  function formatarWa(s) {
+    return esc(s).replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>').replace(/(^|[\s(])_([^_\n]+)_/g, '$1<em>$2</em>').replace(/~([^~\n]+)~/g, '<s>$1</s>');
+  }
+  function telefone() { let d = (config.telefone || '').replace(/\D/g, ''); if (d.length === 10 || d.length === 11) d = '55' + d; return d; }
+
+  /* ---------- Resumo, histórico e início ---------- */
+  function renderDerivados() {
+    const itens = nomeados();
+    const comprar = itens.filter((p) => aComprar(p) > 0).length;
+    const vencendo = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo === 'vencendo'; }).length;
+    const vencidos = itens.filter((p) => { const s = statusValidade(p); return s && s.tipo === 'vencido'; }).length;
+    const ult = contagens[contagens.length - 1];
+    $('esResumo').innerHTML = `
+      <div><span>Para comprar</span><strong class="${comprar ? 'es-warn' : ''}">${comprar} ${comprar === 1 ? 'item' : 'itens'}</strong></div>
+      <div><span>Vencendo</span><strong class="${vencendo ? 'es-warn' : ''}">${vencendo}</strong></div>
+      <div><span>Vencidos</span><strong class="${vencidos ? 'es-danger' : ''}">${vencidos}</strong></div>
+      <div><span>Última contagem</span><strong>${ult ? fmtData(ult.data).slice(0, 5) : '–'}</strong>${ult && ult.criado_por && nomes[ult.criado_por] ? `<small>por ${esc(nomes[ult.criado_por])}</small>` : ''}</div>`;
+    const texto = montarMensagem();
+    const agora = new Date();
+    $('esPreview').innerHTML = formatarWa(texto) + '<span class="time">' + String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0') + '</span>';
+    const tel = telefone();
+    $('esEnviar').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(texto);
+    $('esEnviar').lastChild.textContent = tel ? 'Enviar no WhatsApp' : 'Enviar no WhatsApp (escolher contato)';
+    $('esImportarBox').hidden = !(podeEditar && carregado.produtos && produtos.length === 0);
+    document.dispatchEvent(new CustomEvent('estoque:resumo', { detail: { carregado: carregado.produtos, total: itens.length, comprar, vencendo, vencidos } }));
+  }
+  function renderHistorico() {
+    const box = $('esHistorico');
+    $('esDesfazer').hidden = !(podeEditar && contagens.length);
+    if (contagens.length < 2) {
+      box.innerHTML = `<p class="empty-state-msg">${contagens.length
+        ? 'Primeira contagem registrada em ' + fmtData(contagens[0].data) + '. O consumo aparece a partir da próxima contagem registrada.'
+        : 'Nenhuma contagem registrada ainda. No fim de cada semana, preencha as quantidades e toque em “Registrar contagem da semana”.'}</p>`;
+      return;
+    }
+    const cols = consumoCols();
+    let corpo = '';
+    AREAS.forEach((a) => {
+      const its = nomeados().filter((p) => p.area === a.nome); if (!its.length) return;
+      corpo += `<tr class="grp"><td colspan="${cols.length + 2}">${a.icone} ${esc(a.nome)}</td></tr>`;
+      its.forEach((p) => {
+        corpo += '<tr><td>' + esc(p.nome) + '</td>';
+        cols.forEach((c) => {
+          const r = c.itens[p.id];
+          if (!r || r.consumo == null) corpo += '<td>–</td>';
+          else if (r.consumo < 0) corpo += `<td class="neg" title="O estoque aumentou mais do que a entrada registrada">${fmtNum(r.consumo)}</td>`;
+          else corpo += '<td>' + fmtNum(r.consumo) + '</td>';
+        });
+        const m = mediaConsumo(p.id);
+        corpo += '<td class="avg">' + (m == null ? '–' : fmtNum(m) + ((p.unidade || '').trim() ? ' ' + esc(p.unidade.trim()) : '')) + '</td></tr>';
+      });
+    });
+    box.innerHTML = `<div class="hist-wrap"><table class="hist"><thead><tr><th>Produto</th>${cols.map((c) => '<th>' + fmtData(c.data).slice(0, 5) + '</th>').join('')}<th>Média</th></tr></thead><tbody>${corpo}</tbody></table></div>`;
+  }
+
+  /* ---------- Configuração da mensagem ---------- */
+  function preencherConfig() {
+    const map = { esTelefone: 'telefone', esTitulo: 'titulo', esObs: 'observacao' };
+    Object.entries(map).forEach(([id, c]) => { const el = $(id); if (document.activeElement !== el) el.value = config[c] || ''; });
+    $('esSomenteComprar').checked = !!config.somente_comprar;
+    $('esMostrarMedia').checked = !!config.mostrar_media;
+  }
+
+  /* ---------- Ações ---------- */
+  async function adicionar(area) {
+    const { data, error } = await sb.from('estoque_produtos').insert({ area, nome: '', unidade: 'un', aviso_dias: 30 }).select('*').single();
+    if (error) { console.error(error); toast('Não foi possível adicionar o produto.'); return; }
+    produtos.push(data); renderLista(); renderDerivados();
+    const el = $('esLista').querySelector(`.es-row[data-id="${data.id}"] [data-campo="nome"]`); if (el) el.focus();
+  }
+  function excluir(id) {
+    const p = produtos.find((x) => x.id === id); if (!p) return;
+    const apagar = async () => {
+      delete fila[id]; delete sujos[id];
+      const { data, error } = await sb.from('estoque_produtos').delete().eq('id', id).select('id');
+      if (error || !data || !data.length) { toast('Não foi possível excluir.'); return; }
+      produtos = produtos.filter((x) => x.id !== id); renderLista(); renderDerivados(); renderHistorico();
+      if (SN.ui) SN.ui.closeModal();
+      toast('Produto excluído.');
+    };
+    if (!(p.nome || '').trim()) { apagar(); return; }
+    SN.ui.confirmar({ titulo: 'Excluir produto', mensagem: `Excluir "${p.nome}" do controle de estoque? O histórico de consumo dele deixa de aparecer.`, botao: 'Excluir', perigo: true, acao: apagar });
+  }
+  async function registrar() {
+    const itens = nomeados();
+    if (!itens.length) { toast('Cadastre produtos antes de registrar a contagem.'); return; }
+    await salvarTudo();
+    const data = hojeISO(), ult = contagens[contagens.length - 1];
+    const substituir = !!(ult && ult.data === data);
+    const executar = async () => {
+      const anterior = substituir ? contagens[contagens.length - 2] : ult;
+      const snap = {};
+      itens.forEach((p) => {
+        const estoque = n0(p.atual);
+        const entrada = (substituir && p.entrada == null && ult.itens[p.id]) ? ult.itens[p.id].entrada : n0(p.entrada);
+        const ant = anterior && anterior.itens[p.id];
+        snap[p.id] = { nome: p.nome.trim(), area: p.area, unidade: (p.unidade || '').trim(), estoque, entrada,
+          consumo: ant ? Math.round((ant.estoque + entrada - estoque) * 1000) / 1000 : null, validade: p.validade || null };
+      });
+      const r = substituir
+        ? await sb.from('estoque_contagens').update({ itens: snap }).eq('id', ult.id).select('id')
+        : await sb.from('estoque_contagens').insert({ data, itens: snap }).select('id');
+      if (r.error || !r.data || !r.data.length) { console.error(r.error); toast('Não foi possível registrar a contagem.'); return; }
+      const r2 = await sb.from('estoque_produtos').update({ entrada: null }).not('entrada', 'is', null).select('id');
+      if (r2.error) console.error(r2.error);
+      produtos.forEach((p) => { p.entrada = null; });
+      if (SN.ui) SN.ui.closeModal();
+      renderLista(); await buscar('contagens');
+      toast('Contagem de ' + fmtData(data) + ' registrada.');
+    };
+    if (substituir) SN.ui.confirmar({ titulo: 'Registrar contagem', mensagem: 'Já existe uma contagem registrada hoje. Substituir pela contagem atual?', botao: 'Substituir', acao: executar });
+    else executar();
+  }
+  function desfazer() {
+    const ult = contagens[contagens.length - 1]; if (!ult) return;
+    SN.ui.confirmar({
+      titulo: 'Apagar último registro', mensagem: `Apagar a contagem de ${fmtData(ult.data)}? O consumo dessa semana deixa de aparecer, e as entradas registradas nela voltam para a coluna "Entrou".`,
+      botao: 'Apagar', perigo: true,
+      acao: async () => {
+        const { data, error } = await sb.from('estoque_contagens').delete().eq('id', ult.id).select('id');
+        if (error || !data || !data.length) { toast('Não foi possível apagar.'); return; }
+        for (const p of produtos) {
+          const r = ult.itens[p.id];
+          if (r && p.entrada == null && r.entrada) { p.entrada = r.entrada; await sb.from('estoque_produtos').update({ entrada: r.entrada }).eq('id', p.id); }
+        }
+        SN.ui.closeModal(); renderLista(); await buscar('contagens'); toast('Registro apagado.');
+      }
+    });
+  }
+
+  /* ---------- Importar a cópia do controle antigo ---------- */
+  function paraISO(br) { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br || ''); return m ? m[3] + '-' + m[2] + '-' + m[1] : null; }
+  async function importar(arquivo) {
+    let d;
+    try { d = JSON.parse(await arquivo.text()); } catch (e) { toast('Esse arquivo não é uma cópia válida do controle de estoque.'); return; }
+    if (!d || !Array.isArray(d.items)) { toast('Esse arquivo não é uma cópia válida do controle de estoque.'); return; }
+    const velhos = d.items.filter((it) => (it.name || '').trim());
+    const hist = Array.isArray(d.history) ? d.history : [];
+    SN.ui.confirmar({
+      titulo: 'Importar controle antigo',
+      mensagem: `Importar ${velhos.length} produtos e ${hist.length} contagens registradas da cópia "${arquivo.name}"?`,
+      botao: 'Importar',
+      acao: async () => {
+        const mapa = {};
+        const linhas = velhos.map((it) => {
+          const id = crypto.randomUUID(); mapa[it.id] = id;
+          return { id, area: AREAS.some((a) => a.nome === it.area) ? it.area : 'ALMOXARIFADO', nome: String(it.name).trim(), unidade: (it.unit || 'un').trim() || 'un',
+            minimo: lerNum(it.min), atual: lerNum(it.current), entrada: lerNum(it.received), aviso_dias: 30 };
+        });
+        if (linhas.length) { const { error } = await sb.from('estoque_produtos').insert(linhas); if (error) { console.error(error); toast('Não foi possível importar os produtos.'); return; } }
+        const conts = hist.map((h) => {
+          const data = paraISO(h.date); if (!data) return null;
+          const itens = {};
+          Object.entries(h.items || {}).forEach(([velho, r]) => { if (mapa[velho]) itens[mapa[velho]] = { nome: r.name, area: r.area, unidade: r.unit, estoque: n0(r.stock), entrada: n0(r.received), consumo: r.consumed == null ? null : Number(r.consumed) }; });
+          return { data, itens };
+        }).filter(Boolean);
+        if (conts.length) { const { error } = await sb.from('estoque_contagens').upsert(conts, { onConflict: 'data' }); if (error) console.error(error); }
+        const cfg = {};
+        if (d.phone) cfg.telefone = String(d.phone); if (d.title) cfg.titulo = String(d.title); if (d.notes) cfg.observacao = String(d.notes);
+        if (typeof d.onlyLow === 'boolean') cfg.somente_comprar = d.onlyLow; if (typeof d.showAvg === 'boolean') cfg.mostrar_media = d.showAvg;
+        if (Object.keys(cfg).length) await sb.from('estoque_config').update(cfg).eq('id', 1);
+        SN.ui.closeModal();
+        await Promise.all([buscar('produtos'), buscar('contagens'), buscar('config')]);
+        toast('Importação concluída.');
+      }
+    });
+  }
+
+  /* ---------- Eventos ---------- */
+  function ligarEventos() {
+    const lista = $('esLista');
+    lista.addEventListener('input', (e) => {
+      const el = e.target.closest('[data-campo]'); if (!el || !podeEditar) return;
+      const row = el.closest('.es-row'), id = row.dataset.id, campo = el.dataset.campo;
+      const p = produtos.find((x) => x.id === id); if (!p || campo === 'area') return;
+      let valor = el.value;
+      if (CAMPOS_NUM.includes(campo)) valor = lerNum(valor);
+      else if (campo === 'aviso_dias') { valor = parseInt(valor, 10); if (isNaN(valor) || valor < 0) return; }
+      else if (campo === 'validade') valor = valor || null;
+      p[campo] = valor;
+      agendarSalvar(id, campo, valor);
+      atualizarLinha(id); renderDerivados();
+    });
+    lista.addEventListener('change', async (e) => {
+      const el = e.target.closest('select[data-campo="area"]'); if (!el || !podeEditar) return;
+      const id = el.closest('.es-row').dataset.id; const p = produtos.find((x) => x.id === id); if (!p) return;
+      p.area = el.value; await salvarTudo();
+      const { error } = await sb.from('estoque_produtos').update({ area: p.area }).eq('id', id);
+      if (error) { toast('Não foi possível mudar a área.'); atualizar('produtos'); return; }
+      renderLista(); renderDerivados(); renderHistorico(); toast('Produto movido para ' + p.area + '.');
+    });
+    lista.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      if (b.dataset.acao === 'adicionar') adicionar(b.dataset.area);
+      if (b.dataset.acao === 'excluir') excluir(b.closest('.es-row').dataset.id);
+    });
+    $('esBusca').addEventListener('input', (e) => { busca = e.target.value; renderLista(); });
+    $('esRegistrar').addEventListener('click', registrar);
+    $('esDesfazer').addEventListener('click', desfazer);
+    $('esCopiar').addEventListener('click', async () => {
+      const t = montarMensagem();
+      try { await navigator.clipboard.writeText(t); toast('Texto copiado. Cole no WhatsApp.'); }
+      catch (err) { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Texto copiado. Cole no WhatsApp.'); } catch (e2) { toast('Não foi possível copiar.'); } ta.remove(); }
+    });
+    [['esTelefone', 'telefone'], ['esTitulo', 'titulo'], ['esObs', 'observacao']].forEach(([id, c]) => {
+      $(id).addEventListener('input', (e) => { if (!podeEditar) return; agendarConfig(c, e.target.value); renderDerivados(); });
+    });
+    [['esSomenteComprar', 'somente_comprar'], ['esMostrarMedia', 'mostrar_media']].forEach(([id, c]) => {
+      $(id).addEventListener('change', (e) => { if (!podeEditar) return; agendarConfig(c, e.target.checked); renderDerivados(); });
+    });
+    $('esImportar').addEventListener('click', () => $('esArquivo').click());
+    $('esArquivo').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) importar(f); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') salvarTudo();
+      else ['produtos', 'config', 'contagens'].forEach(atualizar);
+    });
+    window.addEventListener('pagehide', () => { salvarTudo(); });
+  }
+
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    document.body.classList.toggle('estoque-leitura', !podeEditar);
+    if (!podeEditar) { const n = $('esNota'); n.textContent = 'Você tem acesso a esta aba só para consulta. Pode ver e enviar o pedido, mas não alterar as quantidades.'; n.hidden = false; }
+    ['esTelefone', 'esTitulo', 'esObs', 'esSomenteComprar', 'esMostrarMedia'].forEach((id) => { $(id).disabled = !podeEditar; });
+    ligarEventos();
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await Promise.all([buscar('produtos'), buscar('config'), buscar('contagens')]); }
+    catch (e) { console.error(e); $('esLista').innerHTML = '<p class="fatal">Não foi possível carregar o controle de estoque. Recarregue a página.</p>'; return; }
+    [['estoque_produtos', 'produtos'], ['estoque_config', 'config'], ['estoque_contagens', 'contagens']].forEach(([tabela, nome]) => {
+      sb.channel('sn-' + tabela).on('postgres_changes', { event: '*', schema: 'public', table: tabela }, () => atualizar(nome)).subscribe();
+    });
+    setInterval(renderDerivados, 60 * 60 * 1000); // vira o dia: recalcula validades
+  }
+  let iniciado = false;
+  window.SN_Estoque = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>
