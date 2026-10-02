@@ -298,6 +298,22 @@
   .gastos-mes-panel .filter-summary { background: var(--bg); color: var(--ink); }
   .fatal { color: var(--danger); font-weight: 600; }
 
+  /* ---------- Painel de filtros ---------- */
+  .btn-filtros { gap: 6px; }
+  .btn-filtros.tem-filtro { border-color: var(--vermelho); color: var(--vermelho); }
+  .filtros-qtd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--vermelho); color: #fff; font-size: .75rem; }
+  .filtros-painel { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 14px; margin-bottom: 12px; }
+  .filtros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .filtros-grid label { font-size: .85rem; min-width: 0; }
+  .filtros-grid select { width: 100%; }
+  .filtros-periodo { margin-top: 12px; flex-wrap: wrap; }
+  .filtros-acoes { display: flex; justify-content: flex-end; align-items: center; gap: 16px; margin-top: 14px; }
+  .filtros-ativos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .filtro-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--vermelho); color: var(--vermelho); background: var(--surface);
+    border-radius: 999px; padding: 4px 10px; font-size: .85rem; font-weight: 600; cursor: pointer; }
+  .filtro-chip span { font-size: 1rem; line-height: 1; }
+  .filtro-chip:hover { background: var(--danger-soft); }
+
   /* ---------- Janelas (modais) ---------- */
   .modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(28, 10, 8, .55); display: flex; align-items: flex-start; justify-content: center;
     padding: calc(24px + env(safe-area-inset-top, 0px)) 14px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
@@ -494,6 +510,7 @@
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
   <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.85"/><path d="M16 4.2a3.5 3.5 0 0 1 0 6.6"/></symbol>
+  <symbol id="i-filtro" viewBox="0 0 24 24"><path d="M4 5h16l-6.2 7.6V19l-3.6-1.8v-4.6z"/></symbol>
   <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-whats" viewBox="0 0 24 24"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9.2 9.2c.3 1.9 1.7 3.6 3.6 4.4l1-1 1.8.8c-.2 1-1 1.6-2 1.5-2.8-.4-5-2.6-5.4-5.4-.1-1 .5-1.8 1.5-2l.8 1.8z"/></symbol>
 </svg>
@@ -603,10 +620,7 @@
           <h2 id="h-resumo">Resumo</h2>
           <div class="summary-controls">
             <div class="segmented" id="horizonToggle" role="group" aria-label="Período do resumo">
-              <button type="button" class="seg-btn" data-mode="preset" data-days="0">Hoje</button>
-              <button type="button" class="seg-btn is-active" data-mode="preset" data-days="7">7 dias</button>
-              <button type="button" class="seg-btn" data-mode="preset" data-days="15">15 dias</button>
-              <button type="button" class="seg-btn" data-mode="preset" data-days="30">30 dias</button>
+              <button type="button" class="seg-btn is-active" data-mode="preset" data-days="0">Hoje</button>
               <button type="button" class="seg-btn" data-mode="custom">Período personalizado</button>
             </div>
             <div class="custom-range" id="customRange" hidden>
@@ -624,25 +638,35 @@
           <div class="panel-head"><h2>Lançamentos</h2></div>
           <div class="filters">
             <input type="search" id="searchInput" placeholder="Buscar por nome, número ou categoria" aria-label="Buscar lançamentos">
-            <select id="filterCategoria" aria-label="Categoria"><option value="">Todas as categorias</option></select>
-            <select id="filterStatus" aria-label="Situação">
-              <option value="">Todos os status</option>
-              <option value="aberto">Em aberto</option>
-              <option value="vencido">Vencido</option>
-              <option value="pago">Pago</option>
-            </select>
-            <select id="filterVencimento" aria-label="Vencimento">
-              <option value="todos">Todos os vencimentos</option>
-              <option value="hoje">Vencem hoje</option>
-              <option value="custom">Período específico</option>
-            </select>
-            <div class="custom-range" id="vencCustomRange" hidden>
-              <input type="date" id="vencFromInput" aria-label="De">
-              <span>até</span>
-              <input type="date" id="vencToInput" aria-label="Até">
-            </div>
+            <button type="button" class="btn btn-small btn-filtros" id="btnFiltros" aria-expanded="false" aria-controls="filtrosPainel"><svg class="i"><use href="#i-filtro"/></svg>Filtros<span class="filtros-qtd" id="filtrosQtd" hidden></span></button>
             <button type="button" class="btn btn-ghost btn-small" id="btnImprimirLancamentos">Imprimir</button>
           </div>
+          <div class="filtros-painel" id="filtrosPainel" hidden>
+            <div class="filtros-grid">
+              <label>Categoria<select id="filterCategoria"><option value="">Todas as categorias</option></select></label>
+              <label>Situação<select id="filterStatus">
+                <option value="">Todas</option>
+                <option value="aberto">Em aberto</option>
+                <option value="vencido">Vencido</option>
+                <option value="pago">Pago</option>
+              </select></label>
+              <label>Forma de pagamento<select id="filterForma"><option value="">Todas</option></select></label>
+              <label>Vencimento<select id="filterVencimento">
+                <option value="todos">Todos</option>
+                <option value="hoje">Vencem hoje</option>
+                <option value="custom">Período específico</option>
+              </select></label>
+            </div>
+            <div class="custom-range filtros-periodo" id="vencCustomRange" hidden>
+              <span>De</span><input type="date" id="vencFromInput" aria-label="De">
+              <span>até</span><input type="date" id="vencToInput" aria-label="Até">
+            </div>
+            <div class="filtros-acoes">
+              <button type="button" class="link-btn" id="btnLimparFiltros">Limpar filtros</button>
+              <button type="button" class="btn btn-small btn-primary" id="btnFecharFiltros">Pronto</button>
+            </div>
+          </div>
+          <div class="filtros-ativos" id="filtrosAtivos" hidden></div>
           <p class="filter-summary" id="vencFilterSummary" hidden></p>
           <div id="contasBody" class="contas-list"></div>
         </section>
@@ -1430,7 +1454,7 @@ let db = null;
 let contas = [];
 let categorias = [];
 let periodMode = 'preset'; // 'preset' | 'custom'
-let presetDays = 7;
+let presetDays = 0;
 let customFrom = null;
 let customTo = null;
 let vencFilterMode = 'todos'; // 'todos' | 'hoje' | 'custom'
@@ -1464,6 +1488,7 @@ function cacheEls() {
     filterCategoria: document.getElementById('filterCategoria'),
     filterStatus: document.getElementById('filterStatus'),
     filterVencimento: document.getElementById('filterVencimento'),
+    filterForma: document.getElementById('filterForma'),
     vencCustomRange: document.getElementById('vencCustomRange'),
     vencFromInput: document.getElementById('vencFromInput'),
     vencToInput: document.getElementById('vencToInput'),
@@ -1749,6 +1774,7 @@ function getFilteredDecorated(todayStr) {
   const term = els.searchInput.value.trim().toLowerCase();
   const cat = els.filterCategoria.value;
   const status = els.filterStatus.value;
+  const forma = els.filterForma.value;
   const vencAtivo = vencFilterMode !== 'todos';
   const win = vencAtivo ? getVencFilterWindow(todayStr) : null;
   return contas
@@ -1756,6 +1782,7 @@ function getFilteredDecorated(todayStr) {
     .filter(({ c, s }) => {
       if (cat && c.categoria !== cat) return false;
       if (status && s.status !== status) return false;
+      if (forma && c.formaPagamento !== forma && !(c.parcelas || []).some(p => p.formaPagamento === forma)) return false;
       if (term) {
         const hay = `${c.nome} ${c.numero || ''} ${c.categoria}`.toLowerCase();
         if (!hay.includes(term)) return false;
@@ -1801,6 +1828,7 @@ function renderParcelasSub(c, todayStr) {
 }
 
 function renderTable(todayStr) {
+  atualizarFiltrosAtivos(todayStr);
   const decorated = getFilteredDecorated(todayStr);
   const vencAtivo = vencFilterMode !== 'todos';
   const win = vencAtivo ? getVencFilterWindow(todayStr) : null;
@@ -1870,6 +1898,43 @@ function renderAll() {
   publicarResumoInicio(todayStr);
 }
 function renderTableOnly() { renderTable(localISODate()); }
+
+/* ===================== Painel de filtros ===================== */
+const ROTULO_STATUS = { aberto: 'Em aberto', vencido: 'Vencido', pago: 'Pago' };
+function filtrosAtivos(todayStr) {
+  const lista = [];
+  if (els.filterCategoria.value) lista.push({ chave: 'categoria', texto: 'Categoria: ' + els.filterCategoria.value });
+  if (els.filterStatus.value) lista.push({ chave: 'status', texto: 'Situação: ' + (ROTULO_STATUS[els.filterStatus.value] || els.filterStatus.value) });
+  if (els.filterForma.value) lista.push({ chave: 'forma', texto: 'Pagamento: ' + els.filterForma.value });
+  if (vencFilterMode === 'hoje') lista.push({ chave: 'venc', texto: 'Vencem hoje' });
+  else if (vencFilterMode === 'custom') {
+    const w = getVencFilterWindow(todayStr);
+    lista.push({ chave: 'venc', texto: 'Vencimento: ' + fmtDate(w.from) + ' a ' + fmtDate(w.to) });
+  }
+  return lista;
+}
+function atualizarFiltrosAtivos(todayStr) {
+  const lista = filtrosAtivos(todayStr);
+  els.filtrosQtd.textContent = lista.length;
+  els.filtrosQtd.hidden = !lista.length;
+  els.btnFiltros.classList.toggle('tem-filtro', lista.length > 0);
+  els.filtrosAtivos.hidden = !lista.length;
+  els.filtrosAtivos.innerHTML = lista.map(f => `<button type="button" class="filtro-chip" data-limpar="${f.chave}" aria-label="Tirar filtro ${esc(f.texto)}">${esc(f.texto)} <span aria-hidden="true">×</span></button>`).join('')
+    + (lista.length > 1 ? '<button type="button" class="link-btn" data-limpar="tudo">Limpar filtros</button>' : '');
+}
+function limparFiltro(chave) {
+  if (chave === 'categoria' || chave === 'tudo') els.filterCategoria.value = '';
+  if (chave === 'status' || chave === 'tudo') els.filterStatus.value = '';
+  if (chave === 'forma' || chave === 'tudo') els.filterForma.value = '';
+  if (chave === 'venc' || chave === 'tudo') {
+    vencFilterMode = 'todos'; els.filterVencimento.value = 'todos'; els.vencCustomRange.hidden = true;
+  }
+  renderTableOnly();
+}
+function abrirFiltros(abrir) {
+  els.filtrosPainel.hidden = !abrir;
+  els.btnFiltros.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+}
 
 /* ===================== Modal genérico ===================== */
 function openModal(title, bodyHTML, mountFn) {
@@ -2459,7 +2524,23 @@ function openEditContaModal(conta) {
           <textarea id="e_observacao" name="observacao" rows="2" placeholder="Observações adicionais (opcional)">${esc(conta.observacao || '')}</textarea>
         </div>
       </div>
-      <p class="hint">Para alterar valores ou datas das parcelas, use “Ajustar” na lista de parcelas da conta.</p>
+      <div class="parcelas-block">
+        <div class="parcelas-head"><h3>Vencimentos</h3></div>
+        <p class="hint" style="margin-top:4px">Altere a data de vencimento das parcelas em aberto. Parcelas já pagas não mudam.</p>
+        <table class="parcelas-table">
+          <thead><tr><th>Parcela</th><th>Valor</th><th>Vencimento</th></tr></thead>
+          <tbody>
+            ${(conta.parcelas || []).map((p, i) => `<tr>
+              <td>${p.numero}/${conta.parcelas.length}</td>
+              <td>${fmtCur(p.valor)}</td>
+              <td>${p.pago
+                ? `${fmtDate(p.dataVencimento)} <span class="badge badge-pago">Paga</span>`
+                : `<input type="date" name="venc_${i}" value="${p.dataVencimento}" required aria-label="Vencimento da parcela ${p.numero}">`}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Para alterar o valor de uma parcela, use “Ajustar” na lista de parcelas da conta.</p>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="btnCancelarEdit">Cancelar</button>
         <button type="submit" class="btn btn-primary">Salvar alterações</button>
@@ -2487,14 +2568,23 @@ function openEditContaModal(conta) {
       } else if (!categoriaFinal) {
         toast('Selecione uma categoria.'); return;
       }
-      updateConta(conta.id, {
+      const novasParcelas = clone(conta.parcelas || []);
+      let mudouVencimento = false;
+      novasParcelas.forEach((p, i) => {
+        if (p.pago) return;
+        const v = (fd.get('venc_' + i) || '').toString();
+        if (v && v !== p.dataVencimento) { p.dataVencimento = v; mudouVencimento = true; }
+      });
+      const patch = {
         categoria: categoriaFinal,
         nome: (fd.get('nome') || '').toString().trim(),
         numero: (fd.get('numero') || '').toString().trim(),
         dataEmissao: fd.get('dataEmissao'),
         formaPagamento: (fd.get('formaPagamento') || '').toString(),
         observacao: (fd.get('observacao') || '').toString().trim()
-      }, 'Conta atualizada.');
+      };
+      if (mudouVencimento) patch.parcelas = novasParcelas;
+      updateConta(conta.id, patch, mudouVencimento ? 'Conta e vencimentos atualizados.' : 'Conta atualizada.');
     });
   });
 }
@@ -2812,6 +2902,17 @@ async function init(ctx) {
   els.searchInput.addEventListener('input', renderTableOnly);
   els.filterCategoria.addEventListener('change', renderTableOnly);
   els.filterStatus.addEventListener('change', renderTableOnly);
+  els.filterForma = document.getElementById('filterForma');
+  els.btnFiltros = document.getElementById('btnFiltros');
+  els.filtrosQtd = document.getElementById('filtrosQtd');
+  els.filtrosPainel = document.getElementById('filtrosPainel');
+  els.filtrosAtivos = document.getElementById('filtrosAtivos');
+  els.filterForma.innerHTML = '<option value="">Todas</option>' + FORMAS_PAGAMENTO.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
+  els.filterForma.addEventListener('change', renderTableOnly);
+  els.btnFiltros.addEventListener('click', () => abrirFiltros(els.filtrosPainel.hidden));
+  document.getElementById('btnFecharFiltros').addEventListener('click', () => abrirFiltros(false));
+  document.getElementById('btnLimparFiltros').addEventListener('click', () => limparFiltro('tudo'));
+  els.filtrosAtivos.addEventListener('click', (e) => { const b = e.target.closest('[data-limpar]'); if (b) limparFiltro(b.dataset.limpar); });
   els.filterVencimento.addEventListener('change', () => {
     vencFilterMode = els.filterVencimento.value;
     els.vencCustomRange.hidden = vencFilterMode !== 'custom';
