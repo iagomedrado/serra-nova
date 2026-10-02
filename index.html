@@ -101,7 +101,7 @@
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
   .grid-2 { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
   @media (min-width: 1000px) { .grid-2 { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); align-items: start; } }
-  .stack { display: grid; gap: 20px; }
+  .stack { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 
   /* ---------- Tabelas ---------- */
   .table-wrap { overflow-x: auto; }
@@ -494,6 +494,48 @@
     .es-pendente .btn { padding: 9px 12px; font-size: .9rem; white-space: nowrap; }
   }
 
+  /* =====================================================
+     LANÇAMENTO DE PRODUÇÃO
+     ===================================================== */
+  .pr-resumo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pr-resumo small { display: block; color: var(--muted); font-size: .82rem; }
+  @media (max-width: 760px) { .pr-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pr-resumo div:nth-child(3) { border-left: 0; } .pr-resumo div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+  @media (max-width: 560px) { .pr-resumo div { display: block !important; } }
+  .pr-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
+  @media (min-width: 1100px) { .pr-grid { grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); align-items: start; } .pr-form { position: sticky; top: 16px; } }
+  .pr-form .two { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  .pr-form .two[hidden], .form [data-campos][hidden] { display: none !important; }
+  .form .two { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  .pr-rend { margin: 0; color: var(--ok); font-size: .92rem; }
+  .pr-rend:empty { display: none; }
+  .pr-aviso { margin: -4px 0 0; color: var(--warn); font-weight: 600; font-size: .88rem; }
+  .pr-dia + .pr-dia { margin-top: 20px; }
+  .pr-tot { font-size: .85rem; }
+  .pr-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .pr-item:last-child { border-bottom: 0; }
+  .pr-item-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+  .pr-nome { font-size: 1rem; }
+  .pr-acoes { margin-left: auto; display: flex; gap: 2px; }
+  #producaoRoot .icon-btn { color: var(--muted); }
+  #producaoRoot .icon-btn:hover { background: var(--bg); color: var(--ink); }
+  #producaoRoot .icon-btn svg.i { width: 19px; height: 19px; }
+  .pr-nums { display: flex; flex-wrap: wrap; gap: 6px 28px; margin-top: 6px; font-weight: 600; }
+  .pr-nums small { display: block; font-weight: 400; font-size: .78rem; color: var(--muted); }
+  .pr-g-nome { flex: 1 1 200px; width: auto; }
+  .cat-manage-row select { width: auto; }
+  body.producao-leitura #prForm, body.producao-leitura #prGerenciar { display: none !important; }
+  @media (max-width: 420px) { .pr-form .two, .form .two { grid-template-columns: 1fr; } }
+  #producaoRoot .panel-head-row { flex-wrap: wrap; }
+  @media (max-width: 600px) {
+    #prPorProduto table, #prPorProduto tbody, #prPorProduto tr, #prPorProduto td { display: block; }
+    #prPorProduto thead, #prPorProduto td.vazio { display: none; }
+    #prPorProduto tr { display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    #prPorProduto tr:last-child { border-bottom: 0; }
+    #prPorProduto td { border: 0; padding: 0; text-align: left; white-space: nowrap; font-weight: 600; }
+    #prPorProduto td:first-child { width: 100%; }
+    #prPorProduto td[data-rot]::before { content: attr(data-rot); display: block; font-weight: 400; font-size: .78rem; color: var(--muted); }
+  }
+
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
   @media print {
@@ -602,7 +644,7 @@
             <li data-modulo="resfriadores"><span class="dot"></span><span><strong>Tanque 2 a 5,1 °C</strong><span class="muted">Acima da faixa de 4 °C desde 07:40.</span></span><a href="#resfriadores">Ver</a></li>
             <li id="attEstoque" hidden></li>
             <li data-modulo="queijos"><span class="dot"></span><span><strong>Lote MUS-0922 vence em 4 dias</strong><span class="muted">38 kg de mussarela.</span></span><a href="#queijos">Ver</a></li>
-            <li data-modulo="producao"><span class="dot ok"></span><span><strong>Produção de hoje registrada</strong><span class="muted">3.800 L processados.</span></span><a href="#producao">Ver</a></li>
+            <li id="attProducao" hidden></li>
           </ul>
         </div>
         <div class="panel">
@@ -610,7 +652,7 @@
           <p class="sem-acesso" id="semAcesso" hidden>Você ainda não tem acesso a nenhuma área. Fale com o administrador do sistema.</p>
           <ul class="areas">
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig">21.450 L<small>2.214 kg produzidos</small></span></a></li>
+            <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Em câmara fria</span></span><span class="fig">1.386 kg<small>5 tipos</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Leituras de hoje</span></span><span class="fig">1 alerta<small>3 equipamentos</small></span></a></li>
@@ -713,48 +755,43 @@
     </section>
 
     <!-- ================= LANÇAMENTO DE PRODUÇÃO ================= -->
-    <section data-tab="producao" aria-labelledby="t-producao">
+    <section data-tab="producao" aria-labelledby="t-producao" id="producaoRoot">
       <div class="page-head">
-        <div><h1 id="t-producao">Lançamento de produção</h1><p>Quanto leite entrou na fabricação e quanto de cada produto saiu.</p></div>
+        <div><h1 id="t-producao">Lançamento de produção</h1><p>Fabricação de queijos e cremes: leite utilizado, peças, peso e rendimento.</p></div>
+        <div class="actions"><button type="button" class="btn" id="prGerenciar">Produtos</button></div>
       </div>
-      <div class="grid-2">
-        <form class="panel form" onsubmit="return false">
-          <h2>Registrar produção</h2>
-          <div class="two">
-            <label>Data<input type="date" id="prodDate"></label>
-            <label>Lote<input type="text" value="MUS-0929" aria-describedby="loteHint"></label>
+      <p class="test-note" id="prNota" hidden></p>
+
+      <div class="lv-row">
+        <h2>Resumo</h2>
+        <div class="summary-controls">
+          <div class="segmented" id="prPeriodo" role="group" aria-label="Período">
+            <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
+            <button type="button" class="seg-btn is-active" data-periodo="semana">Esta semana</button>
+            <button type="button" class="seg-btn" data-periodo="mes">Este mês</button>
+            <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
           </div>
-          <p class="form-hint" id="loteHint">O lote é sugerido pelo produto e pela data.</p>
-          <label>Produto
-            <select><option>Mussarela</option><option>Queijo minas frescal</option><option>Queijo prato</option><option>Requeijão</option><option>Manteiga</option></select>
-          </label>
-          <div class="two">
-            <label>Leite utilizado (L)<input type="number" inputmode="decimal" placeholder="0"></label>
-            <label>Produzido (kg)<input type="number" inputmode="decimal" placeholder="0"></label>
+          <div class="custom-range" id="prCustom" hidden>
+            <input type="date" id="prDe" aria-label="De"><span>até</span><input type="date" id="prAte" aria-label="Até">
           </div>
-          <label>Observação<textarea rows="2" placeholder="Opcional"></textarea></label>
-          <button class="btn primary" type="submit">Registrar produção</button>
-        </form>
+        </div>
+      </div>
+      <div class="ledger pr-resumo" id="prResumo"></div>
+
+      <div class="pr-grid">
+        <form class="panel form pr-form" id="prForm"></form>
         <div class="stack">
-          <div class="ledger" style="margin:0">
-            <div><span>Leite na semana</span><strong>21.450 L</strong></div>
-            <div><span>Produzido</span><strong>2.214 kg</strong></div>
-            <div><span>Rendimento médio</span><strong>9,7 L/kg</strong></div>
-          </div>
-          <div class="panel table-wrap">
-            <h2>Produção desta semana</h2>
-            <table>
-              <thead><tr><th>Data</th><th>Produto</th><th>Lote</th><th class="num">Leite</th><th class="num">Produzido</th><th class="num">Rendimento</th></tr></thead>
-              <tbody>
-                <tr><td>29/09</td><td>Mussarela</td><td>MUS-0929</td><td class="num">3.800 L</td><td class="num">380 kg</td><td class="num">10,0 L/kg</td></tr>
-                <tr><td>28/09</td><td>Queijo minas frescal</td><td>MFR-0928</td><td class="num">2.400 L</td><td class="num">400 kg</td><td class="num">6,0 L/kg</td></tr>
-                <tr><td>27/09</td><td>Mussarela</td><td>MUS-0927</td><td class="num">4.100 L</td><td class="num">402 kg</td><td class="num">10,2 L/kg</td></tr>
-                <tr><td>26/09</td><td>Queijo prato</td><td>PRA-0926</td><td class="num">3.050 L</td><td class="num">305 kg</td><td class="num">10,0 L/kg</td></tr>
-                <tr><td>25/09</td><td>Mussarela</td><td>MUS-0925</td><td class="num">4.300 L</td><td class="num">424 kg</td><td class="num">10,1 L/kg</td></tr>
-                <tr><td>24/09</td><td>Requeijão</td><td>REQ-0924</td><td class="num">3.800 L</td><td class="num">303 kg</td><td class="num">12,5 L/kg</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <section class="panel">
+            <h2>Por produto</h2>
+            <div id="prPorProduto"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head panel-head-row">
+              <h2>Lançamentos</h2>
+              <select id="prFiltro" class="select-inline" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
+            </div>
+            <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
+          </section>
         </div>
       </div>
     </section>
@@ -993,7 +1030,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -1024,6 +1061,20 @@
     } else { att.hidden = true; }
   });
 
+  const n1 = (v, c) => Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: c == null ? 2 : c });
+  document.addEventListener("producao:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    $("homeProducaoFig").innerHTML = n1(r.semanaLeite) + " L<small>" + n1(r.semanaPecas, 0) + " peças" + (r.semanaPeso ? " · " + n1(r.semanaPeso) + " kg de creme" : "") + "</small>";
+    const att = $("attProducao");
+    if (!SN.pode("producao", "ver")) { att.hidden = true; return; }
+    if (r.hoje) {
+      const partes = [r.hojeLeite ? n1(r.hojeLeite) + " L de leite" : "", r.hojePecas ? n1(r.hojePecas, 0) + " peças" : "", r.hojePeso ? n1(r.hojePeso) + " kg de creme" : ""].filter(Boolean);
+      att.innerHTML = '<span class="dot ok"></span><span><strong>Produção de hoje registrada</strong><span class="muted">' + partes.join(", ") + '.</span></span><a href="#producao">Ver</a>';
+    } else {
+      att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao">Ver</a>';
+    }
+    att.hidden = false;
+  });
   document.addEventListener("estoque:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
     $("homeEstoqueFig").innerHTML = pl(r.comprar, "item", "itens") + "<small>de " + r.total + " cadastrados</small>";
@@ -1141,6 +1192,7 @@
     $("app").hidden = false;
     show();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("producao", "ver") && window.SN_Producao) window.SN_Producao.iniciar({ sb: SN.sb, podeEditar: SN.pode("producao", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
     if (perfil.admin) Usuarios.carregar();
   }
@@ -3608,6 +3660,337 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   let iniciado = false;
   window.SN_Estoque = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+})();
+</script>
+<script>
+/* =====================================================
+   LANÇAMENTO DE PRODUÇÃO
+   ===================================================== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let sb = null, podeEditar = false;
+  let produtos = [];
+  let lancamentos = [];
+  let periodo = 'semana';
+  const nomes = {};
+
+  /* ---------- Utilidades ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const hojeISO = () => iso(new Date());
+  function deISO(s) { const [a, m, d] = s.split('-').map(Number); return new Date(a, m - 1, d); }
+  function fmtData(s) { const [a, m, d] = s.split('-'); return d + '/' + m + '/' + a; }
+  function fmtNum(n, casas) { return Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas == null ? 2 : casas }); }
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+  function produto(id) { return produtos.find((p) => p.id === id); }
+  function rendimento(leite, pecas) { return pecas > 0 && leite > 0 ? leite / pecas : null; }
+  function intervalo() {
+    const hoje = new Date(); const h = iso(hoje);
+    if (periodo === 'hoje') return { de: h, ate: h };
+    if (periodo === 'semana') { const d = new Date(hoje); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return { de: iso(d), ate: h }; }
+    if (periodo === 'mes') return { de: hoje.getFullYear() + '-' + pad(hoje.getMonth() + 1) + '-01', ate: h };
+    const de = $('prDe').value || h, ate = $('prAte').value || h;
+    return de <= ate ? { de, ate } : { de: ate, ate: de };
+  }
+  function rotuloPeriodo() {
+    const r = intervalo();
+    if (periodo === 'hoje') return 'hoje';
+    if (periodo === 'semana') return 'nesta semana';
+    if (periodo === 'mes') return 'neste mês';
+    return r.de === r.ate ? 'em ' + fmtData(r.de) : 'de ' + fmtData(r.de) + ' a ' + fmtData(r.ate);
+  }
+
+  /* ---------- Dados ---------- */
+  async function carregarProdutos() {
+    const { data, error } = await sb.from('producao_produtos').select('*').order('ordem');
+    if (error) throw error;
+    produtos = data || [];
+    preencherProdutos();
+  }
+  async function carregarLancamentos() {
+    const r = intervalo();
+    const { data, error } = await sb.from('producao_lancamentos').select('*')
+      .gte('data_fabricacao', r.de).lte('data_fabricacao', r.ate).order('data_fabricacao', { ascending: false });
+    if (error) throw error;
+    lancamentos = (data || []).map((l) => ({ ...l, leite_litros: l.leite_litros == null ? null : Number(l.leite_litros), peso_kg: l.peso_kg == null ? null : Number(l.peso_kg) }))
+      .sort((a, b) => b.data_fabricacao.localeCompare(a.data_fabricacao) || String(b.criado_em || '').localeCompare(String(a.criado_em || '')));
+    render();
+  }
+  async function resumoInicio() {
+    const hoje = new Date(); const ini = new Date(hoje); ini.setDate(ini.getDate() - ((ini.getDay() + 6) % 7));
+    const { data, error } = await sb.from('producao_lancamentos').select('*').gte('data_fabricacao', iso(ini)).lte('data_fabricacao', iso(hoje));
+    if (error) return;
+    const h = iso(hoje), r = { carregado: true, hoje: 0, hojeLeite: 0, hojePecas: 0, hojePeso: 0, semanaLeite: 0, semanaPecas: 0, semanaPeso: 0 };
+    (data || []).forEach((l) => {
+      r.semanaLeite += Number(l.leite_litros || 0); r.semanaPecas += Number(l.pecas || 0); r.semanaPeso += Number(l.peso_kg || 0);
+      if (l.data_fabricacao === h) { r.hoje++; r.hojeLeite += Number(l.leite_litros || 0); r.hojePecas += Number(l.pecas || 0); r.hojePeso += Number(l.peso_kg || 0); }
+    });
+    document.dispatchEvent(new CustomEvent('producao:resumo', { detail: r }));
+  }
+  let timer = null;
+  function atualizar() {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      Promise.all([carregarProdutos(), carregarLancamentos(), resumoInicio()]).catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); });
+    }, 150);
+  }
+
+  /* ---------- Formulário ---------- */
+  function opcoesProdutos(selecionado, incluirInativo) {
+    const grupo = (tipo, rotulo) => {
+      const its = produtos.filter((p) => p.tipo === tipo && (p.ativo || incluirInativo || p.id === selecionado));
+      return its.length ? `<optgroup label="${rotulo}">${its.map((p) => `<option value="${p.id}" ${p.id === selecionado ? 'selected' : ''}>${esc(p.nome)}${p.ativo ? '' : ' (inativo)'}</option>`).join('')}</optgroup>` : '';
+    };
+    return grupo('queijo', 'Queijos') + grupo('creme', 'Cremes');
+  }
+  function preencherProdutos() {
+    const sel = $('prForm').querySelector('[name="produto"]'); if (!sel) return;
+    const atual = sel.value;
+    sel.innerHTML = '<option value="">Escolha o produto</option>' + opcoesProdutos(atual, false);
+    if (atual && produto(atual)) sel.value = atual;
+    const f = $('prFiltro'), fa = f.value;
+    f.innerHTML = '<option value="">Todos os produtos</option>' + produtos.map((p) => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
+    f.value = fa;
+    ajustarCampos($('prForm'));
+  }
+  function ajustarCampos(form) {
+    const p = produto(form.querySelector('[name="produto"]').value);
+    const tipo = p ? p.tipo : null;
+    form.querySelector('[data-campos="queijo"]').hidden = tipo !== 'queijo';
+    form.querySelector('[data-campos="creme"]').hidden = tipo !== 'creme';
+    form.querySelectorAll('[data-campos="queijo"] input').forEach((i) => { i.required = tipo === 'queijo'; });
+    form.querySelectorAll('[data-campos="creme"] input').forEach((i) => { i.required = tipo === 'creme'; });
+    const leite = lerNum(form.querySelector('[name="leite"]').value), pecas = lerNum(form.querySelector('[name="pecas"]').value);
+    const r = tipo === 'queijo' ? rendimento(leite, pecas) : null;
+    const rend = form.querySelector('[data-rend]');
+    rend.innerHTML = r ? `Rendimento: <strong>${fmtNum(r)} litros por peça</strong>` : '';
+    const lote = form.querySelector('[name="lote"]').value.trim(), id = form.dataset.id || '';
+    const aviso = form.querySelector('[data-lote-aviso]');
+    const repetido = p && lote && lancamentos.some((l) => l.produto_id === p.id && l.lote.trim().toLowerCase() === lote.toLowerCase() && l.id !== id);
+    aviso.hidden = !repetido;
+    aviso.textContent = repetido ? 'Atenção: já existe um lançamento de ' + p.nome + ' com o lote ' + lote + ' neste período.' : '';
+  }
+  function lerFormulario(form) {
+    const p = produto(form.querySelector('[name="produto"]').value);
+    if (!p) { toast('Escolha o produto.'); return null; }
+    const dados = {
+      produto_id: p.id,
+      data_fabricacao: form.querySelector('[name="data"]').value,
+      lote: form.querySelector('[name="lote"]').value.trim(),
+      observacao: form.querySelector('[name="obs"]').value.trim(),
+      leite_litros: null, pecas: null, peso_kg: null
+    };
+    if (!dados.data_fabricacao) { toast('Informe a data de fabricação.'); return null; }
+    if (!dados.lote) { toast('Informe o lote.'); return null; }
+    if (p.tipo === 'queijo') {
+      dados.leite_litros = lerNum(form.querySelector('[name="leite"]').value);
+      const pc = lerNum(form.querySelector('[name="pecas"]').value);
+      dados.pecas = pc == null ? null : Math.round(pc);
+      if (!(dados.leite_litros > 0) || !(dados.pecas > 0)) { toast('Informe o volume de leite e o número de peças.'); return null; }
+    } else {
+      dados.peso_kg = lerNum(form.querySelector('[name="peso"]').value);
+      if (!(dados.peso_kg > 0)) { toast('Informe o peso.'); return null; }
+    }
+    return dados;
+  }
+  function camposHTML(l) {
+    l = l || {};
+    return `
+      <label>Produto<select name="produto" required>${''}</select></label>
+      <div class="two">
+        <label>Data de fabricação<input type="date" name="data" value="${l.data_fabricacao || hojeISO()}" required></label>
+        <label>Lote<input type="text" name="lote" value="${esc(l.lote || '')}" placeholder="Ex.: 1002" required autocomplete="off"></label>
+      </div>
+      <p class="pr-aviso" data-lote-aviso hidden></p>
+      <div class="two" data-campos="queijo" hidden>
+        <label>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
+        <label>Número de peças<input type="number" name="pecas" min="0" step="1" inputmode="numeric" value="${l.pecas == null ? '' : l.pecas}" placeholder="0"></label>
+      </div>
+      <div data-campos="creme" hidden>
+        <label>Peso (kg)<input type="number" name="peso" min="0" step="any" inputmode="decimal" value="${l.peso_kg == null ? '' : l.peso_kg}" placeholder="0"></label>
+      </div>
+      <p class="pr-rend" data-rend></p>
+      <label>Observação<textarea name="obs" rows="2" placeholder="Opcional">${esc(l.observacao || '')}</textarea></label>`;
+  }
+  function ligarFormulario(form, selecionado) {
+    const sel = form.querySelector('[name="produto"]');
+    sel.innerHTML = '<option value="">Escolha o produto</option>' + opcoesProdutos(selecionado, false);
+    if (selecionado) sel.value = selecionado;
+    form.addEventListener('input', () => ajustarCampos(form));
+    form.addEventListener('change', () => ajustarCampos(form));
+    ajustarCampos(form);
+  }
+
+  /* ---------- Tela ---------- */
+  function render() {
+    const filtro = $('prFiltro').value;
+    const lista = filtro ? lancamentos.filter((l) => l.produto_id === filtro) : lancamentos;
+    // resumo
+    let leite = 0, pecas = 0, peso = 0;
+    lista.forEach((l) => { leite += l.leite_litros || 0; pecas += l.pecas || 0; peso += l.peso_kg || 0; });
+    $('prResumo').innerHTML = `
+      <div><span>Leite processado</span><strong>${fmtNum(leite)} L</strong></div>
+      <div><span>Peças de queijo</span><strong>${fmtNum(pecas, 0)}</strong></div>
+      <div><span>Creme produzido</span><strong>${fmtNum(peso)} kg</strong></div>
+      <div><span>Lançamentos</span><strong>${lista.length}</strong><small>${esc(rotuloPeriodo())}</small></div>`;
+    // por produto
+    const linhas = produtos.map((p) => {
+      const ls = lancamentos.filter((l) => l.produto_id === p.id); if (!ls.length) return '';
+      const L = ls.reduce((a, l) => a + (l.leite_litros || 0), 0), P = ls.reduce((a, l) => a + (l.pecas || 0), 0), K = ls.reduce((a, l) => a + (l.peso_kg || 0), 0);
+      const r = rendimento(L, P);
+      return p.tipo === 'queijo'
+        ? `<tr><td><b>${esc(p.nome)}</b></td><td class="num" data-rot="Lançamentos">${ls.length}</td><td class="num" data-rot="Leite">${fmtNum(L)} L</td><td class="num" data-rot="Peças">${fmtNum(P, 0)}</td><td class="num" data-rot="Rendimento">${r ? fmtNum(r) + ' L/peça' : '–'}</td><td class="num vazio">–</td></tr>`
+        : `<tr><td><b>${esc(p.nome)}</b></td><td class="num" data-rot="Lançamentos">${ls.length}</td><td class="num vazio">–</td><td class="num vazio">–</td><td class="num vazio">–</td><td class="num" data-rot="Peso">${fmtNum(K)} kg</td></tr>`;
+    }).join('');
+    $('prPorProduto').innerHTML = linhas
+      ? `<div class="table-wrap"><table><thead><tr><th>Produto</th><th class="num">Lançamentos</th><th class="num">Leite</th><th class="num">Peças</th><th class="num">Rendimento</th><th class="num">Peso</th></tr></thead><tbody>${linhas}</tbody></table></div>`
+      : `<p class="empty-state-msg">Nenhuma produção lançada ${esc(rotuloPeriodo())}.</p>`;
+    // lista agrupada por dia
+    const dias = [];
+    lista.forEach((l) => { let g = dias.find((x) => x.data === l.data_fabricacao); if (!g) { g = { data: l.data_fabricacao, itens: [] }; dias.push(g); } g.itens.push(l); });
+    $('prLista').innerHTML = dias.length ? dias.map((g) => {
+      const d = deISO(g.data);
+      const dia = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      const tL = g.itens.reduce((a, l) => a + (l.leite_litros || 0), 0), tP = g.itens.reduce((a, l) => a + (l.pecas || 0), 0), tK = g.itens.reduce((a, l) => a + (l.peso_kg || 0), 0);
+      const tot = [tL ? fmtNum(tL) + ' L' : '', tP ? fmtNum(tP, 0) + ' peças' : '', tK ? fmtNum(tK) + ' kg de creme' : ''].filter(Boolean).join(' · ');
+      return `<div class="pr-dia"><div class="area-title"><h3>${esc(dia.charAt(0).toUpperCase() + dia.slice(1))}</h3><span class="muted pr-tot">${tot}</span></div>
+        ${g.itens.map(itemHTML).join('')}</div>`;
+    }).join('') : `<p class="empty-state-msg">Nenhum lançamento ${esc(rotuloPeriodo())}.</p>`;
+  }
+  function itemHTML(l) {
+    const p = produto(l.produto_id) || { nome: 'Produto removido', tipo: l.peso_kg != null ? 'creme' : 'queijo' };
+    const r = rendimento(l.leite_litros, l.pecas);
+    const nums = p.tipo === 'queijo'
+      ? `<span><small>Leite</small>${fmtNum(l.leite_litros)} L</span><span><small>Peças</small>${fmtNum(l.pecas, 0)}</span><span><small>Rendimento</small>${r ? fmtNum(r) + ' L/peça' : '–'}</span>`
+      : `<span><small>Peso</small>${fmtNum(l.peso_kg)} kg</span>`;
+    return `<div class="pr-item" data-id="${l.id}">
+      <div class="pr-item-top">
+        <b class="pr-nome">${esc(p.nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>
+        ${podeEditar ? `<span class="pr-acoes"><button type="button" class="icon-btn" data-acao="editar" aria-label="Editar lançamento"><svg class="i"><use href="#i-edit"/></svg></button><button type="button" class="icon-btn" data-acao="excluir" aria-label="Excluir lançamento"><svg class="i"><use href="#i-trash"/></svg></button></span>` : ''}
+      </div>
+      <div class="pr-nums">${nums}</div>
+      ${l.observacao ? `<p class="conta-obs" style="margin-left:0">${esc(l.observacao)}</p>` : ''}
+      ${l.criado_por ? `<p class="conta-autor" style="margin-left:0">Lançado por ${esc(nomes[l.criado_por] || 'usuário removido')}</p>` : ''}
+    </div>`;
+  }
+
+  /* ---------- Ações ---------- */
+  async function registrar(e) {
+    e.preventDefault();
+    const form = $('prForm'); const dados = lerFormulario(form); if (!dados) return;
+    const botao = $('prSalvar'); botao.disabled = true;
+    const { error } = await sb.from('producao_lancamentos').insert(dados).select('id');
+    botao.disabled = false;
+    if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
+    ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
+    ajustarCampos(form);
+    toast('Produção registrada.');
+    atualizar();
+  }
+  function editar(id) {
+    const l = lancamentos.find((x) => x.id === id); if (!l) return;
+    SN.ui.openModal('Editar lançamento', `<form class="form" id="prEditForm" data-id="${l.id}">${camposHTML(l)}
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" id="prEditCancelar">Cancelar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div></form>`, (root) => {
+      const form = root.querySelector('#prEditForm');
+      ligarFormulario(form, l.produto_id);
+      root.querySelector('#prEditCancelar').addEventListener('click', SN.ui.closeModal);
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const dados = lerFormulario(form); if (!dados) return;
+        const { data, error } = await sb.from('producao_lancamentos').update(dados).eq('id', l.id).select('id');
+        if (error || !data || !data.length) { console.error(error); toast('Não foi possível salvar.'); return; }
+        SN.ui.closeModal(); toast('Lançamento atualizado.'); atualizar();
+      });
+    });
+  }
+  function excluir(id) {
+    const l = lancamentos.find((x) => x.id === id); if (!l) return;
+    const p = produto(l.produto_id);
+    SN.ui.confirmar({
+      titulo: 'Excluir lançamento', mensagem: `Excluir o lançamento de ${p ? p.nome : 'produção'}, lote ${l.lote}, de ${fmtData(l.data_fabricacao)}?`, botao: 'Excluir', perigo: true,
+      acao: async () => {
+        const { data, error } = await sb.from('producao_lancamentos').delete().eq('id', id).select('id');
+        if (error || !data || !data.length) { toast('Não foi possível excluir.'); return; }
+        SN.ui.closeModal(); toast('Lançamento excluído.'); atualizar();
+      }
+    });
+  }
+  function gerenciarProdutos() {
+    const linha = (p) => `<li class="cat-manage-row" data-id="${p.id}">
+        <input type="text" value="${esc(p.nome)}" data-campo="nome" aria-label="Nome do produto" class="pr-g-nome">
+        <select data-campo="tipo" aria-label="Tipo"><option value="queijo" ${p.tipo === 'queijo' ? 'selected' : ''}>Queijo</option><option value="creme" ${p.tipo === 'creme' ? 'selected' : ''}>Creme</option></select>
+        <label class="check"><input type="checkbox" data-campo="ativo" ${p.ativo ? 'checked' : ''}> Em uso</label>
+      </li>`;
+    SN.ui.openModal('Produtos fabricados', `
+      <p class="modal-context">Queijos são lançados com leite e número de peças. Cremes são lançados com o peso. Desmarque "Em uso" para tirar um produto da lista sem apagar os lançamentos dele.</p>
+      <ul class="cat-manage-list" id="prGLista">${produtos.map(linha).join('')}</ul>
+      <form class="add-cat-form" id="prGNovo" style="margin-top:14px">
+        <input type="text" id="prGNome" placeholder="Novo produto" required>
+        <select id="prGTipo" style="width:auto"><option value="queijo">Queijo</option><option value="creme">Creme</option></select>
+        <button type="submit" class="btn btn-primary">Adicionar</button>
+      </form>
+      <div class="modal-actions"><button type="button" class="btn" id="prGFechar">Fechar</button></div>`, (root) => {
+      root.querySelector('#prGFechar').addEventListener('click', SN.ui.closeModal);
+      root.querySelector('#prGLista').addEventListener('change', async (ev) => {
+        const el = ev.target.closest('[data-campo]'); if (!el) return;
+        const id = el.closest('[data-id]').dataset.id, campo = el.dataset.campo;
+        const valor = campo === 'ativo' ? el.checked : el.value.trim();
+        if (campo === 'nome' && !valor) { toast('O nome não pode ficar vazio.'); return; }
+        const { error } = await sb.from('producao_produtos').update({ [campo]: valor }).eq('id', id);
+        if (error) { toast(String(error.message || '').includes('unique') || String(error.code) === '23505' ? 'Já existe um produto com esse nome.' : 'Não foi possível salvar.'); return; }
+        toast('Produto atualizado.'); atualizar();
+      });
+      root.querySelector('#prGNovo').addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const nome = root.querySelector('#prGNome').value.trim(); if (!nome) return;
+        const tipo = root.querySelector('#prGTipo').value;
+        const { data, error } = await sb.from('producao_produtos').insert({ nome, tipo, ordem: produtos.length + 1 }).select('*').single();
+        if (error) { toast(String(error.code) === '23505' ? 'Já existe um produto com esse nome.' : 'Não foi possível adicionar.'); return; }
+        produtos.push(data);
+        root.querySelector('#prGLista').insertAdjacentHTML('beforeend', linha(data));
+        root.querySelector('#prGNome').value = '';
+        toast('Produto adicionado.'); atualizar();
+      });
+    });
+  }
+
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    document.body.classList.toggle('producao-leitura', !podeEditar);
+    if (!podeEditar) { const n = $('prNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; }
+    $('prForm').innerHTML = `<h2>Registrar produção</h2>${camposHTML()}<button class="btn primary" type="submit" id="prSalvar">Registrar produção</button>`;
+    ligarFormulario($('prForm'), '');
+    $('prForm').addEventListener('submit', registrar);
+    $('prPeriodo').addEventListener('click', (e) => {
+      const b = e.target.closest('.seg-btn'); if (!b) return;
+      periodo = b.dataset.periodo;
+      $('prPeriodo').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
+      $('prCustom').hidden = periodo !== 'custom';
+      if (periodo === 'custom' && !$('prDe').value) { const r = new Date(); $('prAte').value = iso(r); r.setDate(1); $('prDe').value = iso(r); }
+      carregarLancamentos().catch((err) => console.error(err));
+    });
+    ['prDe', 'prAte'].forEach((id) => $(id).addEventListener('change', () => carregarLancamentos().catch((err) => console.error(err))));
+    $('prFiltro').addEventListener('change', render);
+    $('prLista').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      const id = b.closest('.pr-item').dataset.id;
+      if (b.dataset.acao === 'editar') editar(id);
+      if (b.dataset.acao === 'excluir') excluir(id);
+    });
+    $('prGerenciar').addEventListener('click', gerenciarProdutos);
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await carregarProdutos(); await carregarLancamentos(); await resumoInicio(); }
+    catch (e) { console.error(e); $('prLista').innerHTML = '<p class="fatal">Não foi possível carregar a produção. Recarregue a página.</p>'; return; }
+    ['producao_lancamentos', 'producao_produtos'].forEach((t) => {
+      sb.channel('sn-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+  }
+  let iniciado = false;
+  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>

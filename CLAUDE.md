@@ -14,7 +14,7 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - Objeto global `window.SN` com `sb` (cliente Supabase), `perfil`, `permissoes`, `pode(modulo, nivel)`, `ui` (`toast`, `openModal`, `closeModal`, `confirmar`) e `chamarFuncao`.
 
 ## Abas
-- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo` e `estoque:resumo`.
+- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo` e `producao:resumo`.
 - **Livro de contas (pronto):** contas a pagar com parcelas, pagamentos parciais, recorrências e categorias. Tabelas `livro_contas` (parcelas em jsonb), `livro_categorias`, `livro_recorrencias`. Objeto `window.SN_Livro`. Registra quem lançou cada conta e quem registrou cada pagamento.
   - O vencimento das parcelas em aberto pode ser alterado na janela "Editar conta" (seção Vencimentos) ou no "Ajustar" de cada parcela.
   - Os filtros (categoria, situação, forma de pagamento e vencimento) ficam reunidos no botão "Filtros". Os filtros ativos aparecem como etiquetas removíveis abaixo da busca. O filtro de forma de pagamento considera a forma padrão da conta e a forma usada nos pagamentos.
@@ -28,7 +28,13 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Consumo = estoque do registro anterior + entradas − estoque atual. O histórico soma os registros de cada semana (de segunda a domingo) e mostra as últimas 8 semanas, com a média.
   - Os produtos aparecem recolhidos em linhas compactas (nome, avisos e estoque atual) e abrem com um clique para edição. As áreas também recolhem. Há "Abrir todos" e "Recolher todos", e a busca mostra os resultados mesmo em áreas recolhidas.
   - O pedido de compra sai por área. Os itens que estão vencendo, mas não precisam de compra, saem na seção "VENCENDO EM BREVE".
-- **Lançamento de produção, Estoque de queijos e Resfriadores:** ainda são só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessas áreas.
+- **Lançamento de produção (pronto):** objeto `window.SN_Producao`. Tabelas `producao_produtos` (nome, tipo `queijo` ou `creme`, ativo, ordem) e `producao_lancamentos` (data_fabricacao, produto_id, lote, leite_litros, pecas, peso_kg, observacao).
+  - Queijos (Tropical, Parmesão, Meia Cura, Frescal): data de fabricação, lote, volume de leite e número de peças. Rendimento = litros por peça.
+  - Cremes (Creme de Leite Cru, Creme do Soro do Leite): data de fabricação, lote e peso (kg).
+  - Resumo por período (Hoje, Esta semana como padrão, Este mês, Período personalizado), total por produto e lista agrupada por dia. Avisa quando um lote se repete para o mesmo produto no período.
+  - O botão "Produtos" permite adicionar, renomear, mudar o tipo e tirar produtos de uso (sem apagar os lançamentos).
+  - Ainda não alimenta o Estoque de queijos. Isso foi deixado para decidir quando essa aba for construída.
+- **Estoque de queijos e Resfriadores:** ainda são só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessas áreas.
 - **Usuários:** só para administradores.
 
 ## Visual
