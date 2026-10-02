@@ -4252,7 +4252,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <label data-bloco-numero><span data-numero-rot>Número</span><select name="numero"></select></label>
       <label>${esc(o.rotuloQuando)}<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
       <div class="two" data-bloco-tempo>
-        <label>Tempo de permanência<input type="number" name="tempo" min="0" step="any" inputmode="decimal" placeholder="Ex.: 24"></label>
+        <label>Tempo de permanência<input type="number" name="tempo" min="0" step="any" inputmode="decimal" placeholder="Ex.: 2"></label>
         <label>Medido em<select name="unidade"><option value="h">Horas</option><option value="d">Dias</option></select></label>
       </div>
       <p class="qj-previsao" data-previsao></p>`;
@@ -4268,7 +4268,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
     return { html, primeiraLivre };
   }
-  function ligarDestino(form, origem) {
+  function ligarDestino(form, origem, unidadeFixa) {
     const sel = form.querySelector('[name="numero"]');
     const etapaAtual = () => form.querySelector('[name="etapa"]:checked').value;
     function trocarEtapa() {
@@ -4282,7 +4282,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const livre = o.primeiraLivre || [...sel.options].find((x) => !x.disabled)?.value;
         if (livre) sel.value = String(livre);
         form.querySelector('[data-numero-rot]').textContent = 'Número da ' + ETAPAS[et].nome.toLowerCase();
-        form.querySelector('[name="unidade"]').value = ETAPAS[et].unidade;
+        form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
       }
       previsao();
     }
@@ -4334,7 +4334,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <form class="form" id="qjForm">${destinoHTML({ max: faltam, etapa: 'salmoura', rotuloQuando: 'Data e hora da entrada' })}
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar destino</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
-      ligarDestino(form, null);
+      ligarDestino(form, null, 'd');
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
       form.addEventListener('submit', (e) => {
         e.preventDefault();
