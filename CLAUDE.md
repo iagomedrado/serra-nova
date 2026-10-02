@@ -16,6 +16,9 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 ## Abas
 - **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo` e `estoque:resumo`.
 - **Livro de contas (pronto):** contas a pagar com parcelas, pagamentos parciais, recorrências e categorias. Tabelas `livro_contas` (parcelas em jsonb), `livro_categorias`, `livro_recorrencias`. Objeto `window.SN_Livro`. Registra quem lançou cada conta e quem registrou cada pagamento.
+  - O vencimento das parcelas em aberto pode ser alterado na janela "Editar conta" (seção Vencimentos) ou no "Ajustar" de cada parcela.
+  - Os filtros (categoria, situação, forma de pagamento e vencimento) ficam reunidos no botão "Filtros". Os filtros ativos aparecem como etiquetas removíveis abaixo da busca. O filtro de forma de pagamento considera a forma padrão da conta e a forma usada nos pagamentos.
+  - O resumo tem só "Hoje" (padrão ao abrir) e "Período personalizado".
 - **Controle de estoque (pronto):** insumos em 4 áreas (LABORATÓRIO, ALMOXARIFADO QUÍMICO, EMBALAGENS E RÓTULOS, ALMOXARIFADO). Objeto `window.SN_Estoque`. Tabelas `estoque_produtos`, `estoque_config` (uma linha, id = 1) e `estoque_contagens` (um registro por dia, com os itens em jsonb).
   - Cada produto tem os campos **Entrada**, **Estoque atual** e **Estoque mínimo**, além de validade e aviso de vencimento opcionais (prazo definido em cada produto).
   - Fluxo: quando chega produto, o operador preenche **Entrada**. O botão **Registrar Estoque** chama a função `estoque_registrar(p_data)` no banco, que soma a entrada ao estoque atual, limpa o campo e grava o registro do dia, tudo numa única transação. Vários registros no mesmo dia são acumulados no mesmo registro.
