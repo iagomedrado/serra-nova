@@ -598,6 +598,49 @@
   .qj-previsao { margin: 0; color: var(--ok); font-weight: 600; font-size: .92rem; }
   .qj-previsao:empty { display: none; }
   .form [data-bloco-numero][hidden], .form [data-bloco-tempo][hidden] { display: none !important; }
+  .qj-said-lista { display: grid; gap: 8px; }
+  .qj-said-lista .qj-sub { margin: 8px 0 0; }
+  .qj-said { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
+  .qj-said.ativo { border-color: var(--vermelho); box-shadow: inset 3px 0 0 var(--vermelho); }
+  .qj-said-info b { display: block; }
+  .qj-said-info small { color: var(--muted); font-size: .85rem; }
+
+  /* ---------- Gerenciamento de vendas ---------- */
+  .vd-grid { margin-top: 20px; }
+  @media (min-width: 1100px) { .vd-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+  .vd-venda { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .vd-venda:last-child { border-bottom: 0; }
+  .vd-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-bottom: 6px; }
+  .vd-titulo { font-size: 1.02rem; }
+  .vd-total { margin-left: auto; font-weight: 700; font-size: 1.05rem; }
+  .vd-item { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 3px 0; font-size: .93rem; }
+  .vd-item > span:last-child { color: var(--muted); }
+  .vd-item > span:last-child b { color: var(--ink); }
+  .vd-obs { margin: 6px 0 0; color: var(--muted); font-size: .9rem; font-style: italic; }
+  .vd-rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+  .vd-rodape small { color: var(--muted); font-size: .82rem; }
+  .vd-acoes { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-left: auto; }
+  .vd-dia h3 { display: flex; justify-content: space-between; gap: 12px; font-family: Merriweather, Georgia, serif; font-size: 1rem; margin: 16px 0 2px; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+  .vd-dia:first-child h3 { margin-top: 4px; }
+  .vd-tot { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .vd-tot:last-child { border-bottom: 0; }
+  .vd-tot b, .vd-tot small { display: block; }
+  .vd-tot small { color: var(--muted); font-size: .82rem; }
+  .vd-tot > span:last-child { font-weight: 700; white-space: nowrap; }
+  .vd-filtro { display: inline-flex !important; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); }
+  .vd-de { display: inline-flex !important; align-items: center; gap: 6px; }
+  .vd-precos { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 10px; }
+  .vd-precos legend { font-size: .9rem; color: var(--muted); padding: 0; margin-bottom: 6px; }
+  .vd-preco { display: grid; gap: 4px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .vd-campo-rs { display: flex; align-items: center; gap: 8px; }
+  .vd-campo-rs > span { color: var(--muted); font-weight: 600; }
+  .vd-sub { color: var(--muted); font-size: .9rem; text-align: right; }
+  .vd-total-form { margin: 0; font-weight: 700; font-size: 1.05rem; }
+  .vd-cad { display: grid; gap: 0; margin-bottom: 8px; }
+  .vd-cad-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .vd-cad-item.inativo > span:first-child { color: var(--muted); }
+  .vd-cad-novo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-top: 10px; }
+  .vd-cad-novo label { flex: 1 1 220px; }
 
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
@@ -629,6 +672,7 @@
   <symbol id="i-producao" viewBox="0 0 24 24"><path d="M9 3h6v2.5l2.5 3.5V20a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9l2.5-3.5z"/><path d="M6.5 12.5h11"/></symbol>
   <symbol id="i-queijo" viewBox="0 0 24 24"><path d="M3 13.5L13.5 5 21 10v8.5H3z"/><path d="M3 13.5h18"/><circle cx="8" cy="16" r="1"/><circle cx="15.5" cy="16.2" r="1.2"/><circle cx="14" cy="9.6" r=".8"/></symbol>
   <symbol id="i-estoque" viewBox="0 0 24 24"><rect x="3" y="12" width="8" height="8" rx="1"/><rect x="13" y="12" width="8" height="8" rx="1"/><rect x="8" y="3.5" width="8" height="8" rx="1"/></symbol>
+  <symbol id="i-vendas" viewBox="0 0 24 24"><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.3 6.3a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.6"/></symbol>
   <symbol id="i-frio" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 10v7"/><circle cx="12" cy="17.8" r="1.4"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-sair" viewBox="0 0 24 24"><path d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></symbol>
@@ -666,6 +710,7 @@
         <li data-modulo="livro"><a href="#livro"><svg class="i"><use href="#i-livro"/></svg>Livro de contas</a></li>
         <li data-modulo="producao"><a href="#producao"><svg class="i"><use href="#i-producao"/></svg>Lançamento de produção</a></li>
         <li data-modulo="queijos"><a href="#queijos"><svg class="i"><use href="#i-queijo"/></svg>Estoque de queijos</a></li>
+        <li data-modulo="vendas"><a href="#vendas"><svg class="i"><use href="#i-vendas"/></svg>Gerenciamento de vendas</a></li>
         <li data-modulo="estoque"><a href="#estoque"><svg class="i"><use href="#i-estoque"/></svg>Controle de estoque</a></li>
         <li data-modulo="resfriadores"><a href="#resfriadores"><svg class="i"><use href="#i-frio"/></svg>Resfriadores</a></li>
         <li class="sep" role="presentation" data-somente-admin></li>
@@ -707,6 +752,7 @@
             <li data-modulo="resfriadores"><span class="dot"></span><span><strong>Tanque 2 a 5,1 °C</strong><span class="muted">Acima da faixa de 4 °C desde 07:40.</span></span><a href="#resfriadores">Ver</a></li>
             <li id="attEstoque" hidden></li>
             <li id="attQueijos" hidden></li>
+            <li id="attVendas" hidden></li>
             <li id="attProducao" hidden></li>
           </ul>
         </div>
@@ -717,6 +763,7 @@
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Leituras de hoje</span></span><span class="fig">1 alerta<small>3 equipamentos</small></span></a></li>
           </ul>
@@ -887,14 +934,56 @@
 
       <div class="qj-grid2">
         <section class="panel" aria-labelledby="h-qj-est">
-          <h2 id="h-qj-est">Estoque embalado</h2>
-          <p class="muted-note">A saída para venda ainda não está no sistema.</p>
+          <div class="qj-cab"><h2 id="h-qj-est">Estoque embalado</h2><button type="button" class="btn btn-primary btn-small" id="qjSaidaBtn" hidden>Registrar saída</button></div>
+          <p class="muted-note">Na saída, o cliente, o preço e a forma de pagamento são definidos em Gerenciamento de vendas.</p>
           <div id="qjEstoque"></div>
         </section>
         <section class="panel" aria-labelledby="h-qj-mov">
           <h2 id="h-qj-mov">Últimas movimentações</h2>
           <div id="qjMovimentos"></div>
         </section>
+      </div>
+    </section>
+
+    <!-- ================= GERENCIAMENTO DE VENDAS ================= -->
+    <section data-tab="vendas" aria-labelledby="t-vendas" id="vendasRoot">
+      <div class="page-head">
+        <div><h1 id="t-vendas">Gerenciamento de vendas</h1><p>Cliente, preço por quilo e forma de pagamento das saídas registradas no Estoque de queijos.</p></div>
+        <div class="actions"><button type="button" class="btn" id="vdGerenciar" hidden>Clientes e formas de pagamento</button></div>
+      </div>
+      <p class="test-note" id="vdNota" hidden></p>
+
+      <section class="panel qj-bloco" aria-labelledby="vdFilaTitulo">
+        <h2 id="vdFilaTitulo">Aguardando dados da venda</h2>
+        <div id="vdFila"><p class="empty-state-msg">Carregando…</p></div>
+      </section>
+
+      <div class="lv-row">
+        <h2>Vendas</h2>
+        <div class="summary-controls">
+          <div class="segmented" id="vdPeriodo" role="group" aria-label="Período">
+            <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
+            <button type="button" class="seg-btn" data-periodo="semana">Esta semana</button>
+            <button type="button" class="seg-btn is-active" data-periodo="mes">Este mês</button>
+            <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
+          </div>
+          <div class="custom-range" id="vdCustom" hidden>
+            <label class="vd-de">De<input type="date" id="vdDe"></label><label class="vd-de">até<input type="date" id="vdAte"></label>
+          </div>
+        </div>
+      </div>
+      <div class="ledger pr-resumo" id="vdResumo"></div>
+
+      <div class="qj-grid2 vd-grid">
+        <section class="panel" aria-labelledby="h-vd-lista">
+          <div class="panel-head-row"><h2 id="h-vd-lista">Lista de vendas</h2>
+            <label class="vd-filtro">Cliente<select id="vdFiltro" class="select-inline"><option value="">Todos os clientes</option></select></label></div>
+          <div id="vdLista"></div>
+        </section>
+        <div class="stack">
+          <section class="panel" aria-labelledby="h-vd-cli"><h2 id="h-vd-cli">Por cliente</h2><div id="vdPorCliente"></div></section>
+          <section class="panel" aria-labelledby="h-vd-prod"><h2 id="h-vd-prod">Por produto</h2><div id="vdPorProduto"></div></section>
+        </div>
       </div>
     </section>
 
@@ -1026,11 +1115,12 @@
     { id: "livro", nome: "Livro de contas" },
     { id: "producao", nome: "Lançamento de produção" },
     { id: "queijos", nome: "Estoque de queijos" },
+    { id: "vendas", nome: "Gerenciamento de vendas" },
     { id: "estoque", nome: "Controle de estoque" },
     { id: "resfriadores", nome: "Resfriadores" }
   ];
   const TABS = { inicio: "Início", livro: "Livro de contas", producao: "Lançamento de produção",
-    queijos: "Estoque de queijos", estoque: "Controle de estoque", resfriadores: "Resfriadores", usuarios: "Usuários" };
+    queijos: "Estoque de queijos", vendas: "Gerenciamento de vendas", estoque: "Controle de estoque", resfriadores: "Resfriadores", usuarios: "Usuários" };
 
   const SN = window.SN = {
     sb: null, usuario: null, perfil: null, permissoes: {},
@@ -1095,7 +1185,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos" || id === "vendas");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -1139,6 +1229,16 @@
       att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao">Ver</a>';
     }
     att.hidden = false;
+  });
+  document.addEventListener("vendas:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    $("homeVendasFig").innerHTML = brl.format(r.mesTotal) + "<small>" + n1(r.mesKg, 1) + " kg</small>";
+    const att = $("attVendas");
+    if (r.pendentes) {
+      att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.pendentes, "saída aguardando dados da venda", "saídas aguardando dados da venda") +
+        '</strong><span class="muted">' + n1(r.pendentesKg, 1) + ' kg sem cliente e preço.</span></span><a href="#vendas">Ver</a>';
+      att.hidden = false;
+    } else { att.hidden = true; }
   });
   document.addEventListener("queijos:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
@@ -1274,6 +1374,7 @@
     show();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("producao", "ver") && window.SN_Producao) window.SN_Producao.iniciar({ sb: SN.sb, podeEditar: SN.pode("producao", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("vendas", "ver") && window.SN_Vendas) window.SN_Vendas.iniciar({ sb: SN.sb, podeEditar: SN.pode("vendas", "editar") });
     if (SN.pode("queijos", "ver") && window.SN_Queijos) window.SN_Queijos.iniciar({ sb: SN.sb, podeEditar: SN.pode("queijos", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
     if (perfil.admin) Usuarios.carregar();
@@ -4220,7 +4321,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const l = lote(p.lote_id);
       return `<div class="qj-item" data-pos="${p.id}">
         <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>
-          ${podeEditar ? '<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="perda">Registrar perda</button></span>' : ''}</div>
+          ${podeEditar ? '<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>' : ''}</div>
         <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
       </div>`;
     }).join('');
@@ -4233,6 +4334,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       case 'perda': return 'Perda de ' + pecas(m.pecas) + ' ' + noLugar(m.origem) + (m.observacao ? ': ' + m.observacao : '');
       case 'tempo': return 'Saída prevista ' + noLugar(m.origem) + ' mudou para ' + (m.destino && m.destino.previsao_saida ? fmtDataHora(m.destino.previsao_saida) : '?');
       case 'dispensar': return 'Ficou fora do controle de queijos' + (m.pecas ? ' (' + pecas(m.pecas) + ')' : '');
+      case 'saida': return 'Saída de ' + pecas(m.pecas) + (m.destino && m.destino.peso_kg ? ' (' + fmtNum(m.destino.peso_kg) + ' kg)' : '') + ' do estoque' + (m.observacao ? ': ' + m.observacao : '');
       default: return m.tipo;
     }
   }
@@ -4375,9 +4477,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button><button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button></div>` : ''}
       </div>`;
     }).join('') : '<p class="empty-state-msg">Livre. Nenhuma peça aqui agora.</p>';
-    SN.ui.openModal(nome, `${corpo}<div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+    SN.ui.openModal(nome, `<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
-      root.addEventListener('click', (e) => {
+      root.querySelector('[data-lugar]').addEventListener('click', (e) => {
         const b = e.target.closest('[data-acao]'); if (!b) return;
         const id = b.closest('[data-pos]').dataset.pos;
         if (b.dataset.acao === 'mover') mover(id);
@@ -4458,6 +4560,67 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       });
     });
   }
+
+  function abrirSaida(focoPos) {
+    const ps = posicoes.filter((p) => p.etapa === 'estoque').sort((a, b) => String(a.entrada_em).localeCompare(String(b.entrada_em)));
+    if (!ps.length) { toast('Não há peças embaladas no estoque.'); return; }
+    const grupos = {};
+    ps.forEach((p) => { const n = lote(p.lote_id).produto_nome; (grupos[n] = grupos[n] || []).push(p); });
+    const lista = Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => `<h3 class="qj-sub">${esc(n)}</h3>` + grupos[n].map((p) => {
+      const l = lote(p.lote_id);
+      return `<div class="qj-said" data-pos="${p.id}">
+        <div class="qj-said-info"><b>Lote ${esc(l.lote)}</b><small>${pecas(p.pecas)} no estoque, embalado em ${fmtData(localInput(new Date(p.entrada_em)))}</small></div>
+        <div class="two">
+          <label>Peças que saem<input type="number" name="pecas" min="1" max="${p.pecas}" step="1" inputmode="numeric" placeholder="0"></label>
+          <label>Peso (kg)<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
+        </div></div>`;
+    }).join('')).join('');
+    SN.ui.openModal('Registrar saída', `
+      <p class="modal-context">Preencha as peças e o peso só dos lotes que estão saindo. O cliente, o preço e a forma de pagamento ficam para a aba Gerenciamento de vendas.</p>
+      <form class="form" id="qjSaida">
+        <div class="qj-said-lista">${lista}</div>
+        <label>Data e hora da saída<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
+        <label>Observação<input type="text" name="obs" maxlength="200" placeholder="Ex.: carga do caminhão, pedido do cliente" autocomplete="off"></label>
+        <p class="qj-previsao" data-total></p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar saída</button></div>
+      </form>`, (root) => {
+      const form = root.querySelector('#qjSaida');
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      const linhas = () => [...form.querySelectorAll('.qj-said')].map((el) => ({
+        el, pos: el.dataset.pos, max: Number(el.querySelector('[name="pecas"]').max),
+        pecas: lerNum(el.querySelector('[name="pecas"]').value), peso: lerNum(el.querySelector('[name="peso"]').value)
+      }));
+      const total = () => {
+        const ls = linhas().filter((x) => x.pecas || x.peso);
+        linhas().forEach((x) => x.el.classList.toggle('ativo', !!(x.pecas || x.peso)));
+        form.querySelector('[data-total]').textContent = ls.length ? 'Saindo: ' + (ls.length === 1 ? '1 lote' : ls.length + ' lotes') + ', ' +
+          pecas(ls.reduce((a, x) => a + (x.pecas || 0), 0)) + ', ' + fmtNum(ls.reduce((a, x) => a + (x.peso || 0), 0), 3) + ' kg.' : '';
+      };
+      form.addEventListener('input', total);
+      if (focoPos) {
+        const el = form.querySelector(`.qj-said[data-pos="${focoPos}"]`);
+        if (el) { el.scrollIntoView({ block: 'center' }); el.querySelector('[name="pecas"]').focus(); }
+      }
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ls = linhas().filter((x) => x.pecas || x.peso);
+        if (!ls.length) { toast('Preencha as peças e o peso de pelo menos um lote.'); return; }
+        for (const x of ls) {
+          const nome = x.el.querySelector('b').textContent;
+          if (!(x.pecas >= 1) || x.pecas !== Math.round(x.pecas)) { toast(nome + ': informe quantas peças, em número inteiro.'); return; }
+          if (x.pecas > x.max) { toast(nome + ': só há ' + pecas(x.max) + ' no estoque.'); return; }
+          if (!(x.peso > 0)) { toast(nome + ': informe o peso em quilos.'); return; }
+        }
+        const q = form.querySelector('[name="quando"]').value;
+        const quando = q ? new Date(q) : null;
+        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da saída.'); return; }
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_saida', {
+          p_itens: ls.map((x) => ({ posicao: x.pos, pecas: x.pecas, peso_kg: x.peso })),
+          p_quando: quando.toISOString(), p_observacao: form.querySelector('[name="obs"]').value.trim()
+        }), 'Saída registrada. Complete a venda em Gerenciamento de vendas.');
+      });
+    });
+  }
   function desfazer(movId) {
     const m = movimentos.find((x) => x.id === movId); if (!m) return;
     const l = lote(m.lote_id);
@@ -4484,9 +4647,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       abrirLugar(t.dataset.etapa, Number(t.dataset.numero));
     }));
     $('qjEstoque').addEventListener('click', (e) => {
-      const b = e.target.closest('[data-acao="perda"]'); if (!b || !podeEditar) return;
-      perda(b.closest('[data-pos]').dataset.pos);
+      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      const id = b.closest('[data-pos]').dataset.pos;
+      if (b.dataset.acao === 'perda') perda(id);
+      if (b.dataset.acao === 'saida') abrirSaida(id);
     });
+    if (podeEditar) { $('qjSaidaBtn').hidden = false; $('qjSaidaBtn').addEventListener('click', () => abrirSaida(null)); }
     $('qjMovimentos').addEventListener('click', (e) => {
       const b = e.target.closest('[data-acao="desfazer"]'); if (!b || !podeEditar) return;
       desfazer(b.closest('[data-mov]').dataset.mov);
@@ -4502,6 +4668,360 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   let iniciado = false;
   window.SN_Queijos = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+})();
+</script>
+<script>
+/* =====================================================
+   GERENCIAMENTO DE VENDAS: cliente, preço por quilo e forma de pagamento
+   das saídas registradas no Estoque de queijos.
+   ===================================================== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  let sb = null, podeEditar = false, carregado = false, periodo = 'mes';
+  let clientes = [], formas = [], pendentes = [], vendas = [], mes = [];
+  let ultimoPreco = { cliente: {}, produto: {} };
+  let filtroCliente = '';
+  const nomes = {};
+
+  /* ---------- Utilidades ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const fmtNum = (n, c) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: c == null ? 2 : c });
+  const kg = (n) => fmtNum(n, 3) + ' kg';
+  const pecas = (n) => fmtNum(n, 0) + (Number(n) === 1 ? ' peça' : ' peças');
+  function fmtData(s) { if (!s) return ''; const [a, m, d] = String(s).slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
+  function fmtDataHora(ts) { const d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function diaSemana(s) { const [a, m, d] = s.split('-').map(Number); const t = new Date(a, m - 1, d).toLocaleDateString('pt-BR', { weekday: 'long' }); return t.charAt(0).toUpperCase() + t.slice(1); }
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+  function erroMsg(error) {
+    if (error && error.code === 'P0001' && error.message) return error.message;
+    if (error && error.code === '23505') return 'Já existe um cadastro com esse nome.';
+    return 'Não foi possível concluir. Verifique a conexão e tente de novo.';
+  }
+  const cliente = (id) => clientes.find((c) => c.id === id);
+  const forma = (id) => formas.find((f) => f.id === id);
+  const itensDe = (v) => (v.vendas_itens || []).slice().sort((a, b) => a.produto_nome.localeCompare(b.produto_nome, 'pt-BR') || a.lote.localeCompare(b.lote));
+  const pesoDe = (v) => itensDe(v).reduce((a, i) => a + Number(i.peso_kg || 0), 0);
+  const pecasDe = (v) => itensDe(v).reduce((a, i) => a + Number(i.pecas || 0), 0);
+  const valorItem = (i) => Math.round(Number(i.peso_kg || 0) * Number(i.preco_kg || 0) * 100) / 100;
+  const valorDe = (v) => itensDe(v).reduce((a, i) => a + valorItem(i), 0);
+  function intervalo() {
+    const hoje = new Date(), h = iso(hoje);
+    if (periodo === 'hoje') return { de: h, ate: h };
+    if (periodo === 'semana') { const d = new Date(hoje); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return { de: iso(d), ate: h }; }
+    if (periodo === 'mes') return { de: h.slice(0, 8) + '01', ate: h };
+    const de = $('vdDe').value || h, ate = $('vdAte').value || h;
+    return de <= ate ? { de, ate } : { de: ate, ate: de };
+  }
+  function rotuloPeriodo() {
+    const r = intervalo();
+    if (periodo === 'hoje') return 'hoje';
+    if (periodo === 'semana') return 'nesta semana';
+    if (periodo === 'mes') return 'neste mês';
+    return r.de === r.ate ? 'em ' + fmtData(r.de) : 'de ' + fmtData(r.de) + ' a ' + fmtData(r.ate);
+  }
+
+  /* ---------- Dados ---------- */
+  const SEL = '*, vendas_itens(*)';
+  async function carregar() {
+    const r = intervalo(), h = iso(new Date());
+    const [c, f, p, v, m, u] = await Promise.all([
+      sb.from('vendas_clientes').select('*').order('nome'),
+      sb.from('vendas_formas').select('*').order('ordem').order('nome'),
+      sb.from('vendas').select(SEL).eq('situacao', 'pendente').order('saida_em'),
+      sb.from('vendas').select(SEL).eq('situacao', 'concluida').gte('data_venda', r.de).lte('data_venda', r.ate).order('data_venda', { ascending: false }),
+      sb.from('vendas').select(SEL).eq('situacao', 'concluida').gte('data_venda', h.slice(0, 8) + '01').lte('data_venda', h),
+      sb.from('vendas').select('cliente_id, data_venda, concluida_em, vendas_itens(produto_nome, preco_kg)').eq('situacao', 'concluida').order('data_venda', { ascending: false }).limit(150)
+    ]);
+    for (const x of [c, f, p, v, m, u]) if (x.error) throw x.error;
+    clientes = c.data || []; formas = f.data || []; pendentes = p.data || []; mes = m.data || [];
+    vendas = (v.data || []).sort((a, b) => b.data_venda.localeCompare(a.data_venda) || String(b.concluida_em || '').localeCompare(String(a.concluida_em || '')));
+    ultimoPreco = { cliente: {}, produto: {} };
+    (u.data || []).forEach((vd) => (vd.vendas_itens || []).forEach((i) => {
+      if (i.preco_kg == null) return;
+      const k = vd.cliente_id + '|' + i.produto_nome;
+      if (!(k in ultimoPreco.cliente)) ultimoPreco.cliente[k] = Number(i.preco_kg);
+      if (!(i.produto_nome in ultimoPreco.produto)) ultimoPreco.produto[i.produto_nome] = Number(i.preco_kg);
+    }));
+    carregado = true;
+    render();
+  }
+  let timer = null;
+  function atualizar() {
+    clearTimeout(timer);
+    timer = setTimeout(() => carregar().catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); }), 250);
+  }
+
+  /* ---------- Tela ---------- */
+  function linhasItens(v, comPreco) {
+    return itensDe(v).map((i) => `<div class="vd-item"><span><b>${esc(i.produto_nome)}</b> lote ${esc(i.lote)}</span>
+      <span>${pecas(i.pecas)}, ${kg(i.peso_kg)}${comPreco && i.preco_kg != null ? ` × ${brl.format(i.preco_kg)}/kg = <b>${brl.format(valorItem(i))}</b>` : ''}</span></div>`).join('');
+  }
+  function render() {
+    if (!carregado) return;
+    // fila
+    $('vdFila').innerHTML = pendentes.length ? pendentes.map((v) => `
+      <div class="vd-venda" data-venda="${v.id}">
+        <div class="vd-topo"><b class="vd-titulo">Saída de ${fmtDataHora(v.saida_em)}</b>
+          <span class="vd-total">${kg(pesoDe(v))}</span></div>
+        ${linhasItens(v, false)}
+        ${v.observacao_saida ? `<p class="vd-obs">${esc(v.observacao_saida)}</p>` : ''}
+        <div class="vd-rodape"><small>${v.criado_por ? 'Saída registrada por ' + esc(nomes[v.criado_por] || 'usuário removido') : ''}</small>
+          ${podeEditar ? '<button type="button" class="btn btn-primary btn-small" data-acao="completar">Completar venda</button>' : ''}</div>
+      </div>`).join('') : '<p class="empty-state-msg">Nenhuma saída esperando. Todas as saídas do estoque já têm os dados da venda.</p>';
+    $('vdFilaTitulo').textContent = pendentes.length ? 'Aguardando dados da venda (' + pendentes.length + ')' : 'Aguardando dados da venda';
+
+    // filtro de cliente
+    const usados = [...new Set(vendas.map((v) => v.cliente_id))].map(cliente).filter(Boolean).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    if (filtroCliente && !usados.some((c) => c.id === filtroCliente)) filtroCliente = '';
+    $('vdFiltro').innerHTML = '<option value="">Todos os clientes</option>' + usados.map((c) => `<option value="${c.id}" ${c.id === filtroCliente ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+    const lista = filtroCliente ? vendas.filter((v) => v.cliente_id === filtroCliente) : vendas;
+
+    // resumo
+    const total = lista.reduce((a, v) => a + valorDe(v), 0), peso = lista.reduce((a, v) => a + pesoDe(v), 0);
+    $('vdResumo').innerHTML = `
+      <div><span>Total vendido</span><strong>${brl.format(total)}</strong><small>${esc(rotuloPeriodo())}</small></div>
+      <div><span>Quilos vendidos</span><strong>${fmtNum(peso, 1)} kg</strong><small>${pecas(lista.reduce((a, v) => a + pecasDe(v), 0))}</small></div>
+      <div><span>Vendas</span><strong>${lista.length}</strong><small>${filtroCliente ? esc(cliente(filtroCliente)?.nome || '') : 'todos os clientes'}</small></div>
+      <div><span>Preço médio</span><strong>${peso ? brl.format(total / peso) : '—'}</strong><small>por quilo</small></div>`;
+
+    // por cliente e por produto
+    const porCliente = {}, porProduto = {};
+    lista.forEach((v) => {
+      const n = cliente(v.cliente_id)?.nome || 'Cliente removido';
+      porCliente[n] = porCliente[n] || { valor: 0, peso: 0, n: 0 };
+      porCliente[n].valor += valorDe(v); porCliente[n].peso += pesoDe(v); porCliente[n].n++;
+      itensDe(v).forEach((i) => { porProduto[i.produto_nome] = porProduto[i.produto_nome] || { valor: 0, peso: 0 }; porProduto[i.produto_nome].valor += valorItem(i); porProduto[i.produto_nome].peso += Number(i.peso_kg); });
+    });
+    const tabela = (obj, sub) => Object.keys(obj).sort((a, b) => obj[b].valor - obj[a].valor).map((n) =>
+      `<div class="vd-tot"><span><b>${esc(n)}</b><small>${sub(obj[n])}</small></span><span>${brl.format(obj[n].valor)}</span></div>`).join('') || '<p class="empty-state-msg">Nenhuma venda ' + esc(rotuloPeriodo()) + '.</p>';
+    $('vdPorCliente').innerHTML = tabela(porCliente, (x) => (x.n === 1 ? '1 venda' : x.n + ' vendas') + ', ' + fmtNum(x.peso, 1) + ' kg');
+    $('vdPorProduto').innerHTML = tabela(porProduto, (x) => fmtNum(x.peso, 1) + ' kg, média ' + (x.peso ? brl.format(x.valor / x.peso) : '—') + '/kg');
+
+    // lista por dia
+    if (!lista.length) { $('vdLista').innerHTML = '<p class="empty-state-msg">Nenhuma venda ' + esc(rotuloPeriodo()) + '.</p>'; }
+    else {
+      const dias = {};
+      lista.forEach((v) => { (dias[v.data_venda] = dias[v.data_venda] || []).push(v); });
+      $('vdLista').innerHTML = Object.keys(dias).sort().reverse().map((d) => `
+        <div class="vd-dia"><h3>${diaSemana(d)}, ${fmtData(d)}<span>${brl.format(dias[d].reduce((a, v) => a + valorDe(v), 0))}</span></h3>
+        ${dias[d].map((v) => `
+          <div class="vd-venda" data-venda="${v.id}">
+            <div class="vd-topo"><b class="vd-titulo">${esc(cliente(v.cliente_id)?.nome || 'Cliente removido')}</b>
+              <span class="badge badge-recorrente">${esc(forma(v.forma_id)?.nome || '?')}</span>
+              <span class="vd-total">${brl.format(valorDe(v))}</span></div>
+            ${linhasItens(v, true)}
+            ${v.observacao ? `<p class="vd-obs">${esc(v.observacao)}</p>` : ''}
+            <div class="vd-rodape"><small>Saída em ${fmtDataHora(v.saida_em)}${v.concluida_por ? ', venda registrada por ' + esc(nomes[v.concluida_por] || 'usuário removido') : ''}</small>
+              ${podeEditar ? '<span class="vd-acoes"><button type="button" class="link-btn" data-acao="reabrir">Voltar para pendente</button><button type="button" class="btn btn-small" data-acao="editar">Editar</button></span>' : ''}</div>
+          </div>`).join('')}</div>`).join('');
+    }
+    resumoInicio();
+  }
+  function resumoInicio() {
+    document.dispatchEvent(new CustomEvent('vendas:resumo', { detail: {
+      carregado: true, pendentes: pendentes.length, pendentesKg: pendentes.reduce((a, v) => a + pesoDe(v), 0),
+      mesTotal: mes.reduce((a, v) => a + valorDe(v), 0), mesKg: mes.reduce((a, v) => a + pesoDe(v), 0)
+    } }));
+  }
+
+  /* ---------- Completar ou editar a venda ---------- */
+  function completar(vendaId) {
+    const v = pendentes.find((x) => x.id === vendaId) || vendas.find((x) => x.id === vendaId);
+    if (!v) return;
+    const editando = v.situacao === 'concluida';
+    const ativos = clientes.filter((c) => c.ativo || c.id === v.cliente_id);
+    const fs = formas.filter((f) => f.ativo || f.id === v.forma_id);
+    const dataPadrao = v.data_venda || iso(new Date(v.saida_em));
+    SN.ui.openModal(editando ? 'Editar venda' : 'Completar venda', `
+      <p class="modal-context">Saída de ${fmtDataHora(v.saida_em)}: ${pecas(pecasDe(v))}, ${kg(pesoDe(v))}.${v.observacao_saida ? ' ' + esc(v.observacao_saida) : ''}</p>
+      <form class="form" id="vdForm">
+        <label>Cliente<select name="cliente">
+          <option value="">Escolha o cliente</option>
+          ${ativos.map((c) => `<option value="${c.id}" ${c.id === v.cliente_id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}
+          <option value="__novo">+ Cliente novo</option></select></label>
+        <label data-novo hidden>Nome do cliente novo<input type="text" name="novo" maxlength="120" autocomplete="off"></label>
+        <div class="two">
+          <label>Forma de pagamento<select name="forma"><option value="">Escolha</option>
+            ${fs.map((f) => `<option value="${f.id}" ${f.id === v.forma_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></label>
+          <label>Data da venda<input type="date" name="data" value="${dataPadrao}" required></label>
+        </div>
+        <fieldset class="vd-precos"><legend>Preço por quilo</legend>
+          ${itensDe(v).map((i) => `<div class="vd-preco" data-item="${i.id}" data-peso="${i.peso_kg}">
+            <label>${esc(i.produto_nome)}, lote ${esc(i.lote)} (${kg(i.peso_kg)})<span class="vd-campo-rs"><span aria-hidden="true">R$</span><input type="number" name="preco" min="0" step="0.01" inputmode="decimal" value="${i.preco_kg != null ? Number(i.preco_kg) : ''}" placeholder="0,00"></span></label>
+            <span class="vd-sub" data-sub></span></div>`).join('')}
+        </fieldset>
+        <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(v.observacao || '')}" placeholder="Ex.: número do pedido, prazo combinado" autocomplete="off"></label>
+        <p class="vd-total-form" data-total></p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">${editando ? 'Salvar alterações' : 'Registrar venda'}</button></div>
+      </form>`, (root) => {
+      const form = root.querySelector('#vdForm');
+      const sel = form.querySelector('[name="cliente"]');
+      if (!ativos.length) sel.value = '__novo';
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      const recalcular = () => {
+        let total = 0, faltam = 0;
+        form.querySelectorAll('.vd-preco').forEach((el) => {
+          const p = lerNum(el.querySelector('[name="preco"]').value), peso = Number(el.dataset.peso);
+          const val = p == null ? null : Math.round(p * peso * 100) / 100;
+          el.querySelector('[data-sub]').textContent = val == null ? '' : '= ' + brl.format(val);
+          if (val == null) faltam++; else total += val;
+        });
+        form.querySelector('[data-total]').textContent = 'Total da venda: ' + brl.format(total) + (faltam ? ' (falta o preço de ' + (faltam === 1 ? '1 item' : faltam + ' itens') + ')' : '');
+      };
+      const sugerir = () => {
+        const cid = sel.value && sel.value !== '__novo' ? sel.value : null;
+        form.querySelectorAll('.vd-preco').forEach((el) => {
+          const inp = el.querySelector('[name="preco"]');
+          if (inp.value !== '' && inp.dataset.auto !== '1') return;
+          const i = itensDe(v).find((x) => x.id === el.dataset.item);
+          const p = (cid && ultimoPreco.cliente[cid + '|' + i.produto_nome]) ?? ultimoPreco.produto[i.produto_nome];
+          if (p != null) { inp.value = p; inp.dataset.auto = '1'; } else if (inp.dataset.auto === '1') { inp.value = ''; }
+        });
+        recalcular();
+      };
+      const trocarCliente = () => {
+        const novo = sel.value === '__novo';
+        form.querySelector('[data-novo]').hidden = !novo;
+        if (novo) form.querySelector('[name="novo"]').focus();
+        sugerir();
+      };
+      sel.addEventListener('change', trocarCliente);
+      form.querySelectorAll('[name="preco"]').forEach((inp) => inp.addEventListener('input', () => { inp.dataset.auto = '0'; recalcular(); }));
+      trocarCliente();
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const cid = sel.value, novo = form.querySelector('[name="novo"]').value.trim();
+        if (!cid) { toast('Escolha o cliente.'); return; }
+        if (cid === '__novo' && !novo) { toast('Informe o nome do cliente novo.'); return; }
+        const fid = form.querySelector('[name="forma"]').value;
+        if (!fid) { toast('Escolha a forma de pagamento.'); return; }
+        const data = form.querySelector('[name="data"]').value;
+        if (!data) { toast('Informe a data da venda.'); return; }
+        const precos = [];
+        for (const el of form.querySelectorAll('.vd-preco')) {
+          const p = lerNum(el.querySelector('[name="preco"]').value);
+          if (p == null || p < 0) { toast('Informe o preço por quilo de todos os itens.'); el.querySelector('[name="preco"]').focus(); return; }
+          precos.push({ item: el.dataset.item, preco_kg: p });
+        }
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const { error } = await sb.rpc('vendas_concluir', {
+          p_venda: v.id, p_cliente: cid === '__novo' ? null : cid, p_cliente_novo: cid === '__novo' ? novo : null,
+          p_forma: fid, p_data: data, p_precos: precos, p_observacao: form.querySelector('[name="obs"]').value.trim()
+        });
+        b.disabled = false;
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        SN.ui.closeModal(); toast(editando ? 'Venda atualizada.' : 'Venda registrada.'); atualizar();
+      });
+    });
+  }
+  function reabrir(vendaId) {
+    const v = vendas.find((x) => x.id === vendaId); if (!v) return;
+    SN.ui.confirmar({
+      titulo: 'Voltar para pendente',
+      mensagem: `A venda para ${cliente(v.cliente_id)?.nome || 'o cliente'} volta para "Aguardando dados da venda". Use quando a saída precisar ser corrigida ou desfeita no Estoque de queijos.`,
+      botao: 'Voltar para pendente', perigo: false,
+      acao: async () => {
+        const { error } = await sb.rpc('vendas_reabrir', { p_venda: v.id });
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        SN.ui.closeModal(); toast('Venda voltou para pendente.'); atualizar();
+      }
+    });
+  }
+
+  /* ---------- Clientes e formas de pagamento ---------- */
+  function gerenciar() {
+    const bloco = (titulo, tipo, itens) => `
+      <h3 class="qj-sub">${titulo}</h3>
+      <div class="vd-cad" data-tipo="${tipo}">
+        ${itens.length ? itens.map((x) => `<div class="vd-cad-item${x.ativo ? '' : ' inativo'}" data-id="${x.id}"><span>${esc(x.nome)}${x.ativo ? '' : ' <small>(fora de uso)</small>'}</span>
+          <span class="vd-acoes"><button type="button" class="link-btn" data-acao="renomear">Renomear</button><button type="button" class="link-btn" data-acao="ativo">${x.ativo ? 'Tirar de uso' : 'Voltar a usar'}</button></span></div>`).join('') : '<p class="empty-state-msg">Nenhum cadastrado ainda.</p>'}
+        <div class="vd-cad-novo"><label>${tipo === 'clientes' ? 'Nome do cliente novo' : 'Forma de pagamento nova'}<input type="text" maxlength="120" autocomplete="off" data-novo-nome></label>
+          <button type="button" class="btn btn-small" data-acao="adicionar">Adicionar</button></div>
+      </div>`;
+    const ordenar = (a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome, 'pt-BR');
+    SN.ui.openModal('Clientes e formas de pagamento', `
+      <p class="modal-context">O que sai de uso deixa de aparecer na hora de registrar uma venda, mas as vendas antigas continuam com o nome.</p>
+      <div data-gerenciar>${bloco('Clientes', 'clientes', clientes.slice().sort(ordenar))}${bloco('Formas de pagamento', 'formas', formas.slice().sort((a, b) => (b.ativo - a.ativo) || a.ordem - b.ordem))}</div>
+      <div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      root.querySelector('[data-gerenciar]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b) return;
+        const caixa = b.closest('[data-tipo]'), tabela = caixa.dataset.tipo === 'clientes' ? 'vendas_clientes' : 'vendas_formas';
+        const lista = caixa.dataset.tipo === 'clientes' ? clientes : formas;
+        const depois = async (error, msg) => {
+          if (error) { console.error(error); toast(erroMsg(error)); return; }
+          toast(msg); await carregar().catch((er) => console.error(er)); gerenciar();
+        };
+        if (b.dataset.acao === 'adicionar') {
+          const inp = caixa.querySelector('[data-novo-nome]'), nome = inp.value.trim();
+          if (!nome) { toast('Digite o nome.'); inp.focus(); return; }
+          b.disabled = true;
+          const extra = tabela === 'vendas_formas' ? { ordem: formas.reduce((a, f) => Math.max(a, f.ordem), 0) + 1 } : {};
+          const { error } = await sb.from(tabela).insert({ nome, ...extra });
+          b.disabled = false;
+          return depois(error, 'Cadastrado.');
+        }
+        const x = lista.find((y) => y.id === b.closest('[data-id]').dataset.id); if (!x) return;
+        if (b.dataset.acao === 'ativo') {
+          const { error } = await sb.from(tabela).update({ ativo: !x.ativo }).eq('id', x.id);
+          return depois(error, x.ativo ? 'Tirado de uso.' : 'Voltou a ser usado.');
+        }
+        if (b.dataset.acao === 'renomear') {
+          SN.ui.openModal('Renomear', `<form class="form" id="vdRen"><label>Nome<input type="text" name="nome" maxlength="120" value="${esc(x.nome)}" required></label>
+            <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form>`, (r2) => {
+            r2.querySelector('[data-voltar]').addEventListener('click', gerenciar);
+            r2.querySelector('#vdRen').addEventListener('submit', async (ev) => {
+              ev.preventDefault();
+              const nome = r2.querySelector('[name="nome"]').value.trim(); if (!nome) { toast('Digite o nome.'); return; }
+              const { error } = await sb.from(tabela).update({ nome }).eq('id', x.id);
+              depois(error, 'Nome alterado.');
+            });
+          });
+        }
+      });
+    });
+  }
+
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    if (!podeEditar) { const n = $('vdNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; }
+    else $('vdGerenciar').hidden = false;
+    $('vdGerenciar').addEventListener('click', gerenciar);
+    $('vdFila').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="completar"]'); if (!b || !podeEditar) return;
+      completar(b.closest('[data-venda]').dataset.venda);
+    });
+    $('vdLista').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      const id = b.closest('[data-venda]').dataset.venda;
+      if (b.dataset.acao === 'editar') completar(id);
+      if (b.dataset.acao === 'reabrir') reabrir(id);
+    });
+    $('vdFiltro').addEventListener('change', () => { filtroCliente = $('vdFiltro').value; render(); });
+    $('vdPeriodo').addEventListener('click', (e) => {
+      const b = e.target.closest('.seg-btn'); if (!b) return;
+      periodo = b.dataset.periodo;
+      $('vdPeriodo').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
+      $('vdCustom').hidden = periodo !== 'custom';
+      if (periodo === 'custom' && !$('vdDe').value) { const r = new Date(); $('vdAte').value = iso(r); r.setDate(1); $('vdDe').value = iso(r); }
+      atualizar();
+    });
+    ['vdDe', 'vdAte'].forEach((id) => $(id).addEventListener('change', atualizar));
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await carregar(); }
+    catch (e) { console.error(e); $('vdFila').innerHTML = '<p class="fatal">Não foi possível carregar as vendas. Recarregue a página.</p>'; return; }
+    ['vendas', 'vendas_itens', 'vendas_clientes', 'vendas_formas'].forEach((t) => {
+      sb.channel('sn-vd-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+  }
+  let iniciado = false;
+  window.SN_Vendas = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>

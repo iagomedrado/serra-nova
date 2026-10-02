@@ -10,11 +10,11 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - A chave publicável do Supabase no arquivo é pública por natureza. Nunca coloque a chave `service_role`, tokens ou senhas na página.
 - Login por e-mail e senha. O primeiro acesso cria o administrador. Os demais usuários são criados na aba "Usuários" pela edge function `usuarios` (ações: primeiro-acesso, criar, senha, excluir). O botão "Sair" encerra só a sessão do aparelho atual (`signOut({ scope: "local" })`).
 - Permissões por aba: sem acesso / ver / editar (tabela `permissoes`). As regras de segurança (RLS) usam `privado.eh_admin()` e `privado.pode(modulo, nivel)`. A tela esconde botões, mas quem garante a segurança é o banco.
-- Módulos: `livro`, `producao`, `queijos`, `estoque`, `resfriadores`.
+- Módulos: `livro`, `producao`, `queijos`, `vendas`, `estoque`, `resfriadores`. A lista de módulos aparece em três lugares que precisam andar juntos: `MODULOS` no `index.html`, a regra `permissoes_modulo_check` no banco e `MODULOS` na edge function `usuarios`.
 - Objeto global `window.SN` com `sb` (cliente Supabase), `perfil`, `permissoes`, `pode(modulo, nivel)`, `ui` (`toast`, `openModal`, `closeModal`, `confirmar`) e `chamarFuncao`.
 
 ## Abas
-- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo`, `producao:resumo` e `queijos:resumo`.
+- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo`, `producao:resumo`, `queijos:resumo` e `vendas:resumo`.
 - **Livro de contas (pronto):** contas a pagar com parcelas, pagamentos parciais, recorrências e categorias. Tabelas `livro_contas` (parcelas em jsonb), `livro_categorias`, `livro_recorrencias`. Objeto `window.SN_Livro`. Registra quem lançou cada conta e quem registrou cada pagamento.
   - O vencimento das parcelas em aberto pode ser alterado na janela "Editar conta" (seção Vencimentos) ou no "Ajustar" de cada parcela.
   - Os filtros (categoria, situação, forma de pagamento e vencimento) ficam reunidos no botão "Filtros". Os filtros ativos aparecem como etiquetas removíveis abaixo da busca. O filtro de forma de pagamento considera a forma padrão da conta e a forma usada nos pagamentos.
@@ -38,8 +38,12 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Tabelas `queijos_lotes` (um por lançamento de produção), `queijos_posicoes` (onde estão as peças agora: etapa, número, peças, entrada e saída prevista) e `queijos_movimentos` (histórico com origem e destino). A tela não grava nas tabelas diretamente: tudo passa pelas funções do banco `queijos_receber`, `queijos_mover`, `queijos_tempo`, `queijos_perda`, `queijos_dispensar` e `queijos_desfazer`. A fila vem de `queijos_pendentes()`.
   - O tempo de cada etapa é informado na entrada da etapa (não é fixo por tipo de queijo) e pode ser ajustado depois. Quando o tempo acaba, o cartão fica dourado e aparece em "Precisa de atenção". Cartões com mais de um lote ficam em azul (`--misto`); se também estiverem com tempo cumprido, ficam dourados com a faixa lateral azul.
   - Em qualquer etapa só parte das peças pode seguir. Qualquer queijo pode pular etapas (ir da fila direto para a secagem ou para o estoque). Um tanque ou secagem pode ter mais de um lote.
+  - **Saída do estoque:** botão "Registrar saída" (ou "Saída" em cada lote embalado). Informa peças e peso (kg) de um ou mais lotes, data/hora e observação. A função `queijos_saida(p_itens, p_quando, p_observacao)` tira as peças, grava um movimento do tipo `saida` (peso em `destino.peso_kg`) e cria uma venda pendente em Gerenciamento de vendas. Desfazer uma saída só funciona enquanto a venda ainda está pendente.
   - "Registrar perda" tira peças do controle com motivo. "Não controlar" tira um lote da fila (produções antigas). "Desfazer" só vale para o último movimento de cada lote.
-  - A saída do estoque (venda, expedição) ainda não existe. Antes de construir, pergunte ao Iago como funciona.
+- **Gerenciamento de vendas (pronto):** objeto `window.SN_Vendas`, módulo de permissão `vendas` (separado do estoque, para controlar quem vê preços).
+  - Tabelas `vendas` (situação `pendente` ou `concluida`, cliente, forma de pagamento, data da venda), `vendas_itens` (produto, lote, peças, peso e preço por quilo), `vendas_clientes` e `vendas_formas` (listas com "tirar de uso", sem apagar). Vendas e itens só são gravados pelas funções `queijos_saida`, `vendas_concluir` e `vendas_reabrir`; clientes e formas são editados direto na tabela.
+  - Cada saída do estoque chega em "Aguardando dados da venda". "Completar venda" pede cliente (ou cliente novo), forma de pagamento, data e **preço por quilo** de cada item. O preço é sugerido pelo último preço daquele produto para o cliente (ou o último do produto).
+  - Resumo por período (Hoje, Esta semana, Este mês como padrão, Período personalizado), filtro por cliente, totais por cliente e por produto. "Editar" corrige uma venda; "Voltar para pendente" permite desfazer a saída no estoque.
 - **Resfriadores:** ainda é só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessa área.
 - **Usuários:** só para administradores.
 
