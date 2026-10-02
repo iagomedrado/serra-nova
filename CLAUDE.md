@@ -14,7 +14,7 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - Objeto global `window.SN` com `sb` (cliente Supabase), `perfil`, `permissoes`, `pode(modulo, nivel)`, `ui` (`toast`, `openModal`, `closeModal`, `confirmar`) e `chamarFuncao`.
 
 ## Abas
-- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo` e `producao:resumo`.
+- **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo`, `producao:resumo` e `queijos:resumo`.
 - **Livro de contas (pronto):** contas a pagar com parcelas, pagamentos parciais, recorrências e categorias. Tabelas `livro_contas` (parcelas em jsonb), `livro_categorias`, `livro_recorrencias`. Objeto `window.SN_Livro`. Registra quem lançou cada conta e quem registrou cada pagamento.
   - O vencimento das parcelas em aberto pode ser alterado na janela "Editar conta" (seção Vencimentos) ou no "Ajustar" de cada parcela.
   - Os filtros (categoria, situação, forma de pagamento e vencimento) ficam reunidos no botão "Filtros". Os filtros ativos aparecem como etiquetas removíveis abaixo da busca. O filtro de forma de pagamento considera a forma padrão da conta e a forma usada nos pagamentos.
@@ -33,8 +33,14 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Cremes (Creme de Leite Cru, Creme do Soro do Leite): data de fabricação, lote e peso (kg).
   - Resumo por período (Hoje, Esta semana como padrão, Este mês, Período personalizado), total por produto e lista agrupada por dia. Avisa quando um lote se repete para o mesmo produto no período.
   - O botão "Produtos" permite adicionar, renomear, mudar o tipo e tirar produtos de uso (sem apagar os lançamentos).
-  - Ainda não alimenta o Estoque de queijos. Isso foi deixado para decidir quando essa aba for construída.
-- **Estoque de queijos e Resfriadores:** ainda são só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessas áreas.
+  - Os lotes de queijo lançados aqui aparecem na fila "Aguardando destino" do Estoque de queijos. A aba de Produção não foi alterada para isso.
+- **Estoque de queijos (pronto):** acompanha o caminho de cada lote de queijo depois da produção: salmoura (1 a 20) → secagem (1 a 30) → estoque embalado. Objeto `window.SN_Queijos`.
+  - Tabelas `queijos_lotes` (um por lançamento de produção), `queijos_posicoes` (onde estão as peças agora: etapa, número, peças, entrada e saída prevista) e `queijos_movimentos` (histórico com origem e destino). A tela não grava nas tabelas diretamente: tudo passa pelas funções do banco `queijos_receber`, `queijos_mover`, `queijos_tempo`, `queijos_perda`, `queijos_dispensar` e `queijos_desfazer`. A fila vem de `queijos_pendentes()`.
+  - O tempo de cada etapa é informado na entrada da etapa (não é fixo por tipo de queijo) e pode ser ajustado depois. Quando o tempo acaba, o cartão fica dourado e aparece em "Precisa de atenção".
+  - Em qualquer etapa só parte das peças pode seguir. Qualquer queijo pode pular etapas (ir da fila direto para a secagem ou para o estoque). Um tanque ou secagem pode ter mais de um lote.
+  - "Registrar perda" tira peças do controle com motivo. "Não controlar" tira um lote da fila (produções antigas). "Desfazer" só vale para o último movimento de cada lote.
+  - A saída do estoque (venda, expedição) ainda não existe. Antes de construir, pergunte ao Iago como funciona.
+- **Resfriadores:** ainda é só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessa área.
 - **Usuários:** só para administradores.
 
 ## Visual

@@ -536,6 +536,60 @@
     #prPorProduto td[data-rot]::before { content: attr(data-rot); display: block; font-weight: 400; font-size: .78rem; color: var(--muted); }
   }
 
+  /* ---------- Estoque de queijos ---------- */
+  .qj-bloco { margin-bottom: 20px; }
+  .qj-bloco > .muted-note { margin: -6px 0 4px; }
+  .qj-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; margin-bottom: 12px; }
+  .qj-cab h2 { margin: 0; }
+  .qj-legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-size: .85rem; color: var(--muted); }
+  .qj-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .qj-legenda i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); border-left: 3px solid var(--bar); background: var(--surface); }
+  .qj-legenda i.livre { border: 1px dashed var(--muted); background: transparent; }
+  .qj-legenda i.pronto { background: var(--warn-soft); border-color: var(--warn); }
+  .qj-mapa { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  @media (max-width: 560px) { .qj-mapa { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; } }
+  .qj-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; min-height: 96px; padding: 8px 9px; text-align: left;
+    border: 1px solid var(--line); border-left: 4px solid var(--bar); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: .82rem; line-height: 1.25; }
+  .qj-tile:hover { border-color: var(--muted); border-left-color: var(--bar); }
+  .qj-n { font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: 1.2rem; line-height: 1.1; margin-bottom: 3px; }
+  .qj-p { font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qj-q { color: var(--muted); }
+  .qj-t { margin-top: auto; font-weight: 600; }
+  .qj-tile.livre { border: 1px dashed var(--line); background: transparent; color: var(--muted); }
+  .qj-tile.livre:hover { border-color: var(--muted); }
+  .qj-tile.livre .qj-n { font-weight: 700; }
+  .qj-tile.livre .qj-t { font-weight: 400; }
+  .qj-tile.pronto { background: var(--warn-soft); border-color: var(--warn); border-left-color: var(--warn); }
+  .qj-tile.pronto:hover { border-left-color: var(--warn); }
+  .qj-tile.pronto .qj-t { color: var(--warn); }
+  .qj-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .qj-item:last-child { border-bottom: 0; }
+  .qj-fila-acoes { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .qj-status { margin: 6px 0 0; font-weight: 600; font-size: .92rem; color: var(--ok); }
+  .qj-status.warn { color: var(--warn); }
+  .qj-botoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .qj-grid2 { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
+  @media (min-width: 1100px) { .qj-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+  .qj-totais { margin-top: 8px; }
+  .qj-tot { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .qj-tot span { font-weight: 600; }
+  .qj-sub { font-family: Merriweather, Georgia, serif; font-size: 1rem; margin: 18px 0 2px; }
+  .qj-mov { display: flex; gap: 12px; align-items: flex-start; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .qj-mov:last-child { border-bottom: 0; }
+  .qj-mov > div { flex: 1; min-width: 0; }
+  .qj-mov b, .qj-mov span { display: block; }
+  .qj-mov small { display: block; color: var(--muted); font-size: .82rem; }
+  .qj-destino { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .qj-destino legend { font-size: .9rem; color: var(--muted); padding: 0; margin-bottom: 6px; }
+  .qj-opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .qj-opcoes label { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;
+    color: var(--ink); font-size: .95rem; font-weight: 600; cursor: pointer; }
+  .qj-opcoes input { width: auto; min-height: 0; margin: 0; accent-color: var(--vermelho); }
+  .qj-opcoes label:has(input:checked) { border-color: var(--vermelho); box-shadow: inset 0 0 0 1px var(--vermelho); }
+  .qj-previsao { margin: 0; color: var(--ok); font-weight: 600; font-size: .92rem; }
+  .qj-previsao:empty { display: none; }
+  .form [data-bloco-numero][hidden], .form [data-bloco-tempo][hidden] { display: none !important; }
+
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
   @media print {
@@ -643,7 +697,7 @@
             <li id="attLivro" hidden></li>
             <li data-modulo="resfriadores"><span class="dot"></span><span><strong>Tanque 2 a 5,1 °C</strong><span class="muted">Acima da faixa de 4 °C desde 07:40.</span></span><a href="#resfriadores">Ver</a></li>
             <li id="attEstoque" hidden></li>
-            <li data-modulo="queijos"><span class="dot"></span><span><strong>Lote MUS-0922 vence em 4 dias</strong><span class="muted">38 kg de mussarela.</span></span><a href="#queijos">Ver</a></li>
+            <li id="attQueijos" hidden></li>
             <li id="attProducao" hidden></li>
           </ul>
         </div>
@@ -653,7 +707,7 @@
           <ul class="areas">
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Em câmara fria</span></span><span class="fig">1.386 kg<small>5 tipos</small></span></a></li>
+            <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Leituras de hoje</span></span><span class="fig">1 alerta<small>3 equipamentos</small></span></a></li>
           </ul>
@@ -797,39 +851,41 @@
     </section>
 
     <!-- ================= ESTOQUE DE QUEIJOS ================= -->
-    <section data-tab="queijos" aria-labelledby="t-queijos">
+    <section data-tab="queijos" aria-labelledby="t-queijos" id="queijosRoot">
       <div class="page-head">
-        <div><h1 id="t-queijos">Estoque de queijos</h1><p>Produto acabado na câmara fria, por tipo e por lote.</p></div>
-        <div class="actions">
-          <button class="btn" type="button">Registrar saída</button>
-          <button class="btn primary" type="button"><svg class="i"><use href="#i-mais"/></svg>Registrar entrada</button>
-        </div>
+        <div><h1 id="t-queijos">Estoque de queijos</h1><p>O caminho de cada lote depois da produção: salmoura, secagem e estoque embalado.</p></div>
       </div>
-      <div class="stack">
-        <div class="panel table-wrap">
-          <table>
-            <thead><tr><th>Queijo</th><th class="num">Em estoque</th><th class="num">Peças</th><th>Validade mais próxima</th><th>Situação</th></tr></thead>
-            <tbody>
-              <tr><td><b>Mussarela</b></td><td class="num">612 kg</td><td class="num">153</td><td>03/10 (MUS-0922)</td><td><span class="tag warn">Vence em 4 dias</span></td></tr>
-              <tr><td><b>Queijo minas frescal</b></td><td class="num">286 kg</td><td class="num">572</td><td>09/10 (MFR-0925)</td><td><span class="tag ok">Ok</span></td></tr>
-              <tr><td><b>Queijo prato</b></td><td class="num">244 kg</td><td class="num">61</td><td>18/11 (PRA-0916)</td><td><span class="tag ok">Ok</span></td></tr>
-              <tr><td><b>Requeijão</b></td><td class="num">198 kg</td><td class="num">990</td><td>30/10 (REQ-0917)</td><td><span class="tag ok">Ok</span></td></tr>
-              <tr><td><b>Manteiga</b></td><td class="num">46 kg</td><td class="num">230</td><td>12/12 (MAN-0912)</td><td><span class="tag warn">Estoque baixo</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="panel table-wrap">
-          <h2>Últimas movimentações</h2>
-          <table>
-            <thead><tr><th>Data</th><th>Queijo</th><th>Lote</th><th>Movimento</th><th class="num">Quantidade</th></tr></thead>
-            <tbody>
-              <tr><td>29/09</td><td>Mussarela</td><td>MUS-0929</td><td>Entrada da produção</td><td class="num in">+ 380 kg</td></tr>
-              <tr><td>28/09</td><td>Mussarela</td><td>MUS-0920</td><td>Saída para Mercado Central</td><td class="num out">− 180 kg</td></tr>
-              <tr><td>28/09</td><td>Queijo minas frescal</td><td>MFR-0928</td><td>Entrada da produção</td><td class="num in">+ 400 kg</td></tr>
-              <tr><td>25/09</td><td>Queijo minas frescal</td><td>MFR-0921</td><td>Saída para Padaria Estrela</td><td class="num out">− 92 kg</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <p class="test-note" id="qjNota" hidden></p>
+      <div class="ledger pr-resumo" id="qjResumo"></div>
+
+      <section class="panel qj-bloco" aria-labelledby="h-qj-fila">
+        <h2 id="h-qj-fila">Aguardando destino</h2>
+        <p class="muted-note">Lotes de queijo lançados na produção que ainda não foram para a salmoura, a secagem ou o estoque.</p>
+        <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
+      </section>
+
+      <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
+        <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
+          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+        <div class="qj-mapa" id="qjSalmoura"></div>
+      </section>
+
+      <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
+        <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
+          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+        <div class="qj-mapa" id="qjSecagem"></div>
+      </section>
+
+      <div class="qj-grid2">
+        <section class="panel" aria-labelledby="h-qj-est">
+          <h2 id="h-qj-est">Estoque embalado</h2>
+          <p class="muted-note">A saída para venda ainda não está no sistema.</p>
+          <div id="qjEstoque"></div>
+        </section>
+        <section class="panel" aria-labelledby="h-qj-mov">
+          <h2 id="h-qj-mov">Últimas movimentações</h2>
+          <div id="qjMovimentos"></div>
+        </section>
       </div>
     </section>
 
@@ -1030,7 +1086,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -1074,6 +1130,22 @@
       att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao">Ver</a>';
     }
     att.hidden = false;
+  });
+  document.addEventListener("queijos:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    $("homeQueijosFig").innerHTML = n1(r.estoque, 0) + " peças<small>" + n1(r.salmoura, 0) + " na salmoura · " + n1(r.secagem, 0) + " na secagem</small>";
+    const att = $("attQueijos");
+    const pend = r.pendentesLotes ? pl(r.pendentesLotes, "lote", "lotes") + " da produção (" + pl(r.pendentesPecas, "peça", "peças") + ") sem destino." : "";
+    if (r.lugaresProntos.length) {
+      const l = r.lugaresProntos, lista = l.length > 4 ? l.slice(0, 4).join(", ") + " e mais " + (l.length - 4) : l.join(", ");
+      att.innerHTML = '<span class="dot"></span><span><strong>Queijos com tempo cumprido</strong><span class="muted">' + esc(lista) + "." +
+        (pend ? " Também há " + esc(pend.charAt(0).toLowerCase() + pend.slice(1)) : "") + '</span></span><a href="#queijos">Ver</a>';
+      att.hidden = false;
+    } else if (r.pendentesLotes) {
+      att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.pendentesLotes, "lote aguardando destino", "lotes aguardando destino") +
+        '</strong><span class="muted">' + esc(pend) + '</span></span><a href="#queijos">Ver</a>';
+      att.hidden = false;
+    } else { att.hidden = true; }
   });
   document.addEventListener("estoque:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
@@ -1193,6 +1265,7 @@
     show();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("producao", "ver") && window.SN_Producao) window.SN_Producao.iniciar({ sb: SN.sb, podeEditar: SN.pode("producao", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("queijos", "ver") && window.SN_Queijos) window.SN_Queijos.iniciar({ sb: SN.sb, podeEditar: SN.pode("queijos", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
     if (perfil.admin) Usuarios.carregar();
   }
@@ -3991,6 +4064,435 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   let iniciado = false;
   window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+})();
+</script>
+<script>
+/* =====================================================
+   ESTOQUE DE QUEIJOS: salmoura, secagem e estoque embalado
+   As regras ficam no banco (funções queijos_*). Esta parte só mostra e chama.
+   ===================================================== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
+  let sb = null, podeEditar = false, carregado = false;
+  let posicoes = [], pendentes = [], movimentos = [];
+  let lotes = {};
+  const nomes = {};
+
+  /* ---------- Utilidades ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmtNum = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  const pecas = (n) => fmtNum(n) + (Number(n) === 1 ? ' peça' : ' peças');
+  function fmtData(s) { if (!s) return ''; const [a, m, d] = String(s).slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
+  function fmtDataHora(ts) {
+    const d = new Date(ts);
+    const dia = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '').replace(',', '');
+    return dia + ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function localInput(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function lugar(etapa, numero) { return etapa === 'estoque' ? 'Estoque' : ETAPAS[etapa].nome + ' ' + numero; }
+  function noLugar(j) { if (!j) return 'em lugar desconhecido'; return j.etapa === 'estoque' ? 'no estoque' : 'na ' + lugar(j.etapa, j.numero); }
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+  function erroMsg(error, padrao) {
+    if (error && error.code === 'P0001' && error.message) return error.message;
+    return padrao || 'Não foi possível concluir. Verifique a conexão e tente de novo.';
+  }
+  // tempo que falta (ou que passou), em texto curto
+  function duracao(ms) {
+    const min = Math.max(1, Math.ceil(ms / 60000));
+    if (min < 60) return min + ' min';
+    const h = Math.round(min / 60);
+    if (h < 48) return h + ' h';
+    const d = Math.floor(h / 24), r = h % 24;
+    return d + (d === 1 ? ' dia' : ' dias') + (r ? ' e ' + r + ' h' : '');
+  }
+  const faltaMs = (p) => (p.previsao_saida ? new Date(p.previsao_saida).getTime() - Date.now() : null);
+  const pronta = (p) => p.etapa !== 'estoque' && p.previsao_saida && faltaMs(p) <= 0;
+  function situacao(p) {
+    const ms = faltaMs(p); if (ms == null) return '';
+    return ms <= 0 ? 'Tempo cumprido há ' + duracao(-ms) : 'Faltam ' + duracao(ms);
+  }
+  function lote(id) { return lotes[id] || { produto_nome: 'Queijo', lote: '?', data_fabricacao: null }; }
+  const noLugarAtual = (etapa, numero) => posicoes.filter((p) => p.etapa === etapa && (etapa === 'estoque' || p.numero === numero));
+
+  /* ---------- Dados ---------- */
+  async function carregar() {
+    const [p, pe, m] = await Promise.all([
+      sb.from('queijos_posicoes').select('*').order('entrada_em'),
+      sb.rpc('queijos_pendentes'),
+      sb.from('queijos_movimentos').select('*').is('desfeito_em', null).order('ordem', { ascending: false }).limit(30)
+    ]);
+    if (p.error) throw p.error;
+    if (pe.error) throw pe.error;
+    if (m.error) throw m.error;
+    const novas = p.data || [], movs = m.data || [];
+    const ids = [...new Set([...novas.map((x) => x.lote_id), ...movs.map((x) => x.lote_id)])];
+    const novosLotes = {};
+    if (ids.length) {
+      const l = await sb.from('queijos_lotes').select('*').in('id', ids);
+      if (l.error) throw l.error;
+      (l.data || []).forEach((x) => { novosLotes[x.id] = x; });
+    }
+    posicoes = novas; pendentes = pe.data || []; movimentos = movs; lotes = novosLotes;
+    carregado = true;
+    render();
+  }
+  let timer = null;
+  function atualizar() {
+    clearTimeout(timer);
+    timer = setTimeout(() => { carregar().catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); }); }, 200);
+  }
+  function resumoInicio() {
+    const soma = (et) => posicoes.filter((p) => p.etapa === et).reduce((a, p) => a + p.pecas, 0);
+    const prontas = posicoes.filter(pronta).sort((a, b) => (a.etapa === b.etapa ? a.numero - b.numero : a.etapa === 'salmoura' ? -1 : 1));
+    const lugares = [...new Set(prontas.map((p) => lugar(p.etapa, p.numero)))];
+    document.dispatchEvent(new CustomEvent('queijos:resumo', { detail: {
+      carregado: true, estoque: soma('estoque'), salmoura: soma('salmoura'), secagem: soma('secagem'), lugaresProntos: lugares,
+      pendentesLotes: pendentes.length, pendentesPecas: pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0)
+    } }));
+  }
+
+  /* ---------- Tela ---------- */
+  function render() {
+    if (!carregado) return;
+    const soma = (et) => posicoes.filter((p) => p.etapa === et).reduce((a, p) => a + p.pecas, 0);
+    const ocupados = (et) => new Set(posicoes.filter((p) => p.etapa === et).map((p) => p.numero)).size;
+    const aguardando = pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0);
+    $('qjResumo').innerHTML = `
+      <div><span>Aguardando destino</span><strong>${fmtNum(aguardando)}</strong><small>${pendentes.length === 1 ? '1 lote da produção' : pendentes.length + ' lotes da produção'}</small></div>
+      <div><span>Na salmoura</span><strong>${fmtNum(soma('salmoura'))}</strong><small>${ocupados('salmoura')} de 20 ocupadas</small></div>
+      <div><span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas</small></div>
+      <div><span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small></div>`;
+    renderFila();
+    $('qjSalmoura').innerHTML = mapa('salmoura');
+    $('qjSecagem').innerHTML = mapa('secagem');
+    renderEstoque();
+    renderMovimentos();
+    resumoInicio();
+  }
+  function renderFila() {
+    $('qjFila').innerHTML = pendentes.length ? pendentes.map((x) => {
+      const faltam = Math.max(0, x.pecas - x.recebidas);
+      return `<div class="qj-item" data-lanc="${x.lancamento_id}">
+        <div class="pr-item-top"><b class="pr-nome">${esc(x.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(x.lote)}</span>
+          ${podeEditar ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="dispensar">Não controlar</button><button type="button" class="btn btn-primary btn-small" data-acao="receber">Dar destino</button></span>` : ''}</div>
+        <div class="pr-nums"><span><small>Fabricação</small>${fmtData(x.data_fabricacao)}</span><span><small>Aguardando</small>${pecas(faltam)}</span>${x.recebidas ? `<span><small>Já encaminhadas</small>${fmtNum(x.recebidas)} de ${fmtNum(x.pecas)}</span>` : ''}</div>
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Nenhum lote esperando. Tudo o que foi produzido já tem destino.</p>';
+  }
+  function mapa(etapa) {
+    let html = '';
+    for (let n = 1; n <= ETAPAS[etapa].max; n++) {
+      const ps = noLugarAtual(etapa, n);
+      const nome = lugar(etapa, n);
+      if (!ps.length) { html += `<button type="button" class="qj-tile livre" data-etapa="${etapa}" data-numero="${n}" aria-label="${nome}: livre"><span class="qj-n">${n}</span><span class="qj-t">Livre</span></button>`; continue; }
+      const total = ps.reduce((a, p) => a + p.pecas, 0);
+      const lotesAqui = [...new Set(ps.map((p) => p.lote_id))];
+      const comPrevisao = ps.filter((p) => p.previsao_saida).map(faltaMs);
+      const menor = comPrevisao.length ? Math.min(...comPrevisao) : null;
+      const pronto = menor != null && menor <= 0;
+      const titulo = lotesAqui.length > 1 ? lotesAqui.length + ' lotes' : lote(lotesAqui[0]).produto_nome;
+      const tempo = menor == null ? '' : pronto ? 'Pronto' : duracao(menor);
+      html += `<button type="button" class="qj-tile${pronto ? ' pronto' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}">
+        <span class="qj-n">${n}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
+    }
+    return html;
+  }
+  function renderEstoque() {
+    const ps = posicoes.filter((p) => p.etapa === 'estoque');
+    if (!ps.length) { $('qjEstoque').innerHTML = '<p class="empty-state-msg">Nenhuma peça embalada no estoque.</p>'; return; }
+    const porProduto = {};
+    ps.forEach((p) => { const n = lote(p.lote_id).produto_nome; porProduto[n] = (porProduto[n] || 0) + p.pecas; });
+    const tot = Object.keys(porProduto).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+      .map((n) => `<div class="qj-tot"><b>${esc(n)}</b><span>${pecas(porProduto[n])}</span></div>`).join('');
+    const itens = ps.slice().sort((a, b) => String(b.entrada_em).localeCompare(String(a.entrada_em))).map((p) => {
+      const l = lote(p.lote_id);
+      return `<div class="qj-item" data-pos="${p.id}">
+        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>
+          ${podeEditar ? '<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="perda">Registrar perda</button></span>' : ''}</div>
+        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
+      </div>`;
+    }).join('');
+    $('qjEstoque').innerHTML = `<div class="qj-totais">${tot}</div><h3 class="qj-sub">Lotes no estoque</h3>${itens}`;
+  }
+  function descricao(m) {
+    switch (m.tipo) {
+      case 'entrada': return (m.destino && m.destino.etapa === 'estoque' ? 'Entrou direto no estoque' : 'Entrou ' + noLugar(m.destino)) + ', ' + pecas(m.pecas);
+      case 'mover': return lugarCurto(m.origem) + ' → ' + lugarCurto(m.destino) + ', ' + pecas(m.pecas);
+      case 'perda': return 'Perda de ' + pecas(m.pecas) + ' ' + noLugar(m.origem) + (m.observacao ? ': ' + m.observacao : '');
+      case 'tempo': return 'Saída prevista ' + noLugar(m.origem) + ' mudou para ' + (m.destino && m.destino.previsao_saida ? fmtDataHora(m.destino.previsao_saida) : '?');
+      case 'dispensar': return 'Ficou fora do controle de queijos' + (m.pecas ? ' (' + pecas(m.pecas) + ')' : '');
+      default: return m.tipo;
+    }
+  }
+  function lugarCurto(j) { return j ? lugar(j.etapa, j.numero) : '?'; }
+  function renderMovimentos() {
+    if (!movimentos.length) { $('qjMovimentos').innerHTML = '<p class="empty-state-msg">Nenhuma movimentação ainda.</p>'; return; }
+    const vistos = new Set();
+    $('qjMovimentos').innerHTML = movimentos.map((m) => {
+      const ultimo = !vistos.has(m.lote_id); vistos.add(m.lote_id);
+      const l = lote(m.lote_id);
+      const quem = m.criado_por ? ' por ' + (nomes[m.criado_por] || 'usuário removido') : '';
+      return `<div class="qj-mov" data-mov="${m.id}"><div><b>${esc(l.produto_nome)}, lote ${esc(l.lote)}</b><span>${esc(descricao(m))}</span><small>${esc(fmtDataHora(m.quando) + quem)}</small></div>
+        ${podeEditar && ultimo ? '<button type="button" class="link-btn" data-acao="desfazer">Desfazer</button>' : ''}</div>`;
+    }).join('');
+  }
+
+  /* ---------- Formulário de destino (usado ao receber e ao mover) ---------- */
+  function destinoHTML(o) {
+    return `
+      <label>Quantas peças<input type="number" name="pecas" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}" required></label>
+      <fieldset class="qj-destino"><legend>Para onde vão</legend><div class="qj-opcoes">
+        <label><input type="radio" name="etapa" value="salmoura" ${o.etapa === 'salmoura' ? 'checked' : ''}> Salmoura</label>
+        <label><input type="radio" name="etapa" value="secagem" ${o.etapa === 'secagem' ? 'checked' : ''}> Secagem</label>
+        <label><input type="radio" name="etapa" value="estoque" ${o.etapa === 'estoque' ? 'checked' : ''}> Estoque (embalado)</label>
+      </div></fieldset>
+      <label data-bloco-numero><span data-numero-rot>Número</span><select name="numero"></select></label>
+      <label>${esc(o.rotuloQuando)}<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
+      <div class="two" data-bloco-tempo>
+        <label>Tempo de permanência<input type="number" name="tempo" min="0" step="any" inputmode="decimal" placeholder="Ex.: 24"></label>
+        <label>Medido em<select name="unidade"><option value="h">Horas</option><option value="d">Dias</option></select></label>
+      </div>
+      <p class="qj-previsao" data-previsao></p>`;
+  }
+  function opcoesNumero(etapa, origem) {
+    let html = '', primeiraLivre = null;
+    for (let n = 1; n <= ETAPAS[etapa].max; n++) {
+      const ps = noLugarAtual(etapa, n);
+      const mesmo = origem && origem.etapa === etapa && origem.numero === n;
+      const ocup = ps.length ? ' (com ' + [...new Set(ps.map((p) => lote(p.lote_id).produto_nome + ' ' + lote(p.lote_id).lote))].join(', ') + ')' : ' (livre)';
+      if (!ps.length && primeiraLivre == null) primeiraLivre = n;
+      html += `<option value="${n}" ${mesmo ? 'disabled' : ''}>${ETAPAS[etapa].nome} ${n}${mesmo ? ' (onde as peças estão)' : esc(ocup)}</option>`;
+    }
+    return { html, primeiraLivre };
+  }
+  function ligarDestino(form, origem) {
+    const sel = form.querySelector('[name="numero"]');
+    const etapaAtual = () => form.querySelector('[name="etapa"]:checked').value;
+    function trocarEtapa() {
+      const et = etapaAtual();
+      const ehEstoque = et === 'estoque';
+      form.querySelector('[data-bloco-numero]').hidden = ehEstoque;
+      form.querySelector('[data-bloco-tempo]').hidden = ehEstoque;
+      if (!ehEstoque) {
+        const o = opcoesNumero(et, origem);
+        sel.innerHTML = o.html;
+        const livre = o.primeiraLivre || [...sel.options].find((x) => !x.disabled)?.value;
+        if (livre) sel.value = String(livre);
+        form.querySelector('[data-numero-rot]').textContent = 'Número da ' + ETAPAS[et].nome.toLowerCase();
+        form.querySelector('[name="unidade"]').value = ETAPAS[et].unidade;
+      }
+      previsao();
+    }
+    function previsao() {
+      const out = form.querySelector('[data-previsao]');
+      const d = lerDestino(form, true);
+      out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) : '';
+    }
+    form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
+    ['tempo', 'unidade', 'quando'].forEach((n) => { const el = form.querySelector(`[name="${n}"]`); el.addEventListener('input', previsao); el.addEventListener('change', previsao); });
+    trocarEtapa();
+  }
+  function lerDestino(form, silencioso) {
+    const falha = (m) => { if (!silencioso) toast(m); return null; };
+    const max = Number(form.querySelector('[name="pecas"]').max);
+    const pc = lerNum(form.querySelector('[name="pecas"]').value);
+    if (!silencioso && (!(pc >= 1) || pc !== Math.round(pc))) return falha('Informe quantas peças, em número inteiro.');
+    if (!silencioso && pc > max) return falha('Só há ' + pecas(max) + ' para mover.');
+    const etapa = form.querySelector('[name="etapa"]:checked').value;
+    const q = form.querySelector('[name="quando"]').value;
+    const quando = q ? new Date(q) : null;
+    if (!quando || isNaN(quando.getTime())) return falha('Informe a data e a hora.');
+    const r = { pecas: pc, etapa, numero: null, quando: quando.toISOString(), previsao: null };
+    if (etapa !== 'estoque') {
+      r.numero = Number(form.querySelector('[name="numero"]').value) || null;
+      if (!r.numero) return falha('Escolha o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
+      const t = lerNum(form.querySelector('[name="tempo"]').value);
+      if (!(t > 0)) return falha('Informe quanto tempo as peças vão ficar.');
+      const unidade = form.querySelector('[name="unidade"]').value === 'd' ? 86400000 : 3600000;
+      r.previsao = new Date(quando.getTime() + t * unidade).toISOString();
+    }
+    return r;
+  }
+  async function enviar(botao, chamada, sucesso) {
+    botao.disabled = true;
+    const { error } = await chamada();
+    botao.disabled = false;
+    if (error) { console.error(error); toast(erroMsg(error)); return false; }
+    SN.ui.closeModal(); toast(sucesso); atualizar();
+    return true;
+  }
+
+  /* ---------- Ações ---------- */
+  function receber(lancId) {
+    const x = pendentes.find((p) => p.lancamento_id === lancId); if (!x) return;
+    const faltam = Math.max(0, x.pecas - x.recebidas);
+    SN.ui.openModal('Dar destino ao lote', `
+      <p class="modal-context">${esc(x.produto_nome)}, lote ${esc(x.lote)}, fabricado em ${fmtData(x.data_fabricacao)}. ${pecas(faltam)} aguardando destino.</p>
+      <form class="form" id="qjForm">${destinoHTML({ max: faltam, etapa: 'salmoura', rotuloQuando: 'Data e hora da entrada' })}
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar destino</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      ligarDestino(form, null);
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = lerDestino(form); if (!d) return;
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_receber', { p_lancamento: x.lancamento_id, p_pecas: d.pecas, p_etapa: d.etapa, p_numero: d.numero, p_quando: d.quando, p_previsao: d.previsao }),
+          'Destino registrado: ' + (d.etapa === 'estoque' ? 'estoque' : lugar(d.etapa, d.numero)) + '.');
+      });
+    });
+  }
+  function dispensar(lancId) {
+    const x = pendentes.find((p) => p.lancamento_id === lancId); if (!x) return;
+    const faltam = Math.max(0, x.pecas - x.recebidas);
+    SN.ui.confirmar({
+      titulo: 'Não controlar este lote',
+      mensagem: `${x.produto_nome}, lote ${x.lote}: as ${pecas(faltam)} que faltam saem da fila e não entram na salmoura, na secagem nem no estoque. Use para produções antigas ou lotes que não passam por aqui. Dá para desfazer depois.`,
+      botao: 'Tirar da fila', perigo: true,
+      acao: () => enviar($('cfSim'), () => sb.rpc('queijos_dispensar', { p_lancamento: x.lancamento_id }), 'Lote retirado da fila.')
+    });
+  }
+  function abrirLugar(etapa, numero) {
+    const ps = noLugarAtual(etapa, numero);
+    const nome = lugar(etapa, numero);
+    const corpo = ps.length ? ps.map((p) => {
+      const l = lote(p.lote_id), sit = situacao(p);
+      return `<div class="qj-item" data-pos="${p.id}">
+        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span></div>
+        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
+        ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
+        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button><button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button></div>` : ''}
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Livre. Nenhuma peça aqui agora.</p>';
+    SN.ui.openModal(nome, `${corpo}<div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      root.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b) return;
+        const id = b.closest('[data-pos]').dataset.pos;
+        if (b.dataset.acao === 'mover') mover(id);
+        if (b.dataset.acao === 'tempo') ajustarTempo(id);
+        if (b.dataset.acao === 'perda') perda(id);
+      });
+    });
+  }
+  function mover(posId) {
+    const p = posicoes.find((x) => x.id === posId); if (!p) return;
+    const l = lote(p.lote_id);
+    const proxima = p.etapa === 'salmoura' ? 'secagem' : 'estoque';
+    SN.ui.openModal('Mover peças', `
+      <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}, desde ${fmtDataHora(p.entrada_em)}.</p>
+      <form class="form" id="qjForm">${destinoHTML({ max: p.pecas, etapa: proxima, rotuloQuando: 'Data e hora da mudança' })}
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      ligarDestino(form, p);
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLugar(p.etapa, p.numero));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = lerDestino(form); if (!d) return;
+        if (new Date(d.quando) < new Date(p.entrada_em)) { toast('A data da mudança não pode ser antes da entrada atual.'); return; }
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_mover', { p_posicao: p.id, p_pecas: d.pecas, p_etapa: d.etapa, p_numero: d.numero, p_quando: d.quando, p_previsao: d.previsao }),
+          pecas(d.pecas) + (d.etapa === 'estoque' ? ' no estoque.' : ' na ' + lugar(d.etapa, d.numero) + '.'));
+      });
+    });
+  }
+  function ajustarTempo(posId) {
+    const p = posicoes.find((x) => x.id === posId); if (!p) return;
+    const l = lote(p.lote_id);
+    const horas = p.previsao_saida ? (new Date(p.previsao_saida) - new Date(p.entrada_em)) / 3600000 : 0;
+    const emDias = p.etapa === 'secagem' && horas > 0 && Math.abs(horas / 24 - Math.round(horas / 24)) < 0.01;
+    const valor = horas > 0 ? (emDias ? Math.round(horas / 24) : Math.round(horas * 100) / 100) : '';
+    SN.ui.openModal('Ajustar tempo', `
+      <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}, ${esc(noLugar(p))}. Entrou ${fmtDataHora(p.entrada_em)}.</p>
+      <form class="form" id="qjForm">
+        <div class="two">
+          <label>Tempo de permanência, contado da entrada<input type="number" name="tempo" min="0" step="any" inputmode="decimal" value="${valor}" required></label>
+          <label>Medido em<select name="unidade"><option value="h" ${emDias ? '' : 'selected'}>Horas</option><option value="d" ${emDias ? 'selected' : ''}>Dias</option></select></label>
+        </div>
+        <p class="qj-previsao" data-previsao></p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar tempo</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      const calcular = () => {
+        const t = lerNum(form.querySelector('[name="tempo"]').value);
+        if (!(t > 0)) return null;
+        const u = form.querySelector('[name="unidade"]').value === 'd' ? 86400000 : 3600000;
+        return new Date(new Date(p.entrada_em).getTime() + t * u);
+      };
+      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) : ''; };
+      form.addEventListener('input', mostrar); form.addEventListener('change', mostrar); mostrar();
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLugar(p.etapa, p.numero));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = calcular(); if (!d) { toast('Informe o tempo de permanência.'); return; }
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_tempo', { p_posicao: p.id, p_previsao: d.toISOString() }), 'Tempo ajustado.');
+      });
+    });
+  }
+  function perda(posId) {
+    const p = posicoes.find((x) => x.id === posId); if (!p) return;
+    const l = lote(p.lote_id);
+    SN.ui.openModal('Registrar perda', `
+      <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}. As peças perdidas saem do controle.</p>
+      <form class="form" id="qjForm">
+        <label>Peças perdidas<input type="number" name="pecas" min="1" max="${p.pecas}" step="1" inputmode="numeric" required></label>
+        <label>Motivo<input type="text" name="motivo" maxlength="200" placeholder="Ex.: quebra, defeito, descarte" autocomplete="off"></label>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-danger">Registrar perda</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      root.querySelector('[data-cancelar]').addEventListener('click', () => (p.etapa === 'estoque' ? SN.ui.closeModal() : abrirLugar(p.etapa, p.numero)));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const n = lerNum(form.querySelector('[name="pecas"]').value);
+        if (!(n >= 1) || n !== Math.round(n)) { toast('Informe quantas peças, em número inteiro.'); return; }
+        if (n > p.pecas) { toast('Só há ' + pecas(p.pecas) + ' aqui.'); return; }
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_perda', { p_posicao: p.id, p_pecas: n, p_motivo: form.querySelector('[name="motivo"]').value.trim() }), 'Perda registrada.');
+      });
+    });
+  }
+  function desfazer(movId) {
+    const m = movimentos.find((x) => x.id === movId); if (!m) return;
+    const l = lote(m.lote_id);
+    SN.ui.confirmar({
+      titulo: 'Desfazer movimento',
+      mensagem: `${l.produto_nome}, lote ${l.lote}: ${descricao(m)}. As peças voltam para onde estavam antes.`,
+      botao: 'Desfazer', perigo: true,
+      acao: () => enviar($('cfSim'), () => sb.rpc('queijos_desfazer', { p_movimento: m.id }), 'Movimento desfeito.')
+    });
+  }
+
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    if (!podeEditar) { const n = $('qjNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; }
+    $('qjFila').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      const id = b.closest('[data-lanc]').dataset.lanc;
+      if (b.dataset.acao === 'receber') receber(id);
+      if (b.dataset.acao === 'dispensar') dispensar(id);
+    });
+    ['qjSalmoura', 'qjSecagem'].forEach((id) => $(id).addEventListener('click', (e) => {
+      const t = e.target.closest('.qj-tile'); if (!t) return;
+      abrirLugar(t.dataset.etapa, Number(t.dataset.numero));
+    }));
+    $('qjEstoque').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="perda"]'); if (!b || !podeEditar) return;
+      perda(b.closest('[data-pos]').dataset.pos);
+    });
+    $('qjMovimentos').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="desfazer"]'); if (!b || !podeEditar) return;
+      desfazer(b.closest('[data-mov]').dataset.mov);
+    });
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await carregar(); }
+    catch (e) { console.error(e); $('qjFila').innerHTML = '<p class="fatal">Não foi possível carregar o estoque de queijos. Recarregue a página.</p>'; return; }
+    ['queijos_posicoes', 'queijos_movimentos', 'queijos_lotes', 'producao_lancamentos'].forEach((t) => {
+      sb.channel('sn-qj-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+    setInterval(render, 60000);
+  }
+  let iniciado = false;
+  window.SN_Queijos = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>
