@@ -30,6 +30,8 @@
     --danger-soft: #FBE4E5;
     --warning: #A65300;
     --bar: #6E0A10;
+    --misto: #23607F;
+    --misto-soft: #E1EEF5;
     box-sizing: border-box;
   }
   @media (prefers-color-scheme: dark) {
@@ -38,6 +40,7 @@
       --ouro-texto: #F2B81E; --ok: #6BC28F; --ok-soft: #1D3326; --warn: #F0A457; --warn-soft: #3B2A17;
       --entrada: #6BC28F; --saida: #F07A80; --focus: #8AB0F5;
       --danger: #F07A80; --danger-soft: #3A1D1F; --warning: #F0A457; --bar: #F2B81E;
+      --misto: #7DBBDB; --misto-soft: #182A33;
     }
   }
   :root[data-theme="dark"] {
@@ -45,6 +48,7 @@
     --ouro-texto: #F2B81E; --ok: #6BC28F; --ok-soft: #1D3326; --warn: #F0A457; --warn-soft: #3B2A17;
     --entrada: #6BC28F; --saida: #F07A80; --focus: #8AB0F5;
     --danger: #F07A80; --danger-soft: #3A1D1F; --warning: #F0A457; --bar: #F2B81E;
+      --misto: #7DBBDB; --misto-soft: #182A33;
   }
   *, *::before, *::after { box-sizing: inherit; }
   html, body { height: 100%; }
@@ -546,6 +550,7 @@
   .qj-legenda i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); border-left: 3px solid var(--bar); background: var(--surface); }
   .qj-legenda i.livre { border: 1px dashed var(--muted); background: transparent; }
   .qj-legenda i.pronto { background: var(--warn-soft); border-color: var(--warn); }
+  .qj-legenda i.misto { background: var(--misto-soft); border-color: var(--misto); }
   .qj-mapa { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
   @media (max-width: 560px) { .qj-mapa { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; } }
   .qj-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; min-height: 96px; padding: 8px 9px; text-align: left;
@@ -562,6 +567,10 @@
   .qj-tile.pronto { background: var(--warn-soft); border-color: var(--warn); border-left-color: var(--warn); }
   .qj-tile.pronto:hover { border-left-color: var(--warn); }
   .qj-tile.pronto .qj-t { color: var(--warn); }
+  .qj-tile.misto { background: var(--misto-soft); border-color: var(--misto); border-left-color: var(--misto); }
+  .qj-tile.misto:hover { border-left-color: var(--misto); }
+  .qj-tile.misto .qj-p { color: var(--misto); }
+  .qj-tile.misto.pronto { background: var(--warn-soft); border-color: var(--warn); border-left-color: var(--misto); }
   .qj-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
   .qj-item:last-child { border-bottom: 0; }
   .qj-fila-acoes { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
@@ -866,13 +875,13 @@
 
       <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
         <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
-          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
         <div class="qj-mapa" id="qjSalmoura"></div>
       </section>
 
       <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
         <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
-          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
         <div class="qj-mapa" id="qjSecagem"></div>
       </section>
 
@@ -4195,7 +4204,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const pronto = menor != null && menor <= 0;
       const titulo = lotesAqui.length > 1 ? lotesAqui.length + ' lotes' : lote(lotesAqui[0]).produto_nome;
       const tempo = menor == null ? '' : pronto ? 'Pronto' : duracao(menor);
-      html += `<button type="button" class="qj-tile${pronto ? ' pronto' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}">
+      html += `<button type="button" class="qj-tile${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}">
         <span class="qj-n">${n}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
     }
     return html;
