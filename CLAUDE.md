@@ -26,6 +26,7 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Antes de registrar, o cálculo de "Comprar" e o pedido do WhatsApp já consideram estoque atual + entrada.
   - Uma faixa amarela ("Alterações não registradas") aparece quando algum produto mudou desde o último registro, e o navegador avisa se a pessoa tentar sair com alterações feitas por ela e não registradas.
   - Consumo = estoque do registro anterior + entradas − estoque atual. O histórico soma os registros de cada semana (de segunda a domingo) e mostra as últimas 8 semanas, com a média.
+  - Os produtos aparecem recolhidos em linhas compactas (nome, avisos e estoque atual) e abrem com um clique para edição. As áreas também recolhem. Há "Abrir todos" e "Recolher todos", e a busca mostra os resultados mesmo em áreas recolhidas.
   - O pedido de compra sai por área. Os itens que estão vencendo, mas não precisam de compra, saem na seção "VENCENDO EM BREVE".
 - **Lançamento de produção, Estoque de queijos e Resfriadores:** ainda são só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessas áreas.
 - **Usuários:** só para administradores.

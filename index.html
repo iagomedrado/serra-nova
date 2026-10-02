@@ -438,6 +438,27 @@
   .es-inline .es-dias { width: 64px; }
   .es-status { margin-left: auto; }
   .es-add { margin-top: 10px; }
+  .es-ver { display: flex; justify-content: flex-end; gap: 18px; margin: 4px 0 6px; font-size: .9rem; }
+  .es-area-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+  .es-area-qtd { color: var(--muted); font-family: "Source Sans 3", Arial, sans-serif; font-weight: 400; font-size: .9rem; }
+  .es-seta { width: 16px; height: 16px; color: var(--muted); transition: transform .15s ease; }
+  .es-area-btn[aria-expanded="true"] .es-seta { transform: rotate(90deg); }
+  .es-area.fechada .area-title { opacity: .85; }
+  .es-row.es-compacto { padding: 0; margin-top: 6px; }
+  .es-linha { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 10px 12px; background: none; border: 0;
+    color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
+  .es-linha:hover { background: rgba(0, 0, 0, .03); }
+  .es-c-nome { flex: 1 1 180px; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .es-c-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge-comprar { background: var(--warn); color: #fff; }
+  .es-c-estoque { min-width: 90px; text-align: right; font-weight: 600; white-space: nowrap; }
+  .es-c-estoque small { display: block; font-weight: 400; font-size: .72rem; color: var(--muted); }
+  .es-fechar .es-seta, .es-fechar svg.i { transform: rotate(90deg); }
+  @media (max-width: 700px) {
+    .es-c-nome { flex-basis: calc(100% - 140px); }
+    .es-c-tags { order: 3; width: 100%; padding-left: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .es-seta { transition: none; } }
   .es-dica { margin: 0 0 6px; }
   @media (max-width: 700px) {
     .es-nums { grid-template-columns: 1fr 1fr; }
@@ -791,6 +812,7 @@
             <input type="search" id="esBusca" class="es-busca" placeholder="Buscar produto" aria-label="Buscar produto">
           </div>
           <p class="muted-note es-dica">Quando chegar produto, coloque a quantidade em <b>Entrada</b>. Quando conferir a prateleira, corrija o <b>Estoque atual</b>. Depois, clique em <b>Registrar Estoque</b>: a entrada é somada ao estoque atual e a mudança fica salva no histórico.</p>
+          <div class="es-ver"><button type="button" class="link-btn" id="esAbrirTodos">Abrir todos</button><button type="button" class="link-btn" id="esFecharTodos">Recolher todos</button></div>
           <div id="esLista"><p class="empty-state-msg">Carregando produtos…</p></div>
           <p class="muted-note" id="esImportarBox" hidden>Tem produtos cadastrados no controle de estoque antigo? Use “Salvar cópia” nele e depois <button type="button" class="link-btn" id="esImportar">importe a cópia aqui</button>.
             <input type="file" id="esArquivo" accept=".json,application/json" hidden></p>
@@ -3030,6 +3052,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   let filaConfig = null;
   let busca = '';
   let alterouNestaSessao = false;
+  const abertos = new Set();        // produtos com o cartão aberto
+  const areasFechadas = new Set();  // áreas recolhidas
 
   /* ---------- Utilidades ---------- */
   function hojeISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -3136,7 +3160,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
 
   /* ---------- Lista de produtos ---------- */
-  function linhaProduto(p) {
+  function linhaCompleta(p) {
     const dis = podeEditar ? '' : 'disabled';
     const q = aComprar(p), sv = statusValidade(p);
     const u = (p.unidade || '').trim();
@@ -3150,6 +3174,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         </label>`;
     return `<div class="${cls.join(' ')}" data-id="${p.id}">
       <div class="es-top">
+        <button type="button" class="icon-btn es-fechar" data-acao="fechar" aria-label="Recolher produto" aria-expanded="true"><svg class="i"><use href="#i-chev"/></svg></button>
         <input type="text" class="es-nome-input" data-campo="nome" value="${esc(p.nome)}" placeholder="Nome do produto" aria-label="Nome do produto" ${dis}>
         <label class="es-un">Unidade <input type="text" data-campo="unidade" value="${esc(p.unidade)}" placeholder="un" ${dis}></label>
         ${podeEditar ? `<button type="button" class="icon-btn es-del" data-acao="excluir" aria-label="Excluir produto"><svg class="i"><use href="#i-trash"/></svg></button>` : ''}
@@ -3168,6 +3193,34 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <span class="es-status" data-status>${sv && sv.tipo !== 'ok' ? `<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>` : ''}</span>
       </div>
     </div>`;
+  }
+  function linhaProduto(p) { return abertos.has(p.id) ? linhaCompleta(p) : linhaCompacta(p); }
+  function etiquetas(p) {
+    const u = (p.unidade || '').trim(), q = aComprar(p), sv = statusValidade(p), tags = [];
+    if ((p.nome || '').trim() && q > 0) tags.push(`<span class="badge badge-comprar">Comprar ${fmtNum(q)}${u ? ' ' + esc(u) : ''}</span>`);
+    if (sv && sv.tipo !== 'ok') tags.push(`<span class="badge ${sv.tipo === 'vencido' ? 'badge-vencido' : 'badge-aberto'}">${textoValidade(sv)}</span>`);
+    if (n0(p.entrada) !== 0) tags.push(`<span class="badge badge-recorrente">+${fmtNum(p.entrada)}${u ? ' ' + esc(u) : ''} a registrar</span>`);
+    return tags.join('');
+  }
+  function linhaCompacta(p) {
+    const q = aComprar(p), sv = statusValidade(p), u = (p.unidade || '').trim();
+    const cls = ['es-row', 'es-compacto'];
+    if ((p.nome || '').trim() && q > 0) cls.push('low');
+    if (sv && sv.tipo !== 'ok') cls.push(sv.tipo);
+    return `<div class="${cls.join(' ')}" data-id="${p.id}">
+      <button type="button" class="es-linha" data-acao="abrir" aria-expanded="false" aria-label="Abrir ${esc(p.nome || 'produto sem nome')}">
+        <svg class="i es-seta"><use href="#i-chev"/></svg>
+        <span class="es-c-nome">${esc((p.nome || '').trim() || 'Produto sem nome')}</span>
+        <span class="es-c-tags">${etiquetas(p)}</span>
+        <span class="es-c-estoque"><small>Estoque atual</small>${fmtNum(n0(p.atual))}${u ? ' ' + esc(u) : ''}</span>
+      </button>
+    </div>`;
+  }
+  function trocarLinha(id) {
+    const row = $('esLista').querySelector(`.es-row[data-id="${id}"]`); const p = produtos.find((x) => x.id === id);
+    if (!row || !p) return;
+    const tmp = document.createElement('div'); tmp.innerHTML = linhaProduto(p).trim();
+    row.replaceWith(tmp.firstElementChild);
   }
   function caixaComprar(q, u) {
     return q > 0 ? `<span>Comprar</span><strong>${fmtNum(q)}${u ? ' ' + esc(u) : ''}</strong>` : '<span>Comprar</span><strong>Estoque ok</strong>';
@@ -3189,10 +3242,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const visiveis = termo ? itens.filter((p) => (p.nome || '').toLowerCase().includes(termo)) : itens;
       if (termo && !visiveis.length) return '';
       const t = textoArea(a.nome);
-      return `<div class="es-area" data-area="${a.nome}">
-        <div class="area-title"><h3>${a.icone} ${a.nome}</h3><span class="tag ${t.alerta ? 'warn' : 'ok'}" data-area-tag>${t.texto}</span></div>
-        ${visiveis.map(linhaProduto).join('') || '<p class="empty-state-msg">Nenhum produto nesta área.</p>'}
-        ${podeEditar && !termo ? `<button type="button" class="btn btn-ghost btn-small es-add" data-acao="adicionar" data-area="${a.nome}">+ Adicionar produto</button>` : ''}
+      const fechada = areasFechadas.has(a.nome) && !termo;
+      return `<div class="es-area${fechada ? ' fechada' : ''}" data-area="${a.nome}">
+        <div class="area-title"><h3><button type="button" class="es-area-btn" data-acao="area" data-area="${a.nome}" aria-expanded="${!fechada}">
+          <svg class="i es-seta"><use href="#i-chev"/></svg>${a.icone} ${a.nome} <span class="es-area-qtd">(${itens.length})</span></button></h3>
+          <span class="tag ${t.alerta ? 'warn' : 'ok'}" data-area-tag>${t.texto}</span></div>
+        ${fechada ? '' : `${visiveis.map(linhaProduto).join('') || '<p class="empty-state-msg">Nenhum produto nesta área.</p>'}
+        ${podeEditar && !termo ? `<button type="button" class="btn btn-ghost btn-small es-add" data-acao="adicionar" data-area="${a.nome}">+ Adicionar produto</button>` : ''}`}
       </div>`;
     }).join('') || '<p class="empty-state-msg">Nenhum produto encontrado.</p>';
     if (focoInfo) {
@@ -3203,6 +3259,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function atualizarLinha(id) {
     const row = $('esLista').querySelector(`.es-row[data-id="${id}"]`); const p = produtos.find((x) => x.id === id);
     if (!row || !p) return;
+    if (row.classList.contains('es-compacto')) { trocarLinha(id); return; }
     const q = aComprar(p), sv = statusValidade(p);
     row.classList.toggle('low', !!(p.nome || '').trim() && q > 0);
     row.classList.toggle('vencendo', !!sv && sv.tipo === 'vencendo');
@@ -3367,7 +3424,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   async function adicionar(area) {
     const { data, error } = await sb.from('estoque_produtos').insert({ area, nome: '', unidade: 'un', aviso_dias: 30 }).select('*').single();
     if (error) { console.error(error); toast('Não foi possível adicionar o produto.'); return; }
-    produtos.push(data); renderLista(); renderDerivados();
+    produtos.push(data); abertos.add(data.id); areasFechadas.delete(area); renderLista(); renderDerivados();
     const el = $('esLista').querySelector(`.es-row[data-id="${data.id}"] [data-campo="nome"]`); if (el) el.focus();
   }
   function excluir(id) {
@@ -3484,10 +3541,29 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       renderLista(); renderDerivados(); renderHistorico(); toast('Produto movido para ' + p.area + '.');
     });
     lista.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
-      if (b.dataset.acao === 'adicionar') adicionar(b.dataset.area);
-      if (b.dataset.acao === 'excluir') excluir(b.closest('.es-row').dataset.id);
+      const b = e.target.closest('[data-acao]'); if (!b) return;
+      const acao = b.dataset.acao;
+      if (acao === 'abrir' || acao === 'fechar') {
+        const id = b.closest('.es-row').dataset.id;
+        if (acao === 'abrir') abertos.add(id); else abertos.delete(id);
+        trocarLinha(id);
+        const nova = lista.querySelector(`.es-row[data-id="${id}"] ${acao === 'abrir' ? '[data-acao="fechar"]' : '[data-acao="abrir"]'}`);
+        if (nova) nova.focus();
+        return;
+      }
+      if (acao === 'area') {
+        const area = b.dataset.area;
+        if (areasFechadas.has(area)) areasFechadas.delete(area); else areasFechadas.add(area);
+        renderLista();
+        const nb = lista.querySelector(`.es-area-btn[data-area="${area}"]`); if (nb) nb.focus();
+        return;
+      }
+      if (!podeEditar) return;
+      if (acao === 'adicionar') adicionar(b.dataset.area);
+      if (acao === 'excluir') excluir(b.closest('.es-row').dataset.id);
     });
+    $('esAbrirTodos').addEventListener('click', () => { areasFechadas.clear(); produtos.forEach((p) => abertos.add(p.id)); renderLista(); });
+    $('esFecharTodos').addEventListener('click', () => { abertos.clear(); renderLista(); });
     $('esBusca').addEventListener('input', (e) => { busca = e.target.value; renderLista(); });
     $('esRegistrar').addEventListener('click', registrar);
     $('esRegistrar2').addEventListener('click', registrar);
