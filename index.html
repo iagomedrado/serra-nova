@@ -641,6 +641,23 @@
   .vd-cad-item.inativo > span:first-child { color: var(--muted); }
   .vd-cad-novo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-top: 10px; }
   .vd-cad-novo label { flex: 1 1 220px; }
+  .vd-parcelas { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+  .vd-parc { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px; padding: 4px 0; font-size: .92rem; }
+  .vd-parc-valor { font-weight: 600; text-align: right; }
+  .vd-parc-st { grid-column: 1 / -1; color: var(--muted); font-size: .85rem; }
+  .vd-parc.ok .vd-parc-st { color: var(--ok); }
+  .vd-parc.atraso .vd-parc-st, .vd-ar.atraso small, .vd-atraso { color: var(--danger); font-weight: 600; }
+  .vd-parc.hoje .vd-parc-st, .vd-ar.hoje small { color: var(--warn); font-weight: 600; }
+  .vd-ar > span:last-child { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .vd-ar-tot { margin: 0 0 6px; }
+  .vd-parc-bloco { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .vd-parc-cfg { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .vd-parc-lista { display: grid; gap: 8px; }
+  .vd-parc-linha { display: grid; gap: 6px 10px; grid-template-columns: 1fr 1fr; align-items: end; padding-top: 8px; border-top: 1px solid var(--line); }
+  .vd-parc-num { grid-column: 1 / -1; font-weight: 600; }
+  .vd-parc-num small { font-weight: 400; color: var(--ok); }
+  .vd-parc-soma { margin: 0; font-weight: 600; color: var(--ok); }
+  .vd-parc-soma.erro { color: var(--danger); }
 
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
@@ -981,6 +998,7 @@
           <div id="vdLista"></div>
         </section>
         <div class="stack">
+          <section class="panel" aria-labelledby="h-vd-ar"><h2 id="h-vd-ar">Parcelas a receber</h2><div id="vdAReceber"></div></section>
           <section class="panel" aria-labelledby="h-vd-cli"><h2 id="h-vd-cli">Por cliente</h2><div id="vdPorCliente"></div></section>
           <section class="panel" aria-labelledby="h-vd-prod"><h2 id="h-vd-prod">Por produto</h2><div id="vdPorProduto"></div></section>
         </div>
@@ -1234,7 +1252,11 @@
     const r = e.detail; if (!r || !r.carregado) return;
     $("homeVendasFig").innerHTML = brl.format(r.mesTotal) + "<small>" + n1(r.mesKg, 1) + " kg</small>";
     const att = $("attVendas");
-    if (r.pendentes) {
+    if (r.atrasadas) {
+      att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.atrasadas, "parcela de venda em atraso", "parcelas de venda em atraso") +
+        '</strong><span class="muted">' + brl.format(r.atrasadasValor) + ' a receber de clientes.' + (r.pendentes ? ' Também há ' + pl(r.pendentes, "saída", "saídas") + ' sem dados da venda.' : '') + '</span></span><a href="#vendas">Ver</a>';
+      att.hidden = false;
+    } else if (r.pendentes) {
       att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.pendentes, "saída aguardando dados da venda", "saídas aguardando dados da venda") +
         '</strong><span class="muted">' + n1(r.pendentesKg, 1) + ' kg sem cliente e preço.</span></span><a href="#vendas">Ver</a>';
       att.hidden = false;
@@ -4680,7 +4702,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
   let sb = null, podeEditar = false, carregado = false, periodo = 'mes';
-  let clientes = [], formas = [], pendentes = [], vendas = [], mes = [];
+  let clientes = [], formas = [], pendentes = [], vendas = [], mes = [], aReceber = [];
   let ultimoPreco = { cliente: {}, produto: {} };
   let filtroCliente = '';
   const nomes = {};
@@ -4708,6 +4730,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const pecasDe = (v) => itensDe(v).reduce((a, i) => a + Number(i.pecas || 0), 0);
   const valorItem = (i) => Math.round(Number(i.peso_kg || 0) * Number(i.preco_kg || 0) * 100) / 100;
   const valorDe = (v) => itensDe(v).reduce((a, i) => a + valorItem(i), 0);
+  const parcelasDe = (v) => (Array.isArray(v.parcelas) ? v.parcelas : []).slice().sort((a, b) => a.n - b.n);
+  const hojeISO = () => iso(new Date());
+  function addDias(s, n) { const [a, m, d] = s.split('-').map(Number); return iso(new Date(a, m - 1, d + n)); }
+  function difDias(a, b) { const [a1, m1, d1] = a.split('-').map(Number), [a2, m2, d2] = b.split('-').map(Number); return Math.round((new Date(a2, m2 - 1, d2) - new Date(a1, m1 - 1, d1)) / 86400000); }
+  function dividir(total, n) {
+    const cents = Math.round(total * 100), base = Math.floor(cents / n);
+    return Array.from({ length: n }, (_, i) => (i === n - 1 ? cents - base * (n - 1) : base) / 100);
+  }
   function intervalo() {
     const hoje = new Date(), h = iso(hoje);
     if (periodo === 'hoje') return { de: h, ate: h };
@@ -4728,15 +4758,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const SEL = '*, vendas_itens(*)';
   async function carregar() {
     const r = intervalo(), h = iso(new Date());
-    const [c, f, p, v, m, u] = await Promise.all([
+    const [c, f, p, v, m, u, ar] = await Promise.all([
       sb.from('vendas_clientes').select('*').order('nome'),
       sb.from('vendas_formas').select('*').order('ordem').order('nome'),
       sb.from('vendas').select(SEL).eq('situacao', 'pendente').order('saida_em'),
       sb.from('vendas').select(SEL).eq('situacao', 'concluida').gte('data_venda', r.de).lte('data_venda', r.ate).order('data_venda', { ascending: false }),
       sb.from('vendas').select(SEL).eq('situacao', 'concluida').gte('data_venda', h.slice(0, 8) + '01').lte('data_venda', h),
-      sb.from('vendas').select('cliente_id, data_venda, concluida_em, vendas_itens(produto_nome, preco_kg)').eq('situacao', 'concluida').order('data_venda', { ascending: false }).limit(150)
+      sb.from('vendas').select('cliente_id, data_venda, concluida_em, vendas_itens(produto_nome, preco_kg)').eq('situacao', 'concluida').order('data_venda', { ascending: false }).limit(150),
+      sb.rpc('vendas_a_receber')
     ]);
-    for (const x of [c, f, p, v, m, u]) if (x.error) throw x.error;
+    for (const x of [c, f, p, v, m, u, ar]) if (x.error) throw x.error;
+    aReceber = (ar.data || []).map((x) => ({ ...x, valor: Number(x.valor) }));
     clientes = c.data || []; formas = f.data || []; pendentes = p.data || []; mes = m.data || [];
     vendas = (v.data || []).sort((a, b) => b.data_venda.localeCompare(a.data_venda) || String(b.concluida_em || '').localeCompare(String(a.concluida_em || '')));
     ultimoPreco = { cliente: {}, produto: {} };
@@ -4760,8 +4792,39 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return itensDe(v).map((i) => `<div class="vd-item"><span><b>${esc(i.produto_nome)}</b> lote ${esc(i.lote)}</span>
       <span>${pecas(i.pecas)}, ${kg(i.peso_kg)}${comPreco && i.preco_kg != null ? ` × ${brl.format(i.preco_kg)}/kg = <b>${brl.format(valorItem(i))}</b>` : ''}</span></div>`).join('');
   }
+  function situacaoParcela(p) {
+    if (p.recebido_em) return { cls: 'ok', txt: 'Recebida em ' + fmtData(p.recebido_em) };
+    if (p.vencimento < hojeISO()) return { cls: 'atraso', txt: 'Em atraso' };
+    if (p.vencimento === hojeISO()) return { cls: 'hoje', txt: 'Vence hoje' };
+    return { cls: '', txt: 'A receber' };
+  }
+  function linhasParcelas(v) {
+    const ps = parcelasDe(v); if (!ps.length) return '';
+    return `<div class="vd-parcelas">${ps.map((p) => { const st = situacaoParcela(p); return `
+      <div class="vd-parc ${st.cls}" data-n="${p.n}"><span><b>${p.n}/${ps.length}</b> vence ${fmtData(p.vencimento)}</span><span class="vd-parc-valor">${brl.format(p.valor)}</span>
+        <span class="vd-parc-st">${st.txt}${podeEditar ? (p.recebido_em ? ' <button type="button" class="link-btn" data-acao="desreceber">Desfazer</button>' : ' <button type="button" class="link-btn" data-acao="receber">Marcar recebida</button>') : ''}</span></div>`; }).join('')}</div>`;
+  }
+  function renderAReceber() {
+    const h = hojeISO();
+    const atraso = aReceber.filter((p) => p.vencimento < h);
+    const total = aReceber.reduce((a, p) => a + p.valor, 0), totAtraso = atraso.reduce((a, p) => a + p.valor, 0);
+    if (!aReceber.length) { $('vdAReceber').innerHTML = '<p class="empty-state-msg">Nenhuma parcela em aberto.</p>'; return; }
+    const lim = 12, mostrar = aReceber.slice(0, lim);
+    $('vdAReceber').innerHTML = `<p class="vd-ar-tot"><b>${brl.format(total)}</b> em ${aReceber.length === 1 ? '1 parcela' : aReceber.length + ' parcelas'}${atraso.length ? `, <span class="vd-atraso">${brl.format(totAtraso)} em atraso</span>` : ''}.</p>` +
+      mostrar.map((p) => { const st = situacaoParcela(p); return `
+      <div class="vd-tot vd-ar ${st.cls}" data-venda="${p.venda_id}" data-n="${p.n}"><span><b>${esc(cliente(p.cliente_id)?.nome || 'Cliente removido')}</b>
+        <small>Parcela ${p.n}/${p.qtd}, vence ${fmtData(p.vencimento)}${st.cls === 'atraso' ? ' (em atraso)' : st.cls === 'hoje' ? ' (hoje)' : ''}</small></span>
+        <span>${brl.format(p.valor)}${podeEditar ? '<button type="button" class="link-btn" data-acao="receber">Recebida</button>' : ''}</span></div>`; }).join('') +
+      (aReceber.length > lim ? `<p class="muted-note">E mais ${aReceber.length - lim} parcelas.</p>` : '');
+  }
+  async function marcarParcela(vendaId, n, recebida) {
+    const { error } = await sb.rpc('vendas_parcela_recebida', { p_venda: vendaId, p_n: Number(n), p_data: recebida ? hojeISO() : null });
+    if (error) { console.error(error); toast(erroMsg(error)); return; }
+    toast(recebida ? 'Parcela marcada como recebida.' : 'Recebimento desfeito.'); atualizar();
+  }
   function render() {
     if (!carregado) return;
+    renderAReceber();
     // fila
     $('vdFila').innerHTML = pendentes.length ? pendentes.map((v) => `
       <div class="vd-venda" data-venda="${v.id}">
@@ -4811,9 +4874,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${dias[d].map((v) => `
           <div class="vd-venda" data-venda="${v.id}">
             <div class="vd-topo"><b class="vd-titulo">${esc(cliente(v.cliente_id)?.nome || 'Cliente removido')}</b>
-              <span class="badge badge-recorrente">${esc(forma(v.forma_id)?.nome || '?')}</span>
+              <span class="badge badge-recorrente">${esc(forma(v.forma_id)?.nome || '?')}${parcelasDe(v).length ? ' em ' + parcelasDe(v).length + 'x' : ''}</span>
               <span class="vd-total">${brl.format(valorDe(v))}</span></div>
             ${linhasItens(v, true)}
+            ${linhasParcelas(v)}
             ${v.observacao ? `<p class="vd-obs">${esc(v.observacao)}</p>` : ''}
             <div class="vd-rodape"><small>Saída em ${fmtDataHora(v.saida_em)}${v.concluida_por ? ', venda registrada por ' + esc(nomes[v.concluida_por] || 'usuário removido') : ''}</small>
               ${podeEditar ? '<span class="vd-acoes"><button type="button" class="link-btn" data-acao="reabrir">Voltar para pendente</button><button type="button" class="btn btn-small" data-acao="editar">Editar</button></span>' : ''}</div>
@@ -4824,6 +4888,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function resumoInicio() {
     document.dispatchEvent(new CustomEvent('vendas:resumo', { detail: {
       carregado: true, pendentes: pendentes.length, pendentesKg: pendentes.reduce((a, v) => a + pesoDe(v), 0),
+      atrasadas: aReceber.filter((p) => p.vencimento < hojeISO()).length, atrasadasValor: aReceber.filter((p) => p.vencimento < hojeISO()).reduce((a, p) => a + p.valor, 0),
       mesTotal: mes.reduce((a, v) => a + valorDe(v), 0), mesKg: mes.reduce((a, v) => a + pesoDe(v), 0)
     } }));
   }
@@ -4849,13 +4914,25 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
             ${fs.map((f) => `<option value="${f.id}" ${f.id === v.forma_id ? 'selected' : ''}>${esc(f.nome)}</option>`).join('')}</select></label>
           <label>Data da venda<input type="date" name="data" value="${dataPadrao}" required></label>
         </div>
+        <fieldset class="qj-destino"><legend>Pagamento</legend><div class="qj-opcoes">
+          <label><input type="radio" name="modo" value="vista" ${parcelasDe(v).length ? '' : 'checked'}> À vista</label>
+          <label><input type="radio" name="modo" value="parcelado" ${parcelasDe(v).length ? 'checked' : ''}> Parcelado</label></div></fieldset>
         <fieldset class="vd-precos"><legend>Preço por quilo</legend>
           ${itensDe(v).map((i) => `<div class="vd-preco" data-item="${i.id}" data-peso="${i.peso_kg}">
             <label>${esc(i.produto_nome)}, lote ${esc(i.lote)} (${kg(i.peso_kg)})<span class="vd-campo-rs"><span aria-hidden="true">R$</span><input type="number" name="preco" min="0" step="0.01" inputmode="decimal" value="${i.preco_kg != null ? Number(i.preco_kg) : ''}" placeholder="0,00"></span></label>
             <span class="vd-sub" data-sub></span></div>`).join('')}
         </fieldset>
-        <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(v.observacao || '')}" placeholder="Ex.: número do pedido, prazo combinado" autocomplete="off"></label>
         <p class="vd-total-form" data-total></p>
+        <div class="vd-parc-bloco" data-parc hidden>
+          <div class="vd-parc-cfg">
+            <label>Número de parcelas<input type="number" name="qtd" min="2" max="36" step="1" inputmode="numeric" value="${parcelasDe(v).length || 2}"></label>
+            <label>Primeiro vencimento<input type="date" name="primeiro" value="${parcelasDe(v)[0]?.vencimento || addDias(dataPadrao, 30)}"></label>
+            <label>Dias entre parcelas<input type="number" name="intervalo" min="1" max="365" step="1" inputmode="numeric" value="${parcelasDe(v).length > 1 ? difDias(parcelasDe(v)[0].vencimento, parcelasDe(v)[1].vencimento) : 30}"></label>
+          </div>
+          <div class="vd-parc-lista" data-lista></div>
+          <p class="vd-parc-soma" data-soma></p>
+        </div>
+        <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(v.observacao || '')}" placeholder="Ex.: número do pedido, prazo combinado" autocomplete="off"></label>
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">${editando ? 'Salvar alterações' : 'Registrar venda'}</button></div>
       </form>`, (root) => {
       const form = root.querySelector('#vdForm');
@@ -4871,7 +4948,46 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           if (val == null) faltam++; else total += val;
         });
         form.querySelector('[data-total]').textContent = 'Total da venda: ' + brl.format(total) + (faltam ? ' (falta o preço de ' + (faltam === 1 ? '1 item' : faltam + ' itens') + ')' : '');
+        totalVenda = Math.round(total * 100) / 100;
+        if (parcelado() && !valoresManuais) redividir();
+        somaParcelas();
       };
+      let totalVenda = 0, valoresManuais = parcelasDe(v).length > 0;
+      const recebidos = {}; parcelasDe(v).forEach((p) => { if (p.recebido_em) recebidos[p.n] = p.recebido_em; });
+      const parcelado = () => form.querySelector('[name="modo"]:checked').value === 'parcelado';
+      const linhaParc = (n, qtd, venc, valor) => `<div class="vd-parc-linha" data-n="${n}"><span class="vd-parc-num">Parcela ${n} de ${qtd}${recebidos[n] ? ' <small>(recebida em ' + fmtData(recebidos[n]) + ')</small>' : ''}</span>
+        <label>Vencimento<input type="date" name="venc" value="${venc}"></label>
+        <label>Valor (R$)<input type="number" name="valor" min="0" step="0.01" inputmode="decimal" value="${valor}"></label></div>`;
+      const gerar = () => {
+        const qtd = Math.min(36, Math.max(2, Math.round(lerNum(form.querySelector('[name="qtd"]').value) || 2)));
+        const primeiro = form.querySelector('[name="primeiro"]').value || addDias(form.querySelector('[name="data"]').value || dataPadrao, 30);
+        const intervalo = Math.max(1, Math.round(lerNum(form.querySelector('[name="intervalo"]').value) || 30));
+        const valores = dividir(totalVenda, qtd);
+        form.querySelector('[data-lista]').innerHTML = valores.map((val, i) => linhaParc(i + 1, qtd, addDias(primeiro, i * intervalo), val || '')).join('');
+        valoresManuais = false; somaParcelas();
+      };
+      const redividir = () => {
+        const inps = [...form.querySelectorAll('[name="valor"]')]; if (!inps.length) return;
+        dividir(totalVenda, inps.length).forEach((val, i) => { inps[i].value = val || ''; });
+      };
+      const lerParcelas = () => [...form.querySelectorAll('.vd-parc-linha')].map((el) => ({
+        n: Number(el.dataset.n), vencimento: el.querySelector('[name="venc"]').value, valor: lerNum(el.querySelector('[name="valor"]').value), recebido_em: recebidos[Number(el.dataset.n)] || null }));
+      const somaParcelas = () => {
+        const out = form.querySelector('[data-soma]');
+        if (!parcelado()) { out.textContent = ''; return; }
+        const soma = Math.round(lerParcelas().reduce((a, p) => a + (p.valor || 0), 0) * 100) / 100, dif = Math.round((totalVenda - soma) * 100) / 100;
+        out.textContent = 'Soma das parcelas: ' + brl.format(soma) + (dif ? (dif > 0 ? ' (faltam ' + brl.format(dif) + ' para o total)' : ' (passa ' + brl.format(-dif) + ' do total)') : '');
+        out.classList.toggle('erro', !!dif);
+      };
+      const trocarModo = () => {
+        form.querySelector('[data-parc]').hidden = !parcelado();
+        if (parcelado() && !form.querySelector('.vd-parc-linha')) gerar();
+        somaParcelas();
+      };
+      form.querySelectorAll('[name="modo"]').forEach((r) => r.addEventListener('change', trocarModo));
+      ['qtd', 'primeiro', 'intervalo'].forEach((n) => form.querySelector(`[name="${n}"]`).addEventListener('change', gerar));
+      form.querySelector('[data-lista]').addEventListener('input', (e) => { if (e.target.name === 'valor') valoresManuais = true; somaParcelas(); });
+      if (parcelasDe(v).length) form.querySelector('[data-lista]').innerHTML = parcelasDe(v).map((p) => linhaParc(p.n, parcelasDe(v).length, p.vencimento, Number(p.valor))).join('');
       const sugerir = () => {
         const cid = sel.value && sel.value !== '__novo' ? sel.value : null;
         form.querySelectorAll('.vd-preco').forEach((el) => {
@@ -4890,6 +5006,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         sugerir();
       };
       sel.addEventListener('change', trocarCliente);
+      trocarModo();
       form.querySelectorAll('[name="preco"]').forEach((inp) => inp.addEventListener('input', () => { inp.dataset.auto = '0'; recalcular(); }));
       trocarCliente();
       form.addEventListener('submit', async (e) => {
@@ -4907,8 +5024,20 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           if (p == null || p < 0) { toast('Informe o preço por quilo de todos os itens.'); el.querySelector('[name="preco"]').focus(); return; }
           precos.push({ item: el.dataset.item, preco_kg: p });
         }
+        let parcelas = [];
+        if (parcelado()) {
+          parcelas = lerParcelas();
+          if (parcelas.length < 2) { toast('Para parcelar, use pelo menos 2 parcelas.'); return; }
+          for (const p of parcelas) {
+            if (!p.vencimento) { toast('Informe o vencimento da parcela ' + p.n + '.'); return; }
+            if (!(p.valor > 0)) { toast('Informe o valor da parcela ' + p.n + '.'); return; }
+          }
+          const soma = Math.round(parcelas.reduce((a, p) => a + p.valor, 0) * 100) / 100;
+          if (Math.abs(soma - totalVenda) > 0.009) { toast('A soma das parcelas (' + brl.format(soma) + ') precisa ser igual ao total da venda (' + brl.format(totalVenda) + ').'); return; }
+        }
         const b = form.querySelector('[type="submit"]'); b.disabled = true;
         const { error } = await sb.rpc('vendas_concluir', {
+          p_parcelas: parcelas.map((p) => ({ vencimento: p.vencimento, valor: p.valor, recebido_em: p.recebido_em })),
           p_venda: v.id, p_cliente: cid === '__novo' ? null : cid, p_cliente_novo: cid === '__novo' ? novo : null,
           p_forma: fid, p_data: data, p_precos: precos, p_observacao: form.querySelector('[name="obs"]').value.trim()
         });
@@ -5001,8 +5130,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const id = b.closest('[data-venda]').dataset.venda;
       if (b.dataset.acao === 'editar') completar(id);
       if (b.dataset.acao === 'reabrir') reabrir(id);
+      if (b.dataset.acao === 'receber' || b.dataset.acao === 'desreceber') marcarParcela(id, b.closest('[data-n]').dataset.n, b.dataset.acao === 'receber');
     });
     $('vdFiltro').addEventListener('change', () => { filtroCliente = $('vdFiltro').value; render(); });
+    $('vdAReceber').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="receber"]'); if (!b || !podeEditar) return;
+      const el = b.closest('[data-venda]'); marcarParcela(el.dataset.venda, el.dataset.n, true);
+    });
     $('vdPeriodo').addEventListener('click', (e) => {
       const b = e.target.closest('.seg-btn'); if (!b) return;
       periodo = b.dataset.periodo;
