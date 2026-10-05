@@ -20,6 +20,13 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - O vencimento das parcelas em aberto pode ser alterado na janela "Editar conta" (seção Vencimentos) ou no "Ajustar" de cada parcela.
   - Os filtros (categoria, situação, forma de pagamento e vencimento) ficam reunidos no botão "Filtros". Os filtros ativos aparecem como etiquetas removíveis abaixo da busca. O filtro de forma de pagamento considera a forma padrão da conta e a forma usada nos pagamentos.
   - O resumo tem só "Hoje" (padrão ao abrir) e "Período personalizado".
+  - **Leitor de boletos:** nas janelas "Lançar nova conta" e "Editar conta" há o bloco "Linha digitável do boleto", com campo para colar/digitar e botão "Ler com a câmera". Aceita linha digitável de boleto de banco (47 números), de conta de consumo/imposto (48 números, começa com 8) ou o código de barras (44 números). Confere todos os dígitos verificadores e mostra em que bloco está o erro de digitação.
+    - Na nova conta, preenche valor, vencimento da 1ª parcela, 1 parcela e forma "Boleto", e põe o cursor em "Nome da conta". O fornecedor é escolhido à mão. Na edição, trocar o boleto não muda valor nem vencimentos; apagar o campo tira o boleto da conta.
+    - Vencimento pelo fator: base 07/10/1997 no ciclo antigo e 22/02/2025 = fator 1000 no novo; usa a data mais próxima de hoje. Contas de consumo não trazem vencimento no código (a tela avisa). O banco vem dos 3 primeiros números (tabela `BANCOS` no objeto `Boleto`) e não é gravado: é calculado da linha.
+    - Guardado em `livro_contas.linha_digitavel` (texto, só números, regra `livro_contas_linha_digitavel_check`: vazio ou 44 a 48 números). Campo `linhaDigitavel` no `MAPAS.contas`; texto vazio vira null.
+    - Não deixa salvar um boleto que já está em outra conta.
+    - O cartão da conta mostra "Boleto do <banco>" com a linha e "Copiar linha digitável"; a janela "Registrar pagamento" também tem o botão de copiar (copia só os números).
+    - Câmera: usa o leitor nativo do navegador (`BarcodeDetector`, formato `itf`) quando existe (Android/Chrome). Senão carrega sob demanda `@zxing/library@0.23.0` (UMD) do jsDelivr com `integrity` (SRI). Se trocar a versão, recalcule o hash. O leitor abre em tela cheia por cima da janela (classe `.leitor`), tem lanterna quando o aparelho permite, e Esc/Cancelar fecha só a câmera. Só aceita leitura que passe na conferência dos dígitos.
 - **Controle de estoque (pronto):** insumos em 4 áreas (LABORATÓRIO, ALMOXARIFADO QUÍMICO, EMBALAGENS E RÓTULOS, ALMOXARIFADO). Objeto `window.SN_Estoque`. Tabelas `estoque_produtos`, `estoque_config` (uma linha, id = 1) e `estoque_contagens` (um registro por dia, com os itens em jsonb).
   - Cada produto tem os campos **Entrada**, **Estoque atual** e **Estoque mínimo**, além de validade e aviso de vencimento opcionais (prazo definido em cada produto).
   - Fluxo: quando chega produto, o operador preenche **Entrada**. O botão **Registrar Estoque** chama a função `estoque_registrar(p_data)` no banco, que soma a entrada ao estoque atual, limpa o campo e grava o registro do dia, tudo numa única transação. Vários registros no mesmo dia são acumulados no mesmo registro.
@@ -68,3 +75,7 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - Não altere o comportamento das abas prontas sem o Iago pedir.
 - Antes de concluir, confira que o JavaScript não tem erro de sintaxe e que as abas existentes continuam funcionando.
 - Explique as mudanças para o Iago em linguagem simples.
+
+## Boletos: próximos passos possíveis
+- O leitor de boletos está pronto (ver Livro de contas).
+- Contexto: o Iago queria puxar do banco os boletos emitidos contra o CNPJ do laticínio (DDA) e lançar como conta. Não foi encontrada API de DDA pública do Sicoob. As opções futuras são perguntar à cooperativa se liberam DDA por API ou contratar um serviço de DDA (ex.: TecnoSpeed), integrando por uma edge function, sem nunca colocar certificado ou chaves na página.

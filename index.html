@@ -403,6 +403,45 @@
   label.check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: .95rem; }
   label.check input { width: 18px; height: 18px; min-height: 0; margin: 0; accent-color: var(--vermelho); }
 
+
+  /* ---------- Livro: leitor de boletos ---------- */
+  .boleto-bloco { border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; background: var(--bg); }
+  .boleto-bloco > label { font-weight: 600; }
+  .boleto-entrada { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .boleto-entrada input { flex: 1 1 240px; min-width: 0; font-variant-numeric: tabular-nums; }
+  .boleto-entrada .btn svg.i { width: 19px; height: 19px; }
+  .boleto-info { margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 14px; }
+  .boleto-info .boleto-linha { grid-column: 1 / -1; }
+  .boleto-msg { margin: 8px 0 0; font-size: .9rem; }
+  .boleto-msg.erro { color: var(--danger); font-weight: 600; }
+  .boleto-msg.aviso { color: var(--warn); font-weight: 600; }
+  .boleto-num { font-weight: 600; word-break: break-word; letter-spacing: .01em; }
+  .boleto-acoes { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+  @media (max-width: 560px) { .boleto-info { grid-template-columns: 1fr 1fr; } }
+  .conta-boleto { margin: 8px 0 0 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: .9rem; }
+  .conta-boleto .field-label { display: inline; }
+  .conta-boleto .boleto-num { font-weight: 600; }
+  @media (max-width: 700px) { .conta-boleto { margin-left: 0; } }
+  .pay-boleto { background: var(--bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 14px; }
+  .pay-boleto .boleto-acoes { margin-top: 6px; }
+
+  .leitor { position: fixed; inset: 0; z-index: 90; background: #000; color: #fff; display: flex; flex-direction: column; }
+  .leitor[hidden] { display: none; }
+  .leitor-video { position: relative; flex: 1; overflow: hidden; }
+  .leitor-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .leitor-mira { position: absolute; left: 6%; right: 6%; top: 50%; height: min(34%, 32vw); transform: translateY(-50%); border: 3px solid var(--ouro); border-radius: 12px;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45); }
+  .leitor-mira::after { content: ""; position: absolute; left: 4%; right: 4%; top: 50%; height: 2px; background: var(--vermelho); opacity: .9; }
+  .leitor.lido .leitor-mira { border-color: var(--ok); }
+  .leitor-topo, .leitor-base { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px; background: rgba(0, 0, 0, .75); text-align: center; }
+  .leitor-base { padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .leitor-topo p { margin: 0; font-weight: 600; }
+  .leitor-topo small { display: block; color: #ddd; margin-top: 4px; font-size: .88rem; }
+  .leitor-base .btn { background: #fff; color: #2A2320; border-color: #fff; min-width: 130px; }
+  .leitor-base .btn.btn-ghost { background: transparent; color: #fff; }
+  @media (prefers-reduced-motion: no-preference) { .leitor-mira::after { animation: leitor-varre 1.6s ease-in-out infinite alternate; } }
+  @keyframes leitor-varre { from { opacity: .35; } to { opacity: 1; } }
+
   /* ---------- Livro: quem lançou e modo consulta ---------- */
   .conta-autor { margin: 6px 0 0 40px; font-size: .82rem; color: var(--muted); }
   @media (max-width: 700px) { .conta-autor { margin-left: 0; } }
@@ -763,6 +802,8 @@
   <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.85"/><path d="M16 4.2a3.5 3.5 0 0 1 0 6.6"/></symbol>
   <symbol id="i-filtro" viewBox="0 0 24 24"><path d="M4 5h16l-6.2 7.6V19l-3.6-1.8v-4.6z"/></symbol>
   <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-barras" viewBox="0 0 24 24"><path d="M3 7V5a1 1 0 0 1 1-1h2M18 4h2a1 1 0 0 1 1 1v2M21 17v2a1 1 0 0 1-1 1h-2M6 20H4a1 1 0 0 1-1-1v-2"/><path d="M7 8v8M10 8v8M12.5 8v8M15 8v8M17 8v8"/></symbol>
+  <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
   <symbol id="i-whats" viewBox="0 0 24 24"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9.2 9.2c.3 1.9 1.7 3.6 3.6 4.4l1-1 1.8.8c-.2 1-1 1.6-2 1.5-2.8-.4-5-2.6-5.4-5.4-.1-1 .5-1.8 1.5-2l.8 1.8z"/></symbol>
 </svg>
 
@@ -1789,6 +1830,455 @@ function generateParcelas(valorTotal, numParcelas, primeiraData) {
   return arr;
 }
 
+/* ===================== Boletos (leitura da linha digitável e do código de barras) ===================== */
+const Boleto = (function () {
+  const BANCOS = {
+    '001': 'Banco do Brasil', '003': 'Banco da Amazônia', '004': 'Banco do Nordeste', '021': 'Banestes', '033': 'Santander',
+    '037': 'Banpará', '041': 'Banrisul', '047': 'Banese', '070': 'BRB', '077': 'Inter', '085': 'Ailos', '097': 'Credisis',
+    '104': 'Caixa', '133': 'Cresol', '136': 'Unicred', '197': 'Stone', '208': 'BTG Pactual', '212': 'Banco Original',
+    '237': 'Bradesco', '260': 'Nubank', '290': 'PagBank', '323': 'Mercado Pago', '336': 'C6 Bank', '341': 'Itaú',
+    '380': 'PicPay', '389': 'Mercantil do Brasil', '403': 'Cora', '422': 'Safra', '536': 'Neon', '637': 'Sofisa',
+    '655': 'Votorantim', '707': 'Daycoval', '745': 'Citibank', '746': 'Modal', '748': 'Sicredi', '756': 'Sicoob'
+  };
+  const SEGMENTOS = {
+    '1': 'Prefeitura', '2': 'Água e esgoto', '3': 'Energia elétrica e gás', '4': 'Telefone e internet',
+    '5': 'Órgão do governo', '6': 'Carnê ou convênio', '7': 'Multa de trânsito', '9': 'Convênio do banco'
+  };
+
+  function mod10(num) {
+    let soma = 0, peso = 2;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let r = Number(num[i]) * peso;
+      if (r > 9) r = Math.floor(r / 10) + (r % 10);
+      soma += r;
+      peso = peso === 2 ? 1 : 2;
+    }
+    return (10 - (soma % 10)) % 10;
+  }
+  function somaMod11(num) {
+    let soma = 0, peso = 2;
+    for (let i = num.length - 1; i >= 0; i--) {
+      soma += Number(num[i]) * peso;
+      peso = peso === 9 ? 2 : peso + 1;
+    }
+    return soma % 11;
+  }
+  // Dígito geral do boleto bancário
+  function dvBancario(num) {
+    const dv = 11 - somaMod11(num);
+    return (dv === 0 || dv === 10 || dv === 11) ? 1 : dv;
+  }
+  // Módulo 11 das contas de consumo e tributos
+  function dvConvenio11(num) {
+    const resto = somaMod11(num);
+    if (resto === 0 || resto === 1) return 0;
+    if (resto === 10) return 1;
+    return 11 - resto;
+  }
+
+  function isoDe(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function somaDias(y, m, d, n) { return new Date(y, m - 1, d + n, 12); }
+
+  // O fator de vencimento chegou a 9999 em 21/02/2025 e voltou para 1000 em 22/02/2025.
+  // Como o mesmo número vale para duas datas, fica com a mais próxima de hoje.
+  function vencimentoDoFator(fator, hoje) {
+    if (!fator) return null;
+    hoje = hoje || new Date();
+    const antigo = somaDias(1997, 10, 7, fator);
+    const novo = somaDias(2025, 2, 22, fator - 1000);
+    const escolhido = Math.abs(novo - hoje) <= Math.abs(antigo - hoje) ? novo : antigo;
+    return isoDe(escolhido);
+  }
+
+  function linhaDoCodigoBancario(cb) {
+    const c1 = cb.slice(0, 4) + cb.slice(19, 24);
+    const c2 = cb.slice(24, 34);
+    const c3 = cb.slice(34, 44);
+    return c1 + mod10(c1) + c2 + mod10(c2) + c3 + mod10(c3) + cb[4] + cb.slice(5, 19);
+  }
+  function codigoDaLinhaBancaria(ld) {
+    return ld.slice(0, 4) + ld[32] + ld.slice(33, 47) + ld.slice(4, 9) + ld.slice(10, 20) + ld.slice(21, 31);
+  }
+  function dvBloco(bloco, usaMod10) { return usaMod10 ? mod10(bloco) : dvConvenio11(bloco); }
+  function linhaDoCodigoConvenio(cb) {
+    const m10 = cb[2] === '6' || cb[2] === '7';
+    let ld = '';
+    for (let i = 0; i < 4; i++) { const b = cb.slice(i * 11, i * 11 + 11); ld += b + dvBloco(b, m10); }
+    return ld;
+  }
+  function codigoDaLinhaConvenio(ld) {
+    return ld.slice(0, 11) + ld.slice(12, 23) + ld.slice(24, 35) + ld.slice(36, 47);
+  }
+
+  function erro(msg) { return { ok: false, erro: msg }; }
+
+  // Aceita linha digitável (47 ou 48 números) ou código de barras (44 números), com ou sem pontos e espaços.
+  function ler(texto, hoje) {
+    const num = String(texto || '').replace(/\D/g, '');
+    if (!num) return erro('Digite ou cole os números do boleto.');
+    if (![44, 47, 48].includes(num.length)) {
+      return erro(`Foram encontrados ${num.length} números. A linha digitável tem 47 (boleto de banco) ou 48 (conta de consumo ou imposto).`);
+    }
+    const convenio = num[0] === '8';
+    if (num.length === 47 && convenio) return erro('Esses números não formam uma linha digitável válida. Confira se copiou tudo.');
+    if (num.length === 48 && !convenio) return erro('Esses números não formam uma linha digitável válida. Confira se copiou tudo.');
+
+    if (!convenio) {
+      let cb, ld;
+      if (num.length === 47) {
+        ld = num;
+        const blocos = [[0, 9, 9, '1º'], [10, 20, 20, '2º'], [21, 31, 31, '3º']];
+        for (const [ini, fim, pos, nome] of blocos) {
+          if (mod10(ld.slice(ini, fim)) !== Number(ld[pos])) return erro(`Tem um número errado no ${nome} bloco da linha digitável. Confira a digitação.`);
+        }
+        cb = codigoDaLinhaBancaria(ld);
+      } else {
+        cb = num;
+        ld = linhaDoCodigoBancario(cb);
+      }
+      if (dvBancario(cb.slice(0, 4) + cb.slice(5)) !== Number(cb[4])) {
+        return erro(num.length === 44 ? 'O código de barras não foi lido direito. Tente de novo.' : 'Tem um número errado na linha digitável. Confira a digitação.');
+      }
+      const codBanco = cb.slice(0, 3);
+      const valor = Number(cb.slice(9, 19)) / 100;
+      return {
+        ok: true, tipo: 'bancario', linha: ld, codigo: cb,
+        bancoCodigo: codBanco,
+        banco: BANCOS[codBanco] ? BANCOS[codBanco] : 'Banco ' + codBanco,
+        valor: valor > 0 ? valor : null,
+        vencimento: vencimentoDoFator(Number(cb.slice(5, 9)), hoje)
+      };
+    }
+
+    // Contas de consumo, impostos e convênios (começam com 8)
+    let cb, ld;
+    const ind = num[2];
+    if (!['6', '7', '8', '9'].includes(ind)) return erro('Esses números não formam uma linha digitável válida. Confira se copiou tudo.');
+    const m10 = ind === '6' || ind === '7';
+    if (num.length === 48) {
+      ld = num;
+      for (let i = 0; i < 4; i++) {
+        const b = ld.slice(i * 12, i * 12 + 11);
+        if (dvBloco(b, m10) !== Number(ld[i * 12 + 11])) return erro(`Tem um número errado no ${i + 1}º bloco da linha digitável. Confira a digitação.`);
+      }
+      cb = codigoDaLinhaConvenio(ld);
+    } else {
+      cb = num;
+      ld = linhaDoCodigoConvenio(cb);
+    }
+    const semDv = cb.slice(0, 3) + cb.slice(4);
+    const dvGeral = m10 ? mod10(semDv) : dvConvenio11(semDv);
+    if (dvGeral !== Number(cb[3])) {
+      return erro(num.length === 44 ? 'O código de barras não foi lido direito. Tente de novo.' : 'Tem um número errado na linha digitável. Confira a digitação.');
+    }
+    const valorReal = ind === '6' || ind === '8';
+    const valor = valorReal ? Number(cb.slice(4, 15)) / 100 : 0;
+    return {
+      ok: true, tipo: 'convenio', linha: ld, codigo: cb,
+      bancoCodigo: null,
+      banco: SEGMENTOS[cb[1]] || 'Conta de consumo ou imposto',
+      valor: valor > 0 ? valor : null,
+      vencimento: null
+    };
+  }
+
+  function formatar(ld) {
+    const n = String(ld || '').replace(/\D/g, '');
+    if (n.length === 47) {
+      return `${n.slice(0, 5)}.${n.slice(5, 10)} ${n.slice(10, 15)}.${n.slice(15, 21)} ${n.slice(21, 26)}.${n.slice(26, 32)} ${n[32]} ${n.slice(33)}`;
+    }
+    if (n.length === 48) {
+      return [0, 1, 2, 3].map(i => n.slice(i * 12, i * 12 + 11) + '-' + n[i * 12 + 11]).join(' ');
+    }
+    return n;
+  }
+
+  return { ler, formatar, linhaDoCodigoBancario, linhaDoCodigoConvenio, dvBancario, dvConvenio11, mod10 };
+})();
+
+/* ===================== Leitor de código de barras pela câmera ===================== */
+const ZXING_URL = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.23.0/umd/index.min.js';
+const ZXING_SRI = 'sha384-0ASr5PEWAMtTnWsn0PzKmioHVDA4+QqFiJr94io/0DCrGP6E1gRAmbO6O8y5WZW9';
+let zxingPromessa = null;
+function carregarZXing() {
+  if (window.ZXing) return Promise.resolve(window.ZXing);
+  if (zxingPromessa) return zxingPromessa;
+  zxingPromessa = new Promise((resolve, reject) => {
+    const sc = document.createElement('script');
+    sc.src = ZXING_URL; sc.integrity = ZXING_SRI; sc.crossOrigin = 'anonymous'; sc.async = true;
+    sc.onload = () => window.ZXing ? resolve(window.ZXing) : reject(new Error('Leitor não carregou'));
+    sc.onerror = () => { zxingPromessa = null; reject(new Error('Leitor não carregou')); };
+    document.head.appendChild(sc);
+  });
+  return zxingPromessa;
+}
+async function detectorNativo() {
+  try {
+    if (!('BarcodeDetector' in window)) return null;
+    const formatos = await window.BarcodeDetector.getSupportedFormats();
+    if (!formatos.includes('itf')) return null;
+    return new window.BarcodeDetector({ formats: ['itf'] });
+  } catch (e) { return null; }
+}
+
+/* Abre a câmera em tela cheia. Chama onLido(resultadoDoBoleto) quando ler um boleto válido. */
+async function abrirLeitorBoleto(onLido) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast('Este aparelho não permite usar a câmera aqui. Digite ou cole a linha digitável.');
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'leitor';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-label', 'Ler código de barras do boleto');
+  el.innerHTML = `
+    <div class="leitor-topo">
+      <p data-leitor-status>Abrindo a câmera…</p>
+      <small>Deixe o código de barras inteiro dentro da moldura. Funciona melhor com o celular deitado e boa luz.</small>
+    </div>
+    <div class="leitor-video"><video playsinline muted autoplay></video><div class="leitor-mira" aria-hidden="true"></div></div>
+    <div class="leitor-base">
+      <button type="button" class="btn" data-leitor-luz hidden>Ligar lanterna</button>
+      <button type="button" class="btn btn-ghost" data-leitor-fechar>Cancelar</button>
+    </div>`;
+  document.body.appendChild(el);
+  const video = el.querySelector('video');
+  const status = el.querySelector('[data-leitor-status]');
+  const btnLuz = el.querySelector('[data-leitor-luz]');
+  let stream = null, ativo = true, timer = null, luz = false, quadro = 0;
+
+  function fechar() {
+    ativo = false;
+    clearTimeout(timer);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    window.removeEventListener('keydown', onTecla, true);
+    el.remove();
+  }
+  function onTecla(e) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); fechar(); }
+  }
+  window.addEventListener('keydown', onTecla, true);
+  el.querySelector('[data-leitor-fechar]').addEventListener('click', fechar);
+  el.querySelector('[data-leitor-fechar]').focus();
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+    });
+  } catch (e) {
+    fechar();
+    toast(e && e.name === 'NotAllowedError'
+      ? 'A câmera foi bloqueada. Libere o acesso à câmera para este site nas configurações do navegador, ou cole a linha digitável.'
+      : 'Não foi possível abrir a câmera. Digite ou cole a linha digitável.');
+    return;
+  }
+  if (!ativo) { stream.getTracks().forEach(t => t.stop()); return; }
+  video.srcObject = stream;
+  try { await video.play(); } catch (e) { /* alguns aparelhos começam sozinhos */ }
+
+  const track = stream.getVideoTracks()[0];
+  try {
+    const cap = track.getCapabilities ? track.getCapabilities() : {};
+    if (cap.focusMode && cap.focusMode.includes('continuous')) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+    if (cap.torch) {
+      btnLuz.hidden = false;
+      btnLuz.addEventListener('click', () => {
+        luz = !luz;
+        track.applyConstraints({ advanced: [{ torch: luz }] }).catch(() => {});
+        btnLuz.textContent = luz ? 'Desligar lanterna' : 'Ligar lanterna';
+      });
+    }
+  } catch (e) { /* recursos opcionais */ }
+
+  let nativo = await detectorNativo();
+  let leitorZX = null, ZX = null;
+  if (!nativo) {
+    status.textContent = 'Preparando o leitor…';
+    try {
+      ZX = await carregarZXing();
+      const dicas = new Map();
+      dicas.set(ZX.DecodeHintType.POSSIBLE_FORMATS, [ZX.BarcodeFormat.ITF]);
+      dicas.set(ZX.DecodeHintType.TRY_HARDER, true);
+      dicas.set(ZX.DecodeHintType.ALLOWED_LENGTHS, [44]);
+      leitorZX = new ZX.MultiFormatReader();
+      leitorZX.setHints(dicas);
+    } catch (e) {
+      fechar();
+      toast('Não foi possível preparar o leitor. Verifique a internet ou cole a linha digitável.');
+      return;
+    }
+  }
+  if (!ativo) return;
+  status.textContent = 'Aponte para o código de barras do boleto';
+
+  const canvas = document.createElement('canvas');
+  const ctx2d = canvas.getContext('2d', { willReadFrequently: true });
+
+  function aceitar(texto) {
+    const num = String(texto || '').replace(/\D/g, '');
+    if (num.length !== 44) return false;
+    const r = Boleto.ler(num);
+    if (!r.ok) return false;
+    el.classList.add('lido');
+    status.textContent = 'Boleto lido!';
+    if (navigator.vibrate) navigator.vibrate(80);
+    setTimeout(() => { fechar(); onLido(r); }, 250);
+    return true;
+  }
+
+  // Recorta a faixa da moldura (e, em quadros alternados, a faixa em pé, para boleto na vertical)
+  function recortar(vertical) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return false;
+    if (!vertical) {
+      const h = Math.round(vh * 0.4), y = Math.round((vh - h) / 2);
+      const escala = Math.min(1, 1600 / vw);
+      canvas.width = Math.round(vw * escala); canvas.height = Math.round(h * escala);
+      ctx2d.setTransform(1, 0, 0, 1, 0, 0);
+      ctx2d.drawImage(video, 0, y, vw, h, 0, 0, canvas.width, canvas.height);
+    } else {
+      const w = Math.round(vw * 0.4), x = Math.round((vw - w) / 2);
+      const escala = Math.min(1, 1600 / vh);
+      canvas.width = Math.round(vh * escala); canvas.height = Math.round(w * escala);
+      ctx2d.setTransform(0, -1, 1, 0, 0, canvas.height);
+      ctx2d.drawImage(video, x, 0, w, vh, 0, 0, canvas.height, canvas.width);
+      ctx2d.setTransform(1, 0, 0, 1, 0, 0);
+    }
+    return true;
+  }
+
+  async function passo() {
+    if (!ativo) return;
+    try {
+      if (video.readyState >= 2) {
+        if (nativo) {
+          const achados = await nativo.detect(video);
+          for (const a of achados) if (aceitar(a.rawValue)) return;
+        } else {
+          quadro++;
+          if (recortar(quadro % 2 === 0)) {
+            try {
+              const fonte = new ZX.HTMLCanvasElementLuminanceSource(canvas);
+              const res = leitorZX.decode(new ZX.BinaryBitmap(new ZX.HybridBinarizer(fonte)));
+              if (aceitar(res.getText())) return;
+            } catch (e) { /* nada encontrado neste quadro */ }
+          }
+        }
+      }
+    } catch (e) { /* segue tentando */ }
+    if (ativo) timer = setTimeout(passo, nativo ? 150 : 60);
+  }
+  passo();
+}
+
+/* ===================== Copiar para a área de transferência ===================== */
+async function copiarTexto(texto, msg) {
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = texto; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    ta.remove();
+    if (!ok) { toast('Não foi possível copiar. Segure o dedo sobre os números para copiar.'); return; }
+  }
+  toast(msg || 'Copiado.');
+}
+function copiarLinhaDigitavel(ld) {
+  copiarTexto(String(ld || '').replace(/\D/g, ''), 'Linha digitável copiada. Cole no aplicativo do banco.');
+}
+
+/* ===================== Bloco "Boleto" das janelas de conta ===================== */
+function boletoBlocoHTML(prefixo, linhaAtual, ajuda) {
+  return `<div class="boleto-bloco" data-boleto="${prefixo}">
+    <label for="${prefixo}_boleto">Linha digitável do boleto</label>
+    <div class="boleto-entrada">
+      <input id="${prefixo}_boleto" inputmode="numeric" autocomplete="off" placeholder="Cole ou digite os números (opcional)" value="${esc(linhaAtual ? Boleto.formatar(linhaAtual) : '')}">
+      <button type="button" class="btn" data-boleto-camera><svg class="i"><use href="#i-barras"/></svg>Ler com a câmera</button>
+    </div>
+    ${ajuda ? `<p class="hint" style="margin-top:6px">${ajuda}</p>` : ''}
+    <div data-boleto-saida></div>
+  </div>`;
+}
+/* Liga o bloco. opcoes.aoLer(r) é chamado quando um boleto válido entra; opcoes.contaId evita acusar a própria conta como repetida.
+   Devolve { valor() } com a linha (só números), '' se vazio, ou null se o que foi digitado não é válido. */
+function ligarBlocoBoleto(root, prefixo, opcoes) {
+  const bloco = root.querySelector(`[data-boleto="${prefixo}"]`);
+  const input = bloco.querySelector('input');
+  const saida = bloco.querySelector('[data-boleto-saida]');
+  let atual = null; // resultado válido
+  let ultimaAplicada = '';
+
+  function repetida(ld) {
+    return contas.find(c => c.linhaDigitavel && c.linhaDigitavel === ld && c.id !== opcoes.contaId) || null;
+  }
+  function mostrar(r, msgErro) {
+    if (msgErro) { saida.innerHTML = `<p class="boleto-msg erro" role="alert">${esc(msgErro)}</p>`; return; }
+    if (!r) { saida.innerHTML = ''; return; }
+    const hoje = localISODate();
+    const avisos = [];
+    const dup = repetida(r.linha);
+    if (dup) avisos.push(`Este boleto já está lançado na conta “${esc(dup.nome)}”.`);
+    if (r.vencimento && r.vencimento < hoje) avisos.push(`Este boleto venceu em ${fmtDate(r.vencimento)}. Confira se ainda pode ser pago.`);
+    if (!r.valor) avisos.push('O valor não vem no código deste boleto. Preencha o valor à mão.');
+    if (!r.vencimento) avisos.push(r.tipo === 'convenio' ? 'Contas de consumo e impostos não trazem o vencimento no código. Preencha o vencimento à mão.' : 'Este boleto não traz vencimento no código. Preencha o vencimento à mão.');
+    saida.innerHTML = `
+      <div class="boleto-info">
+        <div><span class="field-label">${r.tipo === 'convenio' ? 'Tipo' : 'Banco'}</span><span class="field-value">${esc(r.banco)}</span></div>
+        <div><span class="field-label">Valor</span><span class="field-value">${r.valor ? fmtCur(r.valor) : 'Não informado'}</span></div>
+        <div><span class="field-label">Vencimento</span><span class="field-value">${r.vencimento ? fmtDate(r.vencimento) : 'Não informado'}</span></div>
+        <div class="boleto-linha"><span class="field-label">Linha digitável</span><span class="boleto-num">${esc(Boleto.formatar(r.linha))}</span></div>
+      </div>
+      ${avisos.map(a => `<p class="boleto-msg aviso">${a}</p>`).join('')}`;
+  }
+  function processar(aplicar) {
+    const txt = input.value.trim();
+    if (!txt) { atual = null; mostrar(null); return; }
+    const num = txt.replace(/\D/g, '');
+    if (num.length < 44) { atual = null; mostrar(null, aplicar ? Boleto.ler(txt).erro : null); return; }
+    const r = Boleto.ler(txt);
+    if (!r.ok) { atual = null; mostrar(null, r.erro); return; }
+    atual = r;
+    input.value = Boleto.formatar(r.linha);
+    mostrar(r);
+    if (r.linha !== ultimaAplicada) {
+      ultimaAplicada = r.linha;
+      if (opcoes.aoLer) opcoes.aoLer(r);
+    }
+  }
+  input.addEventListener('input', () => {
+    const n = input.value.replace(/\D/g, '').length;
+    if (n === 44 || n === 47 || n === 48) processar(false);
+    else if (!input.value.trim()) processar(false);
+    else { atual = null; saida.innerHTML = ''; }
+  });
+  input.addEventListener('blur', () => processar(true));
+  input.addEventListener('paste', () => setTimeout(() => processar(true), 0));
+  bloco.querySelector('[data-boleto-camera]').addEventListener('click', () => {
+    abrirLeitorBoleto((r) => { input.value = Boleto.formatar(r.linha); processar(true); });
+  });
+  if (input.value.trim()) {
+    const r = Boleto.ler(input.value);
+    if (r.ok) { atual = r; ultimaAplicada = r.linha; mostrar(r); }
+  }
+  return {
+    valor() {
+      const txt = input.value.trim();
+      if (!txt) return '';
+      const r = Boleto.ler(txt);
+      if (!r.ok) { mostrar(null, r.erro); return null; }
+      return r.linha;
+    },
+    repetida() { const v = this.valor(); return v ? repetida(v) : null; }
+  };
+}
+
 /* ===================== Constantes ===================== */
 const FORMAS_PAGAMENTO = ['PIX', 'Boleto', 'Dinheiro', 'Cartão de crédito', 'Cartão de débito', 'Transferência bancária', 'Cheque', 'Outro'];
 const MESES_PT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -2223,6 +2713,10 @@ function renderTable(todayStr) {
         <div class="stat"><span class="stat-label">Restante</span><span class="stat-value">${s.restante > 0 ? fmtCur(s.restante) : '—'}</span></div>
       </div>
       ${c.observacao ? `<p class="conta-obs">${esc(c.observacao)}</p>` : ''}
+      ${c.linhaDigitavel ? (() => { const b = Boleto.ler(c.linhaDigitavel); return `<div class="conta-boleto">
+        <span><span class="field-label">Boleto${b.ok ? (b.tipo === 'convenio' ? ' de ' + esc(b.banco.toLowerCase()) : ' do ' + esc(b.banco)) : ''}:</span> <span class="boleto-num">${esc(Boleto.formatar(c.linhaDigitavel))}</span></span>
+        <button type="button" class="link-btn" data-action="copiar-boleto" data-id="${esc(c.id)}">Copiar linha digitável</button>
+      </div>`; })() : ''}
       ${c.recorrenciaId ? `<p class="conta-autor">Gerada automaticamente pela conta recorrente</p>` : (c.criadoPor ? `<p class="conta-autor">Lançada por ${esc(nomeUsuario(c.criadoPor))}${c.createdAt ? ` em ${fmtDate(localISODate(new Date(c.createdAt)))}` : ''}</p>` : '')}
       ${expanded ? `<div class="conta-card-parcelas">${renderParcelasSub(c, todayStr)}</div>` : ''}
     </article>`;
@@ -2678,6 +3172,7 @@ function openNovaContaModal() {
   let formParcelas = [];
   const bodyHTML = `
     <form id="contaForm">
+      ${boletoBlocoHTML('f', '', 'Se a conta veio em boleto, leia o código de barras ou cole a linha digitável: valor, vencimento e banco são preenchidos sozinhos. O nome da conta (fornecedor) continua sendo escolhido por você.')}
       <div class="form-grid">
         <div class="field">
           <label for="f_categoria">Categoria</label>
@@ -2801,9 +3296,26 @@ function openNovaContaModal() {
     });
     renderEditor();
 
+    const boleto = ligarBlocoBoleto(root, 'f', {
+      aoLer(r) {
+        if (r.valor) valorTotalInput.value = r.valor.toFixed(2);
+        if (r.vencimento) primeiraVencInput.value = r.vencimento;
+        numParcelasInput.value = 1;
+        const forma = root.querySelector('#f_formaPagamento');
+        if (forma && [...forma.options].some(o => o.value === 'Boleto')) forma.value = 'Boleto';
+        regenerate();
+        const nome = root.querySelector('#f_nome');
+        if (nome && !nome.value.trim()) nome.focus();
+      }
+    });
+
     root.querySelector('#btnCancelarConta').addEventListener('click', closeModal);
     root.querySelector('#contaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const linhaDigitavel = boleto.valor();
+      if (linhaDigitavel === null) { toast('Confira a linha digitável do boleto ou apague o campo.'); return; }
+      const dupNova = boleto.repetida();
+      if (dupNova) { toast(`Este boleto já está lançado na conta “${dupNova.nome}”.`); return; }
       if (formParcelas.length === 0) { toast('Gere as parcelas antes de salvar.'); return; }
       const fd = new FormData(e.target);
       let categoriaFinal = (fd.get('categoria') || '').toString();
@@ -2822,6 +3334,7 @@ function openNovaContaModal() {
         valorTotal: Number(fd.get('valorTotal')) || 0,
         formaPagamento: (fd.get('formaPagamento') || '').toString(),
         observacao: (fd.get('observacao') || '').toString().trim(),
+        linhaDigitavel: linhaDigitavel,
         parcelas: formParcelas,
         createdAt: new Date().toISOString()
       };
@@ -2868,6 +3381,7 @@ function openEditContaModal(conta) {
           <textarea id="e_observacao" name="observacao" rows="2" placeholder="Observações adicionais (opcional)">${esc(conta.observacao || '')}</textarea>
         </div>
       </div>
+      <div style="margin-top:16px">${boletoBlocoHTML('e', conta.linhaDigitavel, 'Para tirar o boleto desta conta, apague o campo. Ler outro boleto aqui não muda o valor nem os vencimentos.')}</div>
       <div class="parcelas-block">
         <div class="parcelas-head"><h3>Vencimentos</h3></div>
         <p class="hint" style="margin-top:4px">Altere a data de vencimento das parcelas em aberto. Parcelas já pagas não mudam.</p>
@@ -2900,9 +3414,14 @@ function openEditContaModal(conta) {
       categoriaNovaInput.required = isNew;
       if (isNew) categoriaNovaInput.focus();
     });
+    const boletoEd = ligarBlocoBoleto(root, 'e', { contaId: conta.id });
     root.querySelector('#btnCancelarEdit').addEventListener('click', closeModal);
     root.querySelector('#editForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const linhaDigitavel = boletoEd.valor();
+      if (linhaDigitavel === null) { toast('Confira a linha digitável do boleto ou apague o campo.'); return; }
+      const dupEd = boletoEd.repetida();
+      if (dupEd) { toast(`Este boleto já está lançado na conta “${dupEd.nome}”.`); return; }
       const fd = new FormData(e.target);
       let categoriaFinal = (fd.get('categoria') || '').toString();
       if (categoriaFinal === '__new__') {
@@ -2927,6 +3446,7 @@ function openEditContaModal(conta) {
         formaPagamento: (fd.get('formaPagamento') || '').toString(),
         observacao: (fd.get('observacao') || '').toString().trim()
       };
+      if (linhaDigitavel !== (conta.linhaDigitavel || '')) patch.linhaDigitavel = linhaDigitavel;
       if (mudouVencimento) patch.parcelas = novasParcelas;
       updateConta(conta.id, patch, mudouVencimento ? 'Conta e vencimentos atualizados.' : 'Conta atualizada.');
     });
@@ -2940,6 +3460,11 @@ function openPagamentoModal(conta, idx) {
   const today = localISODate();
   const bodyHTML = `
     <p class="modal-context">${esc(conta.nome)} — parcela ${p.numero}/${conta.parcelas.length}</p>
+    ${conta.linhaDigitavel ? `<div class="pay-boleto">
+      <span class="field-label">Linha digitável do boleto</span>
+      <span class="boleto-num">${esc(Boleto.formatar(conta.linhaDigitavel))}</span>
+      <div class="boleto-acoes"><button type="button" class="btn btn-small" data-copiar-boleto><svg class="i"><use href="#i-copiar"/></svg>Copiar linha digitável</button></div>
+    </div>` : ''}
     <form id="payForm">
       <div class="form-grid">
         <div class="field">
@@ -2970,6 +3495,8 @@ function openPagamentoModal(conta, idx) {
     </form>
   `;
   openModal('Registrar pagamento', bodyHTML, (root) => {
+    const btnCopiarPay = root.querySelector('[data-copiar-boleto]');
+    if (btnCopiarPay) btnCopiarPay.addEventListener('click', () => copiarLinhaDigitavel(conta.linhaDigitavel));
     const valorContaInput = root.querySelector('#p_valorConta');
     const valorPagoInput = root.querySelector('#p_valor');
     let valorPagoTocado = false;
@@ -3078,6 +3605,7 @@ function onTableClick(e) {
     return;
   }
   if (!conta) return;
+  if (action === 'copiar-boleto') { copiarLinhaDigitavel(conta.linhaDigitavel); return; }
   if (action === 'edit') openEditContaModal(conta);
   else if (action === 'delete') {
     openConfirmModal({
@@ -3116,7 +3644,8 @@ const MAPAS = {
   contas: {
     tabela: 'livro_contas',
     campos: { categoria: 'categoria', nome: 'nome', numero: 'numero', dataEmissao: 'data_emissao', valorTotal: 'valor_total',
-      formaPagamento: 'forma_pagamento', observacao: 'observacao', parcelas: 'parcelas', recorrenciaId: 'recorrencia_id', recorrenciaMes: 'recorrencia_mes' },
+      formaPagamento: 'forma_pagamento', observacao: 'observacao', parcelas: 'parcelas', recorrenciaId: 'recorrencia_id', recorrenciaMes: 'recorrencia_mes',
+      linhaDigitavel: 'linha_digitavel' },
     numeros: ['valorTotal']
   },
   categorias: { tabela: 'livro_categorias', campos: { nome: 'nome' }, numeros: [] },
@@ -3129,7 +3658,7 @@ const MAPAS = {
 };
 function paraBanco(nome, obj) {
   const m = MAPAS[nome].campos, r = {};
-  Object.keys(obj).forEach(k => { if (m[k] && obj[k] !== undefined) r[m[k]] = obj[k] === '' && k === 'dataEmissao' ? null : obj[k]; });
+  Object.keys(obj).forEach(k => { if (m[k] && obj[k] !== undefined) r[m[k]] = obj[k] === '' && (k === 'dataEmissao' || k === 'linhaDigitavel') ? null : obj[k]; });
   return r;
 }
 function doBanco(nome, row) {
@@ -3141,6 +3670,7 @@ function doBanco(nome, row) {
     o.dataEmissao = o.dataEmissao || '';
     o.formaPagamento = o.formaPagamento || '';
     o.observacao = o.observacao || '';
+    o.linhaDigitavel = o.linhaDigitavel || '';
     o.parcelas = Array.isArray(o.parcelas) ? o.parcelas : [];
   }
   o.createdAt = row.criado_em;
