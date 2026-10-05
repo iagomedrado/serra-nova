@@ -2,6 +2,7 @@
 
 Sistema interno da empresa, feito em uma única página: `index.html`, com HTML, CSS e JavaScript no mesmo arquivo.
 Publicado pelo GitHub Pages em https://iagomedrado.github.io/serra-nova/ a partir da branch `main` do repositório `iagomedrado/serra-nova`.
+Junto do `index.html` ficam os arquivos do "app" para celular: `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` e `favicon.png` (feitos com o logotipo, fundo vinho). Não há service worker, de propósito, para o celular sempre abrir a versão mais nova.
 Responsável: Iago (gerente). Escreva sempre em português do Brasil, com linguagem simples e sem termos técnicos desnecessários.
 
 ## Como o sistema funciona
