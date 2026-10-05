@@ -659,6 +659,41 @@
   .vd-parc-soma { margin: 0; font-weight: 600; color: var(--ok); }
   .vd-parc-soma.erro { color: var(--danger); }
 
+  /* ---------- Resfriadores ---------- */
+  .rf-ferramentas { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 20px 0 12px; }
+  .rf-busca { flex: 1 1 260px; max-width: 420px; }
+  .rf-grid { align-items: start; }
+  @media (min-width: 1100px) { .rf-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+  .rf-lista { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .rf-card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; padding: 12px 14px; text-align: left; cursor: pointer;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--bar); border-radius: 8px; font-size: .88rem; }
+  .rf-card:hover { border-color: var(--muted); border-left-color: var(--bar); }
+  .rf-card.patio { border-left-color: var(--warn); background: var(--warn-soft); }
+  .rf-card.fora { opacity: .7; border-left-color: var(--line); }
+  .rf-num { font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: 1.35rem; line-height: 1.1; }
+  .rf-onde { font-weight: 700; font-size: .98rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rf-info { color: var(--muted); }
+  .rf-fora { color: var(--danger); font-weight: 600; }
+  .rf-mlin { display: flex; gap: 12px; align-items: flex-start; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  #rfUltimas .rf-mlin { cursor: pointer; }
+  .rf-mlin:last-child { border-bottom: 0; }
+  .rf-mlin > div { flex: 1; min-width: 0; }
+  .rf-mlin b, .rf-mlin span, .rf-mlin small { display: block; }
+  .rf-mlin small { color: var(--muted); font-size: .82rem; }
+  .rf-custo { font-weight: 700; white-space: nowrap; }
+  .rf-macoes { margin: 6px 0 0 !important; }
+  .rf-total { margin: 8px 0 0; font-weight: 700; text-align: right; }
+  .rf-hist { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .rf-hist b, .rf-hist span { display: block; }
+  .rf-hist span { color: var(--muted); font-size: .88rem; }
+  .rf-botoes { margin: 0 0 6px; }
+  .rf-fotos { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); margin: 6px 0; }
+  .rf-foto { aspect-ratio: 1; padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); cursor: pointer; color: var(--muted); }
+  .rf-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rf-grande { margin: 0; }
+  .rf-grande img { display: block; max-width: 100%; max-height: 65vh; margin: 0 auto; border-radius: 8px; }
+  .rf-grande figcaption { margin-top: 8px; color: var(--muted); font-size: .9rem; text-align: center; }
+
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
   @media print {
@@ -766,7 +801,6 @@
           <h2>Precisa de atenção</h2>
           <ul class="attention">
             <li id="attLivro" hidden></li>
-            <li data-modulo="resfriadores"><span class="dot"></span><span><strong>Tanque 2 a 5,1 °C</strong><span class="muted">Acima da faixa de 4 °C desde 07:40.</span></span><a href="#resfriadores">Ver</a></li>
             <li id="attEstoque" hidden></li>
             <li id="attQueijos" hidden></li>
             <li id="attVendas" hidden></li>
@@ -782,7 +816,7 @@
             <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de queijos</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Leituras de hoje</span></span><span class="fig">1 alerta<small>3 equipamentos</small></span></a></li>
+            <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Nos produtores e no pátio</span></span><span class="fig" id="homeResfFig">…<small>&nbsp;</small></span></a></li>
           </ul>
         </div>
       </div>
@@ -1062,39 +1096,27 @@
     </section>
 
     <!-- ================= RESFRIADORES ================= -->
-    <section data-tab="resfriadores" aria-labelledby="t-resfriadores">
+    <section data-tab="resfriadores" aria-labelledby="t-resfriadores" id="resfriadoresRoot">
       <div class="page-head">
-        <div><h1 id="t-resfriadores">Resfriadores</h1><p>Temperatura e volume dos tanques e da câmara fria, com as leituras do dia.</p></div>
-        <div class="actions"><button class="btn primary" type="button"><svg class="i"><use href="#i-mais"/></svg>Registrar leitura</button></div>
+        <div><h1 id="t-resfriadores">Resfriadores</h1><p>Onde está cada resfriador de leite, por onde já passou, manutenções e fotos.</p></div>
+        <div class="actions"><button type="button" class="btn" id="rfProdutores">Produtores</button><button type="button" class="btn btn-primary" id="rfNovo" hidden>Novo resfriador</button></div>
       </div>
-      <div class="coolers">
-        <article class="cooler">
-          <h3>Tanque de expansão 1</h3><span class="tag ok">Na faixa</span>
-          <p class="temp">3,6<small> °C</small></p>
-          <dl><dt>Faixa</dt><dd>até 4,0 °C</dd><dt>Volume</dt><dd>4.200 L</dd><dt>Última leitura</dt><dd>07:40, por Marcos</dd></dl>
-        </article>
-        <article class="cooler warn">
-          <h3>Tanque de expansão 2</h3><span class="tag warn">Acima da faixa</span>
-          <p class="temp">5,1<small> °C</small></p>
-          <dl><dt>Faixa</dt><dd>até 4,0 °C</dd><dt>Volume</dt><dd>2.850 L</dd><dt>Última leitura</dt><dd>07:40, por Marcos</dd></dl>
-        </article>
-        <article class="cooler">
-          <h3>Câmara fria de queijos</h3><span class="tag ok">Na faixa</span>
-          <p class="temp">5,8<small> °C</small></p>
-          <dl><dt>Faixa</dt><dd>2,0 a 8,0 °C</dd><dt>Ocupação</dt><dd>1.386 kg</dd><dt>Última leitura</dt><dd>08:05, por Ana</dd></dl>
-        </article>
+      <p class="test-note" id="rfNota" hidden></p>
+      <div class="ledger pr-resumo" id="rfResumo"></div>
+
+      <div class="rf-ferramentas">
+        <label class="rf-busca">Buscar<input type="search" id="rfBusca" placeholder="Número ou nome do produtor" autocomplete="off"></label>
+        <div class="segmented" id="rfFiltro" role="group" aria-label="Mostrar">
+          <button type="button" class="seg-btn is-active" data-filtro="todos">Todos</button>
+          <button type="button" class="seg-btn" data-filtro="produtor">Nos produtores</button>
+          <button type="button" class="seg-btn" data-filtro="patio">No pátio</button>
+          <button type="button" class="seg-btn" data-filtro="fora">Fora de uso</button>
+        </div>
       </div>
-      <div class="panel table-wrap">
-        <h2>Leituras de hoje</h2>
-        <table>
-          <thead><tr><th>Hora</th><th>Equipamento</th><th class="num">Temperatura</th><th class="num">Volume</th><th>Responsável</th><th>Situação</th></tr></thead>
-          <tbody>
-            <tr><td>08:05</td><td>Câmara fria de queijos</td><td class="num">5,8 °C</td><td class="num">–</td><td>Ana</td><td><span class="tag ok">Na faixa</span></td></tr>
-            <tr><td>07:40</td><td>Tanque de expansão 2</td><td class="num">5,1 °C</td><td class="num">2.850 L</td><td>Marcos</td><td><span class="tag warn">Acima da faixa</span></td></tr>
-            <tr><td>07:40</td><td>Tanque de expansão 1</td><td class="num">3,6 °C</td><td class="num">4.200 L</td><td>Marcos</td><td><span class="tag ok">Na faixa</span></td></tr>
-            <tr><td>05:30</td><td>Tanque de expansão 2</td><td class="num">3,9 °C</td><td class="num">1.100 L</td><td>Marcos</td><td><span class="tag ok">Na faixa</span></td></tr>
-          </tbody>
-        </table>
+
+      <div class="qj-grid2 rf-grid">
+        <section class="panel" aria-label="Lista de resfriadores"><div class="rf-lista" id="rfLista"><p class="empty-state-msg">Carregando…</p></div></section>
+        <section class="panel" aria-labelledby="h-rf-ult"><h2 id="h-rf-ult">Últimas manutenções</h2><div id="rfUltimas"></div></section>
       </div>
     </section>
 
@@ -1203,7 +1225,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos" || id === "vendas");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos" || id === "vendas" || id === "resfriadores");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -1247,6 +1269,10 @@
       att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao">Ver</a>';
     }
     att.hidden = false;
+  });
+  document.addEventListener("resfriadores:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    $("homeResfFig").innerHTML = n1(r.total, 0) + "<small>" + n1(r.produtores, 0) + " nos produtores · " + n1(r.patio, 0) + " no pátio</small>";
   });
   document.addEventListener("vendas:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
@@ -1396,6 +1422,7 @@
     show();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("producao", "ver") && window.SN_Producao) window.SN_Producao.iniciar({ sb: SN.sb, podeEditar: SN.pode("producao", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("resfriadores", "ver") && window.SN_Resfriadores) window.SN_Resfriadores.iniciar({ sb: SN.sb, podeEditar: SN.pode("resfriadores", "editar") });
     if (SN.pode("vendas", "ver") && window.SN_Vendas) window.SN_Vendas.iniciar({ sb: SN.sb, podeEditar: SN.pode("vendas", "editar") });
     if (SN.pode("queijos", "ver") && window.SN_Queijos) window.SN_Queijos.iniciar({ sb: SN.sb, podeEditar: SN.pode("queijos", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
@@ -5156,6 +5183,477 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   let iniciado = false;
   window.SN_Vendas = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+})();
+</script>
+<script>
+/* =====================================================
+   RESFRIADORES: onde está cada resfriador de leite, histórico de lugares,
+   manutenções e fotos (fotos no Storage, pasta privada "resfriadores").
+   ===================================================== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const BUCKET = 'resfriadores';
+  let sb = null, podeEditar = false, carregado = false, filtro = 'todos';
+  let resfs = [], produtores = [], manuts = [], fotos = [], locais = [];
+  const nomes = {}, urls = {};
+
+  /* ---------- Utilidades ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const hojeISO = () => iso(new Date());
+  function fmtData(s) { if (!s) return ''; const [a, m, d] = String(s).slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
+  const fmtNum = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+  function erroMsg(error) {
+    if (error && error.code === 'P0001' && error.message) return error.message;
+    if (error && error.code === '23505') return 'Já existe um cadastro com esse nome ou número.';
+    return 'Não foi possível concluir. Verifique a conexão e tente de novo.';
+  }
+  const produtor = (id) => produtores.find((p) => p.id === id);
+  const resf = (id) => resfs.find((r) => r.id === id);
+  const ordemNum = (a, b) => a.numero.localeCompare(b.numero, 'pt-BR', { numeric: true });
+  const ondeTexto = (r) => (r.local === 'patio' ? 'Reserva no pátio' : (produtor(r.produtor_id)?.nome || 'Produtor'));
+  const manutsDe = (id) => manuts.filter((m) => m.resfriador_id === id).sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em)));
+  const fotosDe = (id, manId) => fotos.filter((f) => f.resfriador_id === id && (manId === undefined || f.manutencao_id === manId)).sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em)));
+
+  /* ---------- Dados ---------- */
+  async function carregar() {
+    const [r, p, m, f, l] = await Promise.all([
+      sb.from('resfriadores').select('*'),
+      sb.from('resfriadores_produtores').select('*').order('nome'),
+      sb.from('resfriadores_manutencoes').select('*'),
+      sb.from('resfriadores_fotos').select('*'),
+      sb.from('resfriadores_locais').select('*')
+    ]);
+    for (const x of [r, p, m, f, l]) if (x.error) throw x.error;
+    resfs = (r.data || []).sort(ordemNum); produtores = p.data || []; manuts = m.data || []; fotos = f.data || []; locais = l.data || [];
+    carregado = true;
+    render();
+  }
+  let timer = null;
+  function atualizar() {
+    clearTimeout(timer);
+    timer = setTimeout(() => carregar().catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); }), 250);
+  }
+  async function urlsDe(lista) {
+    const faltam = lista.filter((f) => !urls[f.caminho] || urls[f.caminho].ate < Date.now()).map((f) => f.caminho);
+    if (faltam.length) {
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrls(faltam, 3600);
+      if (error) { console.error(error); return; }
+      (data || []).forEach((x) => { if (x.signedUrl) urls[x.path] = { url: x.signedUrl, ate: Date.now() + 3300000 }; });
+    }
+  }
+  const urlDe = (f) => (urls[f.caminho] ? urls[f.caminho].url : '');
+
+  /* ---------- Tela ---------- */
+  function render() {
+    if (!carregado) return;
+    const ativos = resfs.filter((r) => r.ativo);
+    const noProd = ativos.filter((r) => r.local === 'produtor').length, noPatio = ativos.filter((r) => r.local === 'patio').length;
+    const ano = hojeISO().slice(0, 4), doAno = manuts.filter((m) => m.data.startsWith(ano));
+    $('rfResumo').innerHTML = `
+      <div><span>Resfriadores</span><strong>${ativos.length}</strong><small>${resfs.length - ativos.length ? (resfs.length - ativos.length) + ' fora de uso' : 'em uso'}</small></div>
+      <div><span>Nos produtores</span><strong>${noProd}</strong><small>${new Set(ativos.filter((r) => r.local === 'produtor').map((r) => r.produtor_id)).size} produtores</small></div>
+      <div><span>Reserva no pátio</span><strong>${noPatio}</strong><small>prontos para sair</small></div>
+      <div><span>Manutenções em ${ano}</span><strong>${doAno.length}</strong><small>${brl.format(doAno.reduce((a, m) => a + Number(m.custo || 0), 0))}</small></div>`;
+
+    const busca = $('rfBusca').value.trim().toLowerCase();
+    let lista = resfs.filter((r) => (filtro === 'fora' ? !r.ativo : r.ativo && (filtro === 'todos' || r.local === filtro)));
+    if (busca) lista = lista.filter((r) => r.numero.toLowerCase().includes(busca) || ondeTexto(r).toLowerCase().includes(busca));
+    $('rfLista').innerHTML = lista.length ? lista.map((r) => {
+      const ult = manutsDe(r.id)[0], nf = fotosDe(r.id).length;
+      return `<button type="button" class="rf-card${r.local === 'patio' ? ' patio' : ''}${r.ativo ? '' : ' fora'}" data-id="${r.id}">
+        <span class="rf-num">${esc(r.numero)}</span>
+        <span class="rf-onde">${esc(ondeTexto(r))}</span>
+        <span class="rf-info">Desde ${fmtData(r.local_desde)}${r.capacidade_litros ? ', ' + fmtNum(r.capacidade_litros) + ' L' : ''}</span>
+        <span class="rf-info">${ult ? 'Última manutenção: ' + fmtData(ult.data) : 'Sem manutenção registrada'}${nf ? ' · ' + (nf === 1 ? '1 foto' : nf + ' fotos') : ''}</span>
+        ${r.ativo ? '' : '<span class="rf-info rf-fora">Fora de uso</span>'}
+      </button>`;
+    }).join('') : `<p class="empty-state-msg">${resfs.length ? 'Nenhum resfriador encontrado.' : 'Nenhum resfriador cadastrado ainda.' + (podeEditar ? ' Use o botão "Novo resfriador".' : '')}</p>`;
+
+    const ultimas = manuts.slice().sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em))).slice(0, 10);
+    $('rfUltimas').innerHTML = ultimas.length ? ultimas.map((m) => `
+      <div class="rf-mlin" data-id="${m.resfriador_id}"><div><b>Resfriador ${esc(resf(m.resfriador_id)?.numero || '?')}</b><span>${esc(m.descricao)}</span>
+        <small>${fmtData(m.data)}${m.responsavel ? ', ' + esc(m.responsavel) : ''}</small></div>
+        <span class="rf-custo">${m.custo != null ? brl.format(m.custo) : ''}</span></div>`).join('') : '<p class="empty-state-msg">Nenhuma manutenção registrada.</p>';
+
+    document.dispatchEvent(new CustomEvent('resfriadores:resumo', { detail: { carregado: true, total: ativos.length, produtores: noProd, patio: noPatio } }));
+  }
+
+  /* ---------- Campo de produtor (escolher ou novo) ---------- */
+  function produtorHTML(atual) {
+    const ativos = produtores.filter((p) => p.ativo || p.id === atual).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    return `<label data-bloco-prod>Produtor<select name="produtor"><option value="">Escolha o produtor</option>
+        ${ativos.map((p) => `<option value="${p.id}" ${p.id === atual ? 'selected' : ''}>${esc(p.nome)}</option>`).join('')}
+        <option value="__novo">+ Produtor novo</option></select></label>
+      <label data-bloco-novo hidden>Nome do produtor novo<input type="text" name="novo" maxlength="120" autocomplete="off"></label>`;
+  }
+  const localHTML = (marcado) => `<fieldset class="qj-destino"><legend>Onde está</legend><div class="qj-opcoes">
+      <label><input type="radio" name="local" value="produtor" ${marcado === 'produtor' ? 'checked' : ''}> No produtor</label>
+      <label><input type="radio" name="local" value="patio" ${marcado === 'patio' ? 'checked' : ''}> Reserva no pátio</label></div></fieldset>`;
+  function ligarLocal(form) {
+    const sel = form.querySelector('[name="produtor"]');
+    const trocar = () => {
+      const noProd = form.querySelector('[name="local"]:checked').value === 'produtor';
+      form.querySelector('[data-bloco-prod]').hidden = !noProd;
+      form.querySelector('[data-bloco-novo]').hidden = !(noProd && sel.value === '__novo');
+    };
+    if (!produtores.some((p) => p.ativo)) sel.value = '__novo';
+    form.querySelectorAll('[name="local"]').forEach((r) => r.addEventListener('change', trocar));
+    sel.addEventListener('change', () => { trocar(); if (sel.value === '__novo') form.querySelector('[name="novo"]').focus(); });
+    trocar();
+  }
+  function lerLocal(form) {
+    const local = form.querySelector('[name="local"]:checked').value;
+    if (local === 'patio') return { local, produtor: null, novo: null };
+    const v = form.querySelector('[name="produtor"]').value, novo = form.querySelector('[name="novo"]').value.trim();
+    if (!v) { toast('Escolha o produtor.'); return null; }
+    if (v === '__novo' && !novo) { toast('Informe o nome do produtor novo.'); return null; }
+    return { local, produtor: v === '__novo' ? null : v, novo: v === '__novo' ? novo : null };
+  }
+  const botoesForm = (rotulo) => `<div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">${rotulo}</button></div>`;
+
+  /* ---------- Novo resfriador ---------- */
+  function novo() {
+    SN.ui.openModal('Novo resfriador', `
+      <form class="form" id="rfForm">
+        <div class="two">
+          <label>Número do resfriador<input type="text" name="numero" maxlength="30" autocomplete="off" required></label>
+          <label>Capacidade (litros)<input type="number" name="cap" min="1" step="1" inputmode="numeric" placeholder="Opcional"></label>
+        </div>
+        ${localHTML('produtor')}
+        ${produtorHTML(null)}
+        <label>Está nesse lugar desde<input type="date" name="desde" value="${hojeISO()}" required></label>
+        <label>Observação<input type="text" name="obs" maxlength="200" placeholder="Ex.: marca, modelo, detalhe importante" autocomplete="off"></label>
+        ${botoesForm('Cadastrar')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      ligarLocal(form);
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const numero = form.querySelector('[name="numero"]').value.trim();
+        if (!numero) { toast('Informe o número do resfriador.'); return; }
+        const l = lerLocal(form); if (!l) return;
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const { data, error } = await sb.rpc('resfriadores_criar', { p_numero: numero, p_capacidade: lerNum(form.querySelector('[name="cap"]').value),
+          p_observacao: form.querySelector('[name="obs"]').value.trim(), p_local: l.local, p_produtor: l.produtor, p_produtor_novo: l.novo,
+          p_desde: form.querySelector('[name="desde"]').value || hojeISO() });
+        b.disabled = false;
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        toast('Resfriador cadastrado.'); await carregar().catch(console.error); abrir(data);
+      });
+    });
+  }
+
+  /* ---------- Detalhe ---------- */
+  async function abrir(id) {
+    const r = resf(id); if (!r) { SN.ui.closeModal(); return; }
+    const ms = manutsDe(id), fs = fotosDe(id);
+    const hist = locais.filter((l) => l.resfriador_id === id).sort((a, b) => b.desde.localeCompare(a.desde) || String(b.criado_em).localeCompare(String(a.criado_em)));
+    await urlsDe(fs);
+    const miniaturas = (lista) => `<div class="rf-fotos">${lista.map((f) => `<button type="button" class="rf-foto" data-foto="${f.id}" aria-label="Abrir foto${f.legenda ? ': ' + esc(f.legenda) : ''}">
+      ${urlDe(f) ? `<img src="${esc(urlDe(f))}" alt="${esc(f.legenda || 'Foto do resfriador')}" loading="lazy">` : '<span>Foto</span>'}</button>`).join('')}</div>`;
+    SN.ui.openModal('Resfriador ' + r.numero, `
+      <div data-detalhe>
+        <p class="modal-context"><b>${esc(ondeTexto(r))}</b> desde ${fmtData(r.local_desde)}${r.capacidade_litros ? '. Capacidade: ' + fmtNum(r.capacidade_litros) + ' litros' : ''}.${r.observacao ? ' ' + esc(r.observacao) : ''}${r.ativo ? '' : ' <b>Fora de uso.</b>'}</p>
+        ${podeEditar ? `<div class="qj-botoes rf-botoes">
+          <button type="button" class="btn btn-primary btn-small" data-acao="mudar">Mudar de lugar</button>
+          <button type="button" class="btn btn-small" data-acao="manut">Registrar manutenção</button>
+          <button type="button" class="btn btn-small" data-acao="fotos">Adicionar fotos</button>
+          <button type="button" class="btn btn-small" data-acao="editar">Editar dados</button></div>` : ''}
+        <h3 class="qj-sub">Fotos</h3>
+        ${fs.length ? miniaturas(fs) : '<p class="empty-state-msg">Nenhuma foto.</p>'}
+        <h3 class="qj-sub">Manutenções</h3>
+        ${ms.length ? ms.map((m) => `<div class="rf-mlin" data-manut="${m.id}"><div><b>${fmtData(m.data)}</b><span>${esc(m.descricao)}</span>
+          <small>${m.responsavel ? 'Feito por ' + esc(m.responsavel) : ''}${m.criado_por ? (m.responsavel ? ', r' : 'R') + 'egistrado por ' + esc(nomes[m.criado_por] || 'usuário removido') : ''}</small>
+          ${fotosDe(id, m.id).length ? miniaturas(fotosDe(id, m.id)) : ''}
+          ${podeEditar ? '<span class="vd-acoes rf-macoes"><button type="button" class="link-btn" data-acao="editar-manut">Editar</button><button type="button" class="link-btn" data-acao="excluir-manut">Excluir</button></span>' : ''}</div>
+          <span class="rf-custo">${m.custo != null ? brl.format(m.custo) : ''}</span></div>`).join('') : '<p class="empty-state-msg">Nenhuma manutenção registrada.</p>'}
+        ${ms.length ? `<p class="rf-total">Total gasto: ${brl.format(ms.reduce((a, m) => a + Number(m.custo || 0), 0))}</p>` : ''}
+        <h3 class="qj-sub">Por onde passou</h3>
+        ${hist.map((l) => `<div class="rf-hist"><b>${l.local === 'patio' ? 'Reserva no pátio' : esc(l.produtor_nome || 'Produtor')}</b>
+          <span>${fmtData(l.desde)} ${l.ate ? 'até ' + fmtData(l.ate) : 'até hoje'}${l.observacao ? '. ' + esc(l.observacao) : ''}</span></div>`).join('') || '<p class="empty-state-msg">Sem histórico.</p>'}
+      </div>
+      <div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      root.querySelector('[data-detalhe]').addEventListener('click', (e) => {
+        const ft = e.target.closest('[data-foto]'); if (ft) { verFoto(ft.dataset.foto); return; }
+        const b = e.target.closest('[data-acao]'); if (!b) return;
+        const a = b.dataset.acao;
+        if (a === 'mudar') mudar(id);
+        if (a === 'manut') manutencao(id, null);
+        if (a === 'fotos') adicionarFotos(id, null);
+        if (a === 'editar') editar(id);
+        if (a === 'editar-manut') manutencao(id, b.closest('[data-manut]').dataset.manut);
+        if (a === 'excluir-manut') excluirManut(id, b.closest('[data-manut]').dataset.manut);
+      });
+    });
+  }
+
+  /* ---------- Mudar de lugar ---------- */
+  function mudar(id) {
+    const r = resf(id);
+    SN.ui.openModal('Mudar de lugar', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}: hoje em <b>${esc(ondeTexto(r))}</b>, desde ${fmtData(r.local_desde)}.</p>
+      <form class="form" id="rfForm">
+        ${localHTML(r.local === 'patio' ? 'produtor' : 'patio').replace('Onde está', 'Para onde vai')}
+        ${produtorHTML(null)}
+        <label>Data da mudança<input type="date" name="data" value="${hojeISO()}" min="${r.local_desde}" required></label>
+        <label>Observação<input type="text" name="obs" maxlength="200" placeholder="Ex.: motivo da troca" autocomplete="off"></label>
+        ${botoesForm('Mudar de lugar')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      ligarLocal(form);
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrir(id));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const l = lerLocal(form); if (!l) return;
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const { error } = await sb.rpc('resfriadores_mudar', { p_resfriador: id, p_local: l.local, p_produtor: l.produtor, p_produtor_novo: l.novo,
+          p_data: form.querySelector('[name="data"]').value || hojeISO(), p_observacao: form.querySelector('[name="obs"]').value.trim() });
+        b.disabled = false;
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        toast('Lugar atualizado.'); await carregar().catch(console.error); abrir(id);
+      });
+    });
+  }
+
+  /* ---------- Editar dados ---------- */
+  function editar(id) {
+    const r = resf(id);
+    SN.ui.openModal('Editar resfriador', `
+      <form class="form" id="rfForm">
+        <div class="two">
+          <label>Número do resfriador<input type="text" name="numero" maxlength="30" value="${esc(r.numero)}" required></label>
+          <label>Capacidade (litros)<input type="number" name="cap" min="1" step="1" inputmode="numeric" value="${r.capacidade_litros ?? ''}" placeholder="Opcional"></label>
+        </div>
+        <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(r.observacao)}" autocomplete="off"></label>
+        <label class="check"><input type="checkbox" name="fora" ${r.ativo ? '' : 'checked'}> Fora de uso (vendido, sucata ou desativado)</label>
+        ${botoesForm('Salvar')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrir(id));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const numero = form.querySelector('[name="numero"]').value.trim();
+        if (!numero) { toast('Informe o número do resfriador.'); return; }
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const { error } = await sb.from('resfriadores').update({ numero, capacidade_litros: lerNum(form.querySelector('[name="cap"]').value),
+          observacao: form.querySelector('[name="obs"]').value.trim(), ativo: !form.querySelector('[name="fora"]').checked }).eq('id', id);
+        b.disabled = false;
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        toast('Dados salvos.'); await carregar().catch(console.error); abrir(id);
+      });
+    });
+  }
+
+  /* ---------- Manutenções ---------- */
+  function manutencao(id, manId) {
+    const r = resf(id), m = manId ? manuts.find((x) => x.id === manId) : null;
+    const quem = [...new Set(manuts.map((x) => x.responsavel).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    SN.ui.openModal(m ? 'Editar manutenção' : 'Registrar manutenção', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}, em ${esc(ondeTexto(r))}.</p>
+      <form class="form" id="rfForm">
+        <div class="two">
+          <label>Data<input type="date" name="data" value="${m ? m.data : hojeISO()}" required></label>
+          <label>Custo (R$)<input type="number" name="custo" min="0" step="0.01" inputmode="decimal" value="${m && m.custo != null ? Number(m.custo) : ''}" placeholder="Opcional"></label>
+        </div>
+        <label>O que foi feito<textarea name="desc" rows="3" maxlength="1000" required placeholder="Ex.: troca do compressor, limpeza do condensador">${m ? esc(m.descricao) : ''}</textarea></label>
+        <label>Quem fez o serviço<input type="text" name="resp" maxlength="120" list="rfQuem" value="${m ? esc(m.responsavel) : ''}" placeholder="Técnico ou empresa (opcional)" autocomplete="off"></label>
+        <datalist id="rfQuem">${quem.map((q) => `<option value="${esc(q)}">`).join('')}</datalist>
+        ${m ? '' : `<label>Fotos do serviço<input type="file" name="fotos" accept="image/*" multiple></label><p class="muted-note">Opcional. As fotos são reduzidas antes de enviar.</p>`}
+        <p class="qj-previsao" data-prog></p>
+        ${botoesForm(m ? 'Salvar' : 'Registrar')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrir(id));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const desc = form.querySelector('[name="desc"]').value.trim();
+        if (!desc) { toast('Descreva o que foi feito.'); return; }
+        const reg = { data: form.querySelector('[name="data"]').value || hojeISO(), descricao: desc,
+          responsavel: form.querySelector('[name="resp"]').value.trim(), custo: lerNum(form.querySelector('[name="custo"]').value) };
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        let novoId = manId, error;
+        if (m) ({ error } = await sb.from('resfriadores_manutencoes').update(reg).eq('id', manId));
+        else {
+          const res = await sb.from('resfriadores_manutencoes').insert({ resfriador_id: id, ...reg }).select('id').single();
+          error = res.error; novoId = res.data && res.data.id;
+        }
+        if (error) { b.disabled = false; console.error(error); toast(erroMsg(error)); return; }
+        const arquivos = m ? [] : [...form.querySelector('[name="fotos"]').files];
+        if (arquivos.length) await enviarFotos(id, novoId, arquivos, '', reg.data, form.querySelector('[data-prog]'));
+        toast(m ? 'Manutenção atualizada.' : 'Manutenção registrada.'); await carregar().catch(console.error); abrir(id);
+      });
+    });
+  }
+  function excluirManut(id, manId) {
+    const m = manuts.find((x) => x.id === manId); if (!m) return;
+    SN.ui.confirmar({ titulo: 'Excluir manutenção', mensagem: `Excluir a manutenção de ${fmtData(m.data)} (${m.descricao})? As fotos dela continuam no resfriador.`, botao: 'Excluir', perigo: true,
+      acao: async () => {
+        const { error } = await sb.from('resfriadores_manutencoes').delete().eq('id', manId);
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        toast('Manutenção excluída.'); await carregar().catch(console.error); abrir(id);
+      } });
+  }
+
+  /* ---------- Fotos ---------- */
+  function reduzir(arquivo) {
+    return new Promise((ok, falha) => {
+      const img = new Image(), u = URL.createObjectURL(arquivo);
+      img.onload = () => {
+        const max = 1600, esc2 = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * esc2); c.height = Math.round(img.height * esc2);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(u);
+        c.toBlob((b) => (b ? ok(b) : falha(new Error('Não foi possível ler a foto.'))), 'image/jpeg', 0.82);
+      };
+      img.onerror = () => { URL.revokeObjectURL(u); falha(new Error('Arquivo não é uma imagem.')); };
+      img.src = u;
+    });
+  }
+  const novoNome = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+  async function enviarFotos(id, manId, arquivos, legenda, data, prog) {
+    let ok = 0, falhas = 0;
+    for (let i = 0; i < arquivos.length; i++) {
+      if (prog) prog.textContent = 'Enviando foto ' + (i + 1) + ' de ' + arquivos.length + '…';
+      try {
+        const blob = await reduzir(arquivos[i]);
+        const caminho = id + '/' + novoNome() + '.jpg';
+        const up = await sb.storage.from(BUCKET).upload(caminho, blob, { contentType: 'image/jpeg', upsert: false });
+        if (up.error) throw up.error;
+        const { error } = await sb.from('resfriadores_fotos').insert({ resfriador_id: id, manutencao_id: manId, caminho, legenda, data });
+        if (error) { await sb.storage.from(BUCKET).remove([caminho]); throw error; }
+        ok++;
+      } catch (e) { console.error(e); falhas++; }
+    }
+    if (prog) prog.textContent = '';
+    if (falhas) toast(falhas === 1 ? '1 foto não pôde ser enviada.' : falhas + ' fotos não puderam ser enviadas.');
+    return ok;
+  }
+  function adicionarFotos(id) {
+    const r = resf(id);
+    SN.ui.openModal('Adicionar fotos', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}. Dá para tirar a foto na hora pelo celular ou escolher da galeria.</p>
+      <form class="form" id="rfForm">
+        <label>Fotos<input type="file" name="fotos" accept="image/*" multiple required></label>
+        <div class="two">
+          <label>Data das fotos<input type="date" name="data" value="${hojeISO()}" required></label>
+          <label>Legenda<input type="text" name="legenda" maxlength="200" placeholder="Opcional" autocomplete="off"></label>
+        </div>
+        <p class="qj-previsao" data-prog></p>
+        ${botoesForm('Enviar fotos')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrir(id));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const arquivos = [...form.querySelector('[name="fotos"]').files];
+        if (!arquivos.length) { toast('Escolha pelo menos uma foto.'); return; }
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const n = await enviarFotos(id, null, arquivos, form.querySelector('[name="legenda"]').value.trim(), form.querySelector('[name="data"]').value || hojeISO(), form.querySelector('[data-prog]'));
+        b.disabled = false;
+        if (n) toast(n === 1 ? 'Foto enviada.' : n + ' fotos enviadas.');
+        await carregar().catch(console.error); abrir(id);
+      });
+    });
+  }
+  async function verFoto(fotoId) {
+    const f = fotos.find((x) => x.id === fotoId); if (!f) return;
+    await urlsDe([f]);
+    const m = f.manutencao_id ? manuts.find((x) => x.id === f.manutencao_id) : null;
+    SN.ui.openModal('Foto do resfriador ' + (resf(f.resfriador_id)?.numero || ''), `
+      <figure class="rf-grande"><img src="${esc(urlDe(f))}" alt="${esc(f.legenda || 'Foto do resfriador')}">
+        <figcaption>${fmtData(f.data)}${f.legenda ? ': ' + esc(f.legenda) : ''}${m ? ' (manutenção: ' + esc(m.descricao) + ')' : ''}</figcaption></figure>
+      <div class="modal-actions">${podeEditar ? '<button type="button" class="btn btn-danger" data-apagar>Apagar foto</button>' : ''}
+        <a class="btn btn-ghost" href="${esc(urlDe(f))}" target="_blank" rel="noopener">Abrir em tamanho real</a>
+        <button type="button" class="btn" data-voltar>Voltar</button></div>`, (root) => {
+      root.querySelector('[data-voltar]').addEventListener('click', () => abrir(f.resfriador_id));
+      const ap = root.querySelector('[data-apagar]');
+      if (ap) ap.addEventListener('click', () => SN.ui.confirmar({ titulo: 'Apagar foto', mensagem: 'Apagar esta foto de vez?', botao: 'Apagar', perigo: true,
+        acao: async () => {
+          const { error } = await sb.from('resfriadores_fotos').delete().eq('id', f.id);
+          if (error) { console.error(error); toast(erroMsg(error)); return; }
+          const rm = await sb.storage.from(BUCKET).remove([f.caminho]); if (rm.error) console.error(rm.error);
+          toast('Foto apagada.'); await carregar().catch(console.error); abrir(f.resfriador_id);
+        } }));
+    });
+  }
+
+  /* ---------- Produtores ---------- */
+  function gerenciarProdutores() {
+    const lista = produtores.slice().sort((a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome, 'pt-BR'));
+    const qtd = (pid) => resfs.filter((r) => r.ativo && r.produtor_id === pid).length;
+    SN.ui.openModal('Produtores', `
+      <p class="modal-context">O produtor que sai de uso deixa de aparecer na hora de escolher, mas o histórico continua com o nome.</p>
+      <div class="vd-cad" data-gerenciar>
+        ${lista.length ? lista.map((p) => `<div class="vd-cad-item${p.ativo ? '' : ' inativo'}" data-id="${p.id}"><span>${esc(p.nome)}${qtd(p.id) ? ' <small>(' + qtd(p.id) + ' resfriador' + (qtd(p.id) > 1 ? 'es' : '') + ')</small>' : ''}${p.ativo ? '' : ' <small>(fora de uso)</small>'}</span>
+          ${podeEditar ? `<span class="vd-acoes"><button type="button" class="link-btn" data-acao="renomear">Renomear</button><button type="button" class="link-btn" data-acao="ativo">${p.ativo ? 'Tirar de uso' : 'Voltar a usar'}</button></span>` : ''}</div>`).join('') : '<p class="empty-state-msg">Nenhum produtor cadastrado ainda.</p>'}
+        ${podeEditar ? `<div class="vd-cad-novo"><label>Nome do produtor novo<input type="text" maxlength="120" autocomplete="off" data-novo-nome></label>
+          <button type="button" class="btn btn-small" data-acao="adicionar">Adicionar</button></div>` : ''}
+      </div>
+      <div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      root.querySelector('[data-gerenciar]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+        const depois = async (error, msg) => { if (error) { console.error(error); toast(erroMsg(error)); return; } toast(msg); await carregar().catch(console.error); gerenciarProdutores(); };
+        if (b.dataset.acao === 'adicionar') {
+          const inp = root.querySelector('[data-novo-nome]'), nome = inp.value.trim();
+          if (!nome) { toast('Digite o nome.'); inp.focus(); return; }
+          const { error } = await sb.from('resfriadores_produtores').insert({ nome });
+          return depois(error, 'Produtor cadastrado.');
+        }
+        const p = produtores.find((x) => x.id === b.closest('[data-id]').dataset.id); if (!p) return;
+        if (b.dataset.acao === 'ativo') {
+          const { error } = await sb.from('resfriadores_produtores').update({ ativo: !p.ativo }).eq('id', p.id);
+          return depois(error, p.ativo ? 'Produtor tirado de uso.' : 'Produtor voltou a ser usado.');
+        }
+        if (b.dataset.acao === 'renomear') {
+          SN.ui.openModal('Renomear produtor', `<form class="form" id="rfRen"><label>Nome<input type="text" name="nome" maxlength="120" value="${esc(p.nome)}" required></label>
+            <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form>`, (r2) => {
+            r2.querySelector('[data-voltar]').addEventListener('click', gerenciarProdutores);
+            r2.querySelector('#rfRen').addEventListener('submit', async (ev) => {
+              ev.preventDefault();
+              const nome = r2.querySelector('[name="nome"]').value.trim(); if (!nome) { toast('Digite o nome.'); return; }
+              const { error } = await sb.from('resfriadores_produtores').update({ nome }).eq('id', p.id);
+              depois(error, 'Nome alterado.');
+            });
+          });
+        }
+      });
+    });
+  }
+
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    if (!podeEditar) { const n = $('rfNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; }
+    else $('rfNovo').hidden = false;
+    $('rfNovo').addEventListener('click', novo);
+    $('rfProdutores').addEventListener('click', gerenciarProdutores);
+    $('rfLista').addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) abrir(c.dataset.id); });
+    $('rfUltimas').addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) abrir(c.dataset.id); });
+    $('rfBusca').addEventListener('input', render);
+    $('rfFiltro').addEventListener('click', (e) => {
+      const b = e.target.closest('.seg-btn'); if (!b) return;
+      filtro = b.dataset.filtro;
+      $('rfFiltro').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
+      render();
+    });
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await carregar(); }
+    catch (e) { console.error(e); $('rfLista').innerHTML = '<p class="fatal">Não foi possível carregar os resfriadores. Recarregue a página.</p>'; return; }
+    ['resfriadores', 'resfriadores_locais', 'resfriadores_manutencoes', 'resfriadores_fotos', 'resfriadores_produtores'].forEach((t) => {
+      sb.channel('sn-rf-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+  }
+  let iniciado = false;
+  window.SN_Resfriadores = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>

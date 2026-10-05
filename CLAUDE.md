@@ -45,8 +45,13 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Cada saída do estoque chega em "Aguardando dados da venda". "Completar venda" pede cliente (ou cliente novo), forma de pagamento, data e **preço por quilo** de cada item. O preço é sugerido pelo último preço daquele produto para o cliente (ou o último do produto).
   - **Parcelado:** na janela da venda, "Pagamento" à vista ou parcelado (2 a 36 parcelas). Número de parcelas, primeiro vencimento e dias entre parcelas geram a lista; vencimentos e valores podem ser ajustados, mas a soma precisa ser igual ao total (o banco também confere). As parcelas ficam na coluna `vendas.parcelas` (jsonb: n, vencimento, valor, recebido_em, recebido_por). `vendas_parcela_recebida(p_venda, p_n, p_data)` marca ou desfaz o recebimento; `vendas_a_receber()` lista as parcelas em aberto para o painel "Parcelas a receber". Parcelas em atraso aparecem em "Precisa de atenção".
   - Resumo por período (Hoje, Esta semana, Este mês como padrão, Período personalizado), filtro por cliente, totais por cliente e por produto. "Editar" corrige uma venda; "Voltar para pendente" permite desfazer a saída no estoque.
-- **Resfriadores:** ainda é só demonstração de layout, com dados de exemplo. Antes de construir, pergunte ao Iago como a empresa trabalha nessa área.
+- **Resfriadores (pronto):** os resfriadores de leite da empresa, emprestados aos produtores ou de reserva no pátio. Objeto `window.SN_Resfriadores`, módulo `resfriadores`.
+  - Tabelas `resfriadores` (número único, capacidade em litros, observação, `local` = `produtor` ou `patio`, produtor, desde quando, `ativo` para "fora de uso"), `resfriadores_produtores` (lista com "tirar de uso"), `resfriadores_locais` (histórico de por onde passou), `resfriadores_manutencoes` (data, o que foi feito, quem fez, custo) e `resfriadores_fotos`.
+  - Cadastrar e mudar de lugar só pelas funções `resfriadores_criar` e `resfriadores_mudar`, que mantêm o histórico de lugares. Os demais dados, manutenções e fotos são gravados direto nas tabelas.
+  - Fotos ficam no Storage, na pasta privada `resfriadores` (máximo 5 MB, só imagens), em `<id do resfriador>/<nome>.jpg`. A tela reduz cada foto para no máximo 1600 px antes de enviar e mostra com links temporários (`createSignedUrls`). As fotos podem ser ligadas a uma manutenção (`manutencao_id`).
+  - Não há leitura de temperatura: a aba antiga de exemplo com tanques e câmara fria foi substituída.
 - **Usuários:** só para administradores.
+- Todas as abas agora usam dados reais. O aviso de demonstração (`demoNote`) não aparece em nenhuma.
 
 ## Visual
 - Cores da marca: vinho `#6E0A10` no menu, vermelho `#C8101A` nos botões principais, dourado `#F2B81E` nos destaques. Fundo neutro claro. Há tema escuro por `prefers-color-scheme`.
