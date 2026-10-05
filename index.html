@@ -682,8 +682,17 @@
   .rf-onde { font-weight: 700; font-size: .98rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rf-info { color: var(--muted); }
   .rf-fora { color: var(--danger); font-weight: 600; }
-  .rf-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-  .rf-tag { font-size: .75rem; font-weight: 700; color: #fff; background: var(--danger); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  .rf-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; width: 100%; }
+  .rf-tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0; }
+  .rf-tag { font-size: .75rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; border: 1px solid currentColor; }
+  .rf-tag.ativo { color: var(--ok); background: var(--ok-soft); }
+  .rf-tag.patio { color: var(--ouro-texto); background: var(--warn-soft); }
+  .rf-tag.defeito { color: #fff; background: var(--danger); border-color: var(--danger); }
+  .rf-tag.fora { color: var(--muted); background: transparent; }
+  .rf-cap { font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: 1.15rem; line-height: 1.1; white-space: nowrap; }
+  .rf-cap small { font-family: "Source Sans 3", sans-serif; font-weight: 600; font-size: .8rem; color: var(--muted); }
+  .rf-cap.sem { font-family: inherit; font-weight: 400; font-size: .8rem; color: var(--muted); }
+  #modalBody .rf-tags { margin: 0 0 8px; }
   .rf-card.defeito { border-color: var(--danger); border-left-color: var(--danger); }
   .rf-card.defeito:hover { border-left-color: var(--danger); }
   .rf-def { color: var(--danger) !important; font-weight: 600; }
@@ -5245,8 +5254,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const resf = (id) => resfs.find((r) => r.id === id);
   const ordemNum = (a, b) => a.numero.localeCompare(b.numero, 'pt-BR', { numeric: true });
   const marcas = () => [...new Set(resfs.map((r) => r.marca).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  const detalhesTexto = (r) => [r.marca, r.ordenhas ? r.ordenhas + (r.ordenhas === 1 ? ' ordenha' : ' ordenhas') : '', r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' L' : ''].filter(Boolean).join(', ');
-  const ondeTexto = (r) => (r.local === 'patio' ? 'Reserva no pátio' : (produtor(r.produtor_id)?.nome || 'Produtor'));
+  const marcaOrdTexto = (r) => [r.marca, r.ordenhas ? r.ordenhas + (r.ordenhas === 1 ? ' ordenha' : ' ordenhas') : ''].filter(Boolean).join(', ');
+  const detalhesTexto = (r) => [marcaOrdTexto(r), r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' L' : ''].filter(Boolean).join(', ');
+  function tagsHTML(r) {
+    const t = [];
+    if (!r.ativo) t.push('<span class="rf-tag fora">Fora de uso</span>');
+    else t.push(r.local === 'patio' ? '<span class="rf-tag patio">Pátio</span>' : '<span class="rf-tag ativo">Ativo</span>');
+    if (r.ativo && r.status === 'defeito') t.push('<span class="rf-tag defeito">Com defeito</span>');
+    return '<span class="rf-tags">' + t.join('') + '</span>';
+  }
+  const ondeTexto = (r) => (r.local === 'patio' ? 'Pátio' : (produtor(r.produtor_id)?.nome || 'Produtor'));
   const manutsDe = (id) => manuts.filter((m) => m.resfriador_id === id).sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em)));
   const fotosDe = (id, manId) => fotos.filter((f) => f.resfriador_id === id && (manId === undefined || f.manutencao_id === manId)).sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em)));
 
@@ -5290,7 +5307,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('rfResumo').innerHTML = `
       <div><span>Resfriadores</span><strong>${ativos.length}</strong><small>${resfs.length - ativos.length ? (resfs.length - ativos.length) + ' fora de uso' : 'em uso'}</small></div>
       <div><span>Nos produtores</span><strong>${noProd}</strong><small>${new Set(ativos.filter((r) => r.local === 'produtor').map((r) => r.produtor_id)).size} produtores</small></div>
-      <div><span>Reserva no pátio</span><strong>${noPatio}</strong><small>prontos para sair</small></div>
+      <div><span>Pátio</span><strong>${noPatio}</strong><small>${(() => { const n = ativos.filter((r) => r.local === 'patio' && r.status === 'defeito').length; return n ? (n === 1 ? '1 com defeito' : n + ' com defeito') : 'todos funcionando'; })()}</small></div>
       <div class="${comDefeito.length ? 'rf-res-defeito' : ''}"><span>Com defeito</span><strong>${comDefeito.length}</strong><small>${comDefeito.length ? defProd.length + ' em produtores' : 'todos funcionando'}</small></div>`;
     $('rfAno').textContent = 'Em ' + ano + ': ' + (doAno.length === 1 ? '1 manutenção' : doAno.length + ' manutenções') + ', ' + brl.format(doAno.reduce((a, m) => a + Number(m.custo || 0), 0)) + '.';
 
@@ -5301,12 +5318,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const ult = manutsDe(r.id)[0], nf = fotosDe(r.id).length;
       const def = r.ativo && r.status === 'defeito';
       return `<button type="button" class="rf-card${r.local === 'patio' ? ' patio' : ''}${r.ativo ? '' : ' fora'}${def ? ' defeito' : ''}" data-id="${r.id}">
-        <span class="rf-topo"><span class="rf-num">${esc(r.numero)}</span>${def ? '<span class="rf-tag">Com defeito</span>' : ''}</span>
-        <span class="rf-onde">${esc(ondeTexto(r))}</span>
+        <span class="rf-topo"><span class="rf-num">${esc(r.numero)}</span>${r.capacidade_litros ? `<span class="rf-cap">${fmtNum(r.capacidade_litros)}<small> litros</small></span>` : '<span class="rf-cap sem">sem capacidade</span>'}</span>
+        ${tagsHTML(r)}
+        ${r.local === 'produtor' ? `<span class="rf-onde">${esc(ondeTexto(r))}</span>` : ''}
         ${def ? `<span class="rf-info rf-def">${esc(r.defeito)}</span>` : ''}
-        <span class="rf-info">${detalhesTexto(r) ? esc(detalhesTexto(r)) + '. ' : ''}Desde ${fmtData(r.local_desde)}</span>
+        <span class="rf-info">${marcaOrdTexto(r) ? esc(marcaOrdTexto(r)) + '. ' : ''}${r.local === 'patio' ? 'No pátio desde ' : 'Desde '}${fmtData(r.local_desde)}</span>
         <span class="rf-info">${ult ? 'Última manutenção: ' + fmtData(ult.data) : 'Sem manutenção registrada'}${nf ? ' · ' + (nf === 1 ? '1 foto' : nf + ' fotos') : ''}</span>
-        ${r.ativo ? '' : '<span class="rf-info rf-fora">Fora de uso</span>'}
       </button>`;
     }).join('') : `<p class="empty-state-msg">${resfs.length ? 'Nenhum resfriador encontrado.' : 'Nenhum resfriador cadastrado ainda.' + (podeEditar ? ' Use o botão "Novo resfriador".' : '')}</p>`;
 
@@ -5330,7 +5347,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   const localHTML = (marcado) => `<fieldset class="qj-destino"><legend>Onde está</legend><div class="qj-opcoes">
       <label><input type="radio" name="local" value="produtor" ${marcado === 'produtor' ? 'checked' : ''}> No produtor</label>
-      <label><input type="radio" name="local" value="patio" ${marcado === 'patio' ? 'checked' : ''}> Reserva no pátio</label></div></fieldset>`;
+      <label><input type="radio" name="local" value="patio" ${marcado === 'patio' ? 'checked' : ''}> Pátio</label></div></fieldset>`;
   function ligarLocal(form) {
     const sel = form.querySelector('[name="produtor"]');
     const trocar = () => {
@@ -5354,7 +5371,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const marcaOrdenhasHTML = (r) => `<div class="two">
       <label>Marca<input type="text" name="marca" maxlength="60" list="rfMarcas" value="${esc(r ? r.marca : '')}" placeholder="Ex.: Friomax" autocomplete="off"></label>
       <label>Ordenhas<select name="ordenhas"><option value="">Não informado</option>
-        <option value="1" ${r && r.ordenhas === 1 ? 'selected' : ''}>1 ordenha</option><option value="2" ${r && r.ordenhas === 2 ? 'selected' : ''}>2 ordenhas</option></select></label>
+        <option value="1" ${r && r.ordenhas === 1 ? 'selected' : ''}>1 ordenha</option><option value="2" ${r && r.ordenhas === 2 ? 'selected' : ''}>2 ordenhas</option><option value="4" ${r && r.ordenhas === 4 ? 'selected' : ''}>4 ordenhas</option></select></label>
     </div><datalist id="rfMarcas">${marcas().map((m) => `<option value="${esc(m)}">`).join('')}</datalist>`;
   const statusHTML = (marcado, defeito) => `<fieldset class="qj-destino"><legend>Status</legend><div class="qj-opcoes">
       <label><input type="radio" name="status" value="funcionando" ${marcado === 'funcionando' ? 'checked' : ''}> Funcionando</label>
@@ -5418,6 +5435,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     SN.ui.openModal('Resfriador ' + r.numero, `
       <div data-detalhe>
         <p class="modal-context"><b>${esc(ondeTexto(r))}</b> desde ${fmtData(r.local_desde)}.${detalhesTexto(r) ? ' ' + esc(detalhesTexto(r)) + '.' : ''}${r.observacao ? ' ' + esc(r.observacao) : ''}${r.ativo ? '' : ' <b>Fora de uso.</b>'}</p>
+        ${tagsHTML(r)}
         <p class="rf-status ${def ? 'defeito' : 'ok'}">${def ? 'Com defeito desde ' + fmtData(r.status_desde) + ': ' + esc(r.defeito) : 'Funcionando'}</p>
         ${podeEditar ? `<div class="qj-botoes rf-botoes">
           <button type="button" class="btn btn-small ${def ? 'btn-primary' : ''}" data-acao="status">${def ? 'Voltou a funcionar' : 'Informar defeito'}</button>
@@ -5438,7 +5456,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${histSt.map((x) => `<div class="rf-hist"><b class="${x.status === 'defeito' ? 'rf-def' : 'rf-ok'}">${x.status === 'defeito' ? 'Com defeito: ' + esc(x.defeito) : 'Funcionando'}</b>
           <span>${fmtData(x.data)}${x.observacao ? '. ' + esc(x.observacao) : ''}${x.criado_por ? ', por ' + esc(nomes[x.criado_por] || 'usuário removido') : ''}</span></div>`).join('') || '<p class="empty-state-msg">Sem histórico.</p>'}
         <h3 class="qj-sub">Por onde passou</h3>
-        ${hist.map((l) => `<div class="rf-hist"><b>${l.local === 'patio' ? 'Reserva no pátio' : esc(l.produtor_nome || 'Produtor')}</b>
+        ${hist.map((l) => `<div class="rf-hist"><b>${l.local === 'patio' ? 'Pátio' : esc(l.produtor_nome || 'Produtor')}</b>
           <span>${fmtData(l.desde)} ${l.ate ? 'até ' + fmtData(l.ate) : 'até hoje'}${l.observacao ? '. ' + esc(l.observacao) : ''}</span></div>`).join('') || '<p class="empty-state-msg">Sem histórico.</p>'}
       </div>
       <div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
