@@ -560,6 +560,8 @@
   .pr-rend { margin: 0; color: var(--ok); font-size: .92rem; }
   .pr-rend:empty { display: none; }
   .pr-aviso { margin: -4px 0 0; color: var(--warn); font-weight: 600; font-size: .88rem; }
+  .pr-lote-dia { margin: -4px 0 0; color: var(--muted); font-size: .88rem; }
+  .pr-lote-dia.erro { color: var(--danger); font-weight: 600; }
   .pr-dia + .pr-dia { margin-top: 20px; }
   .pr-tot { font-size: .85rem; }
   .pr-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
@@ -4480,6 +4482,26 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   const hojeISO = () => iso(new Date());
   function deISO(s) { const [a, m, d] = s.split('-').map(Number); return new Date(a, m - 1, d); }
+  /* Dia do ano da data de fabricação, com 3 números (07/10/2026 = "280", 05/01 = "005"). O lote precisa começar com ele. */
+  function diaDoAno(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+    const [a, m, d] = iso.split('-').map(Number);
+    const n = Math.round((Date.UTC(a, m - 1, d) - Date.UTC(a, 0, 1)) / 86400000) + 1;
+    return String(n).padStart(3, '0');
+  }
+  function loteConfere(lote, iso) { const dia = diaDoAno(iso); return !!dia && String(lote || '').trim().startsWith(dia); }
+  /* Quando a data muda, troca o começo do lote pelo novo dia (ou preenche, se o lote estiver vazio). */
+  function ligarLoteNaData(form) {
+    const data = form.querySelector('[name="data"]'), lote = form.querySelector('[name="lote"]');
+    let anterior = diaDoAno(data.value);
+    if (!lote.value.trim()) lote.value = anterior;
+    data.addEventListener('change', () => {
+      const novo = diaDoAno(data.value), atual = lote.value.trim();
+      if (novo && (!atual || (anterior && atual.startsWith(anterior)))) lote.value = novo + (anterior && atual.startsWith(anterior) ? atual.slice(anterior.length) : '');
+      anterior = novo;
+      ajustarCampos(form);
+    });
+  }
   function fmtData(s) { const [a, m, d] = s.split('-'); return d + '/' + m + '/' + a; }
   function fmtNum(n, casas) { return Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas == null ? 2 : casas }); }
   function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
@@ -4489,8 +4511,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function intervalo() {
     const hoje = new Date(); const h = iso(hoje);
     if (periodo === 'hoje') return { de: h, ate: h };
-    if (periodo === 'semana') { const d = new Date(hoje); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return { de: iso(d), ate: h }; }
-    if (periodo === 'mes') return { de: hoje.getFullYear() + '-' + pad(hoje.getMonth() + 1) + '-01', ate: h };
+    // Semana e mês vão até o último dia (domingo / fim do mês), para não esconder lançamentos com data à frente de hoje.
+    if (periodo === 'semana') { const d = new Date(hoje); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); const f = new Date(d); f.setDate(d.getDate() + 6); return { de: iso(d), ate: iso(f) }; }
+    if (periodo === 'mes') return { de: hoje.getFullYear() + '-' + pad(hoje.getMonth() + 1) + '-01', ate: iso(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)) };
     const de = $('prDe').value || h, ate = $('prAte').value || h;
     return de <= ate ? { de, ate } : { de: ate, ate: de };
   }
@@ -4571,6 +4594,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const repetido = p && lote && lancamentos.some((l) => l.produto_id === p.id && l.lote.trim().toLowerCase() === lote.toLowerCase() && l.id !== id);
     aviso.hidden = !repetido;
     aviso.textContent = repetido ? 'Atenção: já existe um lançamento de ' + p.nome + ' com o lote ' + lote + ' neste período.' : '';
+    const data = form.querySelector('[name="data"]').value, dia = diaDoAno(data), info = form.querySelector('[data-lote-dia]');
+    const errado = !!dia && !!lote && !loteConfere(lote, data);
+    info.classList.toggle('erro', errado);
+    const futura = !!data && data > hojeISO();
+    info.textContent = !dia ? '' : (errado
+      ? `O lote precisa começar com ${dia}, porque ${fmtData(data)} é o dia ${Number(dia)} do ano.`
+      : `${fmtData(data)} é o dia ${Number(dia)} do ano: o lote começa com ${dia}.`) + (futura ? ' Atenção: essa data é depois de hoje.' : '');
+    info.classList.toggle('erro', errado || futura);
   }
   function lerFormulario(form) {
     const p = produto(form.querySelector('[name="produto"]').value);
@@ -4584,6 +4615,19 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     };
     if (!dados.data_fabricacao) { toast('Informe a data de fabricação.'); return null; }
     if (!dados.lote) { toast('Informe o lote.'); return null; }
+    if (!loteConfere(dados.lote, dados.data_fabricacao)) {
+      const dia = diaDoAno(dados.data_fabricacao);
+      toast(`O lote precisa começar com ${dia}, que é o dia ${Number(dia)} do ano (${fmtData(dados.data_fabricacao)}).`);
+      form.querySelector('[name="lote"]').focus();
+      return null;
+    }
+    // Data de fabricação depois de hoje: pede para clicar de novo (evita lançar no dia errado sem perceber).
+    if (dados.data_fabricacao > hojeISO() && form.dataset.futuraOk !== dados.data_fabricacao) {
+      form.dataset.futuraOk = dados.data_fabricacao;
+      toast(`A data de fabricação (${fmtData(dados.data_fabricacao)}) é depois de hoje. Confira a data. Se estiver certa, clique de novo para salvar.`);
+      form.querySelector('[name="data"]').focus();
+      return null;
+    }
     if (p.tipo === 'queijo') {
       dados.leite_litros = lerNum(form.querySelector('[name="leite"]').value);
       const pc = lerNum(form.querySelector('[name="pecas"]').value);
@@ -4601,8 +4645,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <label>Produto<select name="produto" required>${''}</select></label>
       <div class="two">
         <label>Data de fabricação<input type="date" name="data" value="${l.data_fabricacao || hojeISO()}" required></label>
-        <label>Lote<input type="text" name="lote" value="${esc(l.lote || '')}" placeholder="Ex.: 1002" required autocomplete="off"></label>
+        <label>Lote<input type="text" name="lote" value="${esc(l.lote || '')}" placeholder="Começa com o dia do ano" required autocomplete="off"></label>
       </div>
+      <p class="pr-lote-dia" data-lote-dia aria-live="polite"></p>
       <p class="pr-aviso" data-lote-aviso hidden></p>
       <div class="two" data-campos="queijo" hidden>
         <label>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
@@ -4618,6 +4663,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const sel = form.querySelector('[name="produto"]');
     sel.innerHTML = '<option value="">Escolha o produto</option>' + opcoesProdutos(selecionado, false);
     if (selecionado) sel.value = selecionado;
+    ligarLoteNaData(form);
     form.addEventListener('input', () => ajustarCampos(form));
     form.addEventListener('change', () => ajustarCampos(form));
     ajustarCampos(form);
@@ -4685,6 +4731,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     botao.disabled = false;
     if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
     ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
+    form.querySelector('[name="lote"]').value = diaDoAno(form.querySelector('[name="data"]').value);
     ajustarCampos(form);
     toast('Produção registrada.');
     atualizar();

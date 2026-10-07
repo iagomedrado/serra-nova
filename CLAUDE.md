@@ -40,6 +40,8 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Queijos (Tropical, Parmesão, Meia Cura, Frescal): data de fabricação, lote, volume de leite e número de peças. Rendimento = litros por peça.
   - Cremes (Creme de Leite Cru, Creme do Soro do Leite): data de fabricação, lote e peso (kg).
   - Resumo por período (Hoje, Esta semana como padrão, Este mês, Período personalizado), total por produto e lista agrupada por dia. Avisa quando um lote se repete para o mesmo produto no período.
+  - **Lote ligado à data:** os 3 primeiros números do lote são o dia do ano da data de fabricação, com 3 algarismos (07/10/2026 = 280, 05/01 = 005). Vale para queijos e cremes. O campo Lote já vem com esses 3 números; ao trocar a data, eles são trocados e o resto do lote é mantido. Abaixo do campo aparece o dia do ano, em vermelho se não conferir, e a tela não deixa salvar (funções `diaDoAno`, `loteConfere`, `ligarLoteNaData`). A regra é só da tela, não do banco.
+  - "Esta semana" vai de segunda a domingo e "Este mês" vai até o último dia do mês (antes paravam em hoje e escondiam lançamentos com data à frente). Data de fabricação depois de hoje mostra aviso e pede um segundo clique para salvar.
   - O botão "Produtos" permite adicionar, renomear, mudar o tipo e tirar produtos de uso (sem apagar os lançamentos).
   - Os lotes de queijo lançados aqui aparecem na fila "Aguardando destino" do Estoque de queijos. A aba de Produção não foi alterada para isso.
 - **Estoque de queijos (pronto):** acompanha o caminho de cada lote de queijo depois da produção: salmoura (1 a 20) → secagem (1 a 30) → estoque embalado. Objeto `window.SN_Queijos`.
