@@ -709,6 +709,9 @@
   .vd-parc-soma.erro { color: var(--danger); }
 
   /* ---------- Resfriadores ---------- */
+  .rf-avisos { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; border: 1px solid var(--line); border-left: 4px solid var(--ouro); border-radius: 10px; padding: 10px 14px; margin: -8px 0 18px; }
+  .rf-avisos p { margin: 0; font-size: .95rem; flex: 1 1 260px; }
+  .rf-avisos.ativo { border-left-color: var(--ok); }
   .rf-ferramentas { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 20px 0 12px; }
   .rf-busca { flex: 1 1 260px; max-width: 420px; }
   .rf-grid { align-items: start; }
@@ -1175,6 +1178,7 @@
         <div class="actions"><button type="button" class="btn" id="rfProdutores">Produtores</button><button type="button" class="btn btn-primary" id="rfNovo" hidden>Novo resfriador</button></div>
       </div>
       <p class="test-note" id="rfNota" hidden></p>
+      <div class="rf-avisos" id="rfAvisos" hidden aria-live="polite"><p id="rfAvisosTexto"></p><div class="actions" id="rfAvisosAcoes"></div></div>
       <div class="ledger pr-resumo" id="rfResumo"></div>
 
       <div class="rf-ferramentas">
@@ -6322,6 +6326,104 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     });
   }
 
+  /* ---------- Avisos no celular (notificações) ---------- */
+  const PUSH_CHAVE = 'BPEfqIGgANgUSmj-xx_XJyVbjqUnbrQUEbFVhamkctGnwdfb97fQMppbXuqnWozkCrLWo18RKuT89Nam_K_hgws';
+  function chaveBytes(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const bin = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  }
+  function ehIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function instalado() { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+  function nomeAparelho() {
+    const ua = navigator.userAgent;
+    if (/iphone/i.test(ua)) return 'iPhone';
+    if (/ipad/i.test(ua)) return 'iPad';
+    if (/android/i.test(ua)) return 'Android';
+    if (/windows/i.test(ua)) return 'Computador (Windows)';
+    if (/mac/i.test(ua)) return 'Computador (Mac)';
+    return 'Outro aparelho';
+  }
+  function suportaAvisos() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  async function registroSW() {
+    return (await navigator.serviceWorker.getRegistration('./')) || navigator.serviceWorker.register('sw.js', { scope: './' });
+  }
+  async function inscricaoAtual() {
+    if (!suportaAvisos() || Notification.permission !== 'granted') return null;
+    const reg = await navigator.serviceWorker.getRegistration('./');
+    return reg ? reg.pushManager.getSubscription() : null;
+  }
+  async function salvarInscricao(sub) {
+    const j = sub.toJSON();
+    const { error } = await sb.rpc('push_inscrever', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_aparelho: nomeAparelho() });
+    if (error) throw error;
+  }
+  function mostrarAvisos(texto, botao, ativo) {
+    const box = $('rfAvisos');
+    $('rfAvisosTexto').textContent = texto;
+    const acoes = $('rfAvisosAcoes');
+    acoes.innerHTML = '';
+    if (botao) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn ' + (ativo ? 'btn-small' : 'btn-primary'); b.textContent = botao.texto;
+      b.addEventListener('click', async () => { b.disabled = true; try { await botao.acao(); } finally { b.disabled = false; } });
+      acoes.appendChild(b);
+    }
+    box.classList.toggle('ativo', !!ativo);
+    box.hidden = false;
+  }
+  async function prepararAvisos() {
+    if (!suportaAvisos()) {
+      if (ehIOS() && !instalado()) mostrarAvisos('Para receber no iPhone o aviso de resfriador com defeito, abra o sistema no Safari, toque em Compartilhar e em "Adicionar à Tela de Início". Depois abra pelo ícone e ative aqui.', null, false);
+      else mostrarAvisos('Este navegador não recebe notificações. No celular, use o Chrome (Android) ou o sistema instalado na Tela de Início (iPhone).', null, false);
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      mostrarAvisos('As notificações estão bloqueadas neste aparelho. Para receber os avisos, libere as notificações deste site nas configurações do navegador e recarregue a página.', null, false);
+      return;
+    }
+    let sub = null;
+    try { sub = await inscricaoAtual(); } catch (e) { console.error(e); }
+    if (sub) {
+      try { await salvarInscricao(sub); } catch (e) { console.error(e); }
+      mostrarAvisos('Avisos ativados neste aparelho: você recebe uma notificação quando um resfriador der defeito ou voltar a funcionar.', { texto: 'Desativar', acao: desativarAvisos }, true);
+    } else {
+      mostrarAvisos('Receba no celular um aviso quando um resfriador der defeito ou voltar a funcionar.', { texto: 'Ativar avisos neste aparelho', acao: ativarAvisos }, false);
+    }
+  }
+  async function ativarAvisos() {
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { toast('Sem a permissão, o aparelho não recebe os avisos.'); await prepararAvisos(); return; }
+      const reg = await registroSW();
+      await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveBytes(PUSH_CHAVE) });
+      await salvarInscricao(sub);
+      try { await reg.showNotification('Avisos ativados', { body: 'Você vai receber aqui os avisos dos resfriadores.', icon: 'icon-192.png', badge: 'icon-192.png', tag: 'avisos-ativados' }); } catch (e) { /* opcional */ }
+      toast('Avisos ativados neste aparelho.');
+    } catch (e) {
+      console.error(e);
+      toast('Não foi possível ativar os avisos: ' + (e && e.message ? e.message : 'tente de novo.'));
+    }
+    await prepararAvisos();
+  }
+  async function desativarAvisos() {
+    try {
+      const sub = await inscricaoAtual();
+      if (sub) {
+        const { error } = await sb.rpc('push_cancelar', { p_endpoint: sub.endpoint });
+        if (error) throw error;
+        await sub.unsubscribe();
+      }
+      toast('Avisos desativados neste aparelho.');
+    } catch (e) {
+      console.error(e);
+      toast('Não foi possível desativar. Tente de novo.');
+    }
+    await prepararAvisos();
+  }
+
   /* ---------- Início ---------- */
   async function iniciar(ctx) {
     sb = ctx.sb; podeEditar = !!ctx.podeEditar;
@@ -6329,6 +6431,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     else $('rfNovo').hidden = false;
     $('rfNovo').addEventListener('click', novo);
     $('rfProdutores').addEventListener('click', gerenciarProdutores);
+    prepararAvisos().catch((e) => console.error(e));
     $('rfLista').addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) abrir(c.dataset.id); });
     $('rfUltimas').addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) abrir(c.dataset.id); });
     $('rfBusca').addEventListener('input', render);

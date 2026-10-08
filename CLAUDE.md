@@ -2,7 +2,7 @@
 
 Sistema interno da empresa, feito em uma única página: `index.html`, com HTML, CSS e JavaScript no mesmo arquivo.
 Publicado pelo GitHub Pages em https://iagomedrado.github.io/serra-nova/ a partir da branch `main` do repositório `iagomedrado/serra-nova`.
-Junto do `index.html` ficam os arquivos do "app" para celular: `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` e `favicon.png` (feitos com o logotipo, fundo vinho). Não há service worker, de propósito, para o celular sempre abrir a versão mais nova.
+Junto do `index.html` ficam os arquivos do "app" para celular: `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` e `favicon.png` (feitos com o logotipo, fundo vinho). Há um `sw.js` só para receber as notificações: ele não tem `fetch` nem guarda cópia da página, de propósito, para o celular sempre abrir a versão mais nova. Não adicione cache a ele.
 Responsável: Iago (gerente). Escreva sempre em português do Brasil, com linguagem simples e sem termos técnicos desnecessários.
 
 ## Como o sistema funciona
@@ -62,6 +62,11 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
   - Cadastrar e mudar de lugar só pelas funções `resfriadores_criar` e `resfriadores_mudar`, que mantêm o histórico de lugares. Os demais dados, manutenções e fotos são gravados direto nas tabelas.
   - Fotos ficam no Storage, na pasta privada `resfriadores` (máximo 5 MB, só imagens), em `<id do resfriador>/<nome>.jpg`. A tela reduz cada foto para no máximo 1600 px antes de enviar e mostra com links temporários (`createSignedUrls`). As fotos podem ser ligadas a uma manutenção (`manutencao_id`).
   - Não há leitura de temperatura: a aba antiga de exemplo com tanques e câmara fria foi substituída.
+  - **Avisos no celular (notificações):** quando o status de um resfriador muda para "com defeito" ou volta para "funcionando", todos os usuários ativos que podem ver a aba (administradores ou com permissão em `resfriadores`) recebem uma notificação, em cada aparelho onde ativaram. O aviso traz número, produtor (ou pátio), defeito e quem mudou; tocar abre `./#resfriadores`.
+    - Na aba, a caixa "Receba no celular um aviso…" tem o botão "Ativar avisos neste aparelho" / "Desativar". No iPhone só funciona com o sistema instalado na Tela de Início (a caixa explica). A chave pública (`PUSH_CHAVE`) fica na página; a privada fica no cofre do Supabase.
+    - Banco: tabela `push_inscricoes` (um aparelho por linha; `ativo` false = desativado; RLS só deixa cada um ver os seus), funções `push_inscrever(p_endpoint, p_p256dh, p_auth, p_aparelho)` e `push_cancelar(p_endpoint)`. Gatilho `notificar_status` (after update of status em `resfriadores`) chama `privado.resfriadores_notificar()`, que usa `pg_net` para chamar a edge function `notificar`. Falha no envio não impede a troca de status.
+    - Edge function `notificar` (verify_jwt desligado; aceita só com o cabeçalho `x-segredo` igual ao segredo `push_segredo` do cofre). Lê as chaves `push_vapid_privada` e `push_vapid_publica` do cofre (Vault) pela conexão direta do banco e envia com `web-push`. Aparelho que desinstalou (404/410) vira `ativo = false`.
+    - O MCP do Supabase cancela sozinho comandos com `delete`; por isso o "desativar" marca `ativo = false` em vez de apagar.
 - **Usuários:** só para administradores.
 - Todas as abas agora usam dados reais. O aviso de demonstração (`demoNote`) não aparece em nenhuma.
 
@@ -77,6 +82,11 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - Não altere o comportamento das abas prontas sem o Iago pedir.
 - Antes de concluir, confira que o JavaScript não tem erro de sintaxe e que as abas existentes continuam funcionando.
 - Explique as mudanças para o Iago em linguagem simples.
+
+## Importação da planilha antiga (07/10/2026)
+- 52 contas da planilha de outubro do Iago foram lançadas direto no banco em 07/10/2026 às 15:51 (Brasília). Elas têm `criado_por` vazio e o mesmo `criado_em` (2026-10-07 18:51:07 UTC); as parcelas pagas têm `pagoPor` = "Importado da planilha". Para desfazer, apagar as contas com esse `criado_em` e `criado_por` nulo.
+- Ficaram de fora, por decisão do Iago: as contas mensais, as que estavam sem valor ou sem vencimento, a Prodoeste repetida, o segundo IBAMA ("passar até janeiro/2027"), a multa do veículo de 30/09 e a última parcela da Toyota (05/09).
+- Compras parceladas entraram só com a parcela de outubro (número da parcela e valor total da compra na observação), exceto a GL Rótulos, que entrou como uma conta com as 3 parcelas.
 
 ## Boletos: próximos passos possíveis
 - O leitor de boletos está pronto (ver Livro de contas).
