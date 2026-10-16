@@ -4863,7 +4863,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 (function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
+  // padrao: peças que cabem numa prateleira em uso normal (valor que já vem preenchido em cada linha)
+  const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h', padrao: 66 }, secagem: { nome: 'Secagem', max: 30, unidade: 'd', padrao: 55 }, estoque: { nome: 'Estoque', max: 0 } };
   let sb = null, podeEditar = false, carregado = false;
   let posicoes = [], pendentes = [], movimentos = [];
   let lotes = {};
@@ -5117,7 +5118,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       form.querySelector('[data-bloco-tempo]').hidden = ehEstoque;
       linhasEl.innerHTML = '';
       if (!ehEstoque) {
-        addLinha(et, proximaLivre(et), max);
+        // Já divide as peças pelas prateleiras, até o limite de uso normal de cada uma (66 na salmoura, 55 na secagem).
+        let resto = max;
+        do { const q = Math.min(ETAPAS[et].padrao, resto); addLinha(et, proximaLivre(et), q); resto -= q; }
+        while (resto > 0 && linhas().length < ETAPAS[et].max);
         form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
       }
       atualizar();
@@ -5130,7 +5134,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
     form.querySelector('[data-mais]').addEventListener('click', () => {
       const et = etapaAtual(); if (!et || et === 'estoque') return;
-      addLinha(et, proximaLivre(et), Math.max(0, max - soma()));
+      addLinha(et, proximaLivre(et), Math.min(ETAPAS[et].padrao, Math.max(0, max - soma())));
       atualizar();
       const ult = linhas().pop(); if (ult) ult.querySelector('select').focus();
     });
