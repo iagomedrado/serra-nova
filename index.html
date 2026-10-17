@@ -575,6 +575,15 @@
   .pr-nums { display: flex; flex-wrap: wrap; gap: 6px 28px; margin-top: 6px; font-weight: 600; }
   .pr-nums small { display: block; font-weight: 400; font-size: .78rem; color: var(--muted); }
   .pr-g-nome { flex: 1 1 200px; width: auto; }
+  .pr-g-extra { flex: 1 1 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; align-items: end; }
+  .pr-g-extra label { font-size: .85rem; color: var(--muted); display: grid; gap: 4px; }
+  @media (max-width: 520px) { .pr-g-extra { grid-template-columns: 1fr 1fr; } }
+  .pr-queijo { display: grid; gap: 12px; }
+  .pr-queijo[hidden], [data-bloco-leite][hidden] { display: none !important; }
+  .pr-compartilhado { align-items: flex-start; line-height: 1.35; }
+  .pr-compartilhado input { margin-top: 2px; flex: none; }
+  .pr-junto { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
+  .pr-rend-aviso { color: var(--warn); font-weight: 600; }
   .cat-manage-row select { width: auto; }
   body.producao-leitura #prForm, body.producao-leitura #prGerenciar { display: none !important; }
   @media (max-width: 420px) { .pr-form .two, .form .two { grid-template-columns: 1fr; } }
@@ -4523,6 +4532,27 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
   function produto(id) { return produtos.find((p) => p.id === id); }
   function rendimento(leite, pecas) { return pecas > 0 && leite > 0 ? leite / pecas : null; }
+  /* Meia Cura (ou outro queijo) feito com o leite de outro lançamento do mesmo dia e lote.
+     O leite fica só no lançamento "dono"; as peças dos outros entram no rendimento dele,
+     convertidas pelo peso médio (ex.: Meia Cura 1 kg = 1/6 de uma peça de Tropical de 6 kg). */
+  const mesmoLote = (a, b) => a.data_fabricacao === b.data_fabricacao && String(a.lote || '').trim().toLowerCase() === String(b.lote || '').trim().toLowerCase();
+  function donoDoLeite(l) {
+    return lancamentos.find((x) => x.id !== l.id && !x.leite_compartilhado && x.leite_litros > 0 && x.pecas > 0 && mesmoLote(x, l)) || null;
+  }
+  function juntosNoLeite(dono) {
+    return lancamentos.filter((x) => x.id !== dono.id && x.leite_compartilhado && x.pecas > 0 && mesmoLote(x, dono));
+  }
+  function fatorPeca(de, para) {
+    const a = produto(de), b = produto(para);
+    const pa = a && Number(a.peso_medio_kg), pb = b && Number(b.peso_medio_kg);
+    return pa > 0 && pb > 0 ? pa / pb : 1;
+  }
+  // Peças equivalentes de um lançamento com leite próprio (as dele + as dos que usaram o mesmo leite).
+  function pecasEquivalentes(l) {
+    if (!l || l.leite_compartilhado || !(l.pecas > 0)) return 0;
+    return l.pecas + juntosNoLeite(l).reduce((a, x) => a + x.pecas * fatorPeca(x.produto_id, l.produto_id), 0);
+  }
+  function rendimentoLanc(l) { return l && !l.leite_compartilhado ? rendimento(l.leite_litros, pecasEquivalentes(l)) : null; }
   function intervalo() {
     const hoje = new Date(); const h = iso(hoje);
     if (periodo === 'hoje') return { de: h, ate: h };
@@ -4552,7 +4582,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const { data, error } = await sb.from('producao_lancamentos').select('*')
       .gte('data_fabricacao', r.de).lte('data_fabricacao', r.ate).order('data_fabricacao', { ascending: false });
     if (error) throw error;
-    lancamentos = (data || []).map((l) => ({ ...l, leite_litros: l.leite_litros == null ? null : Number(l.leite_litros), peso_kg: l.peso_kg == null ? null : Number(l.peso_kg) }))
+    lancamentos = (data || []).map((l) => ({ ...l, leite_compartilhado: !!l.leite_compartilhado, leite_litros: l.leite_litros == null ? null : Number(l.leite_litros), peso_kg: l.peso_kg == null ? null : Number(l.peso_kg) }))
       .sort((a, b) => b.data_fabricacao.localeCompare(a.data_fabricacao) || String(b.criado_em || '').localeCompare(String(a.criado_em || '')));
     render();
   }
@@ -4598,12 +4628,24 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const tipo = p ? p.tipo : null;
     form.querySelector('[data-campos="queijo"]').hidden = tipo !== 'queijo';
     form.querySelector('[data-campos="creme"]').hidden = tipo !== 'creme';
-    form.querySelectorAll('[data-campos="queijo"] input').forEach((i) => { i.required = tipo === 'queijo'; });
+    const compart = tipo === 'queijo' && form.querySelector('[name="compartilhado"]').checked;
+    form.querySelector('[data-bloco-leite]').hidden = compart;
+    form.querySelector('[name="pecas"]').required = tipo === 'queijo';
+    form.querySelector('[name="leite"]').required = tipo === 'queijo' && !compart;
     form.querySelectorAll('[data-campos="creme"] input').forEach((i) => { i.required = tipo === 'creme'; });
     const leite = lerNum(form.querySelector('[name="leite"]').value), pecas = lerNum(form.querySelector('[name="pecas"]').value);
-    const r = tipo === 'queijo' ? rendimento(leite, pecas) : null;
     const rend = form.querySelector('[data-rend]');
-    rend.innerHTML = r ? `Rendimento: <strong>${fmtNum(r)} litros por peça</strong>` : '';
+    if (compart) {
+      const lt = form.querySelector('[name="lote"]').value.trim(), dt = form.querySelector('[name="data"]').value;
+      const dono = lt && dt ? donoDoLeite({ id: form.dataset.id || '', lote: lt, data_fabricacao: dt }) : null;
+      const pd = dono && produto(dono.produto_id);
+      rend.innerHTML = dono
+        ? `Leite contado no lançamento de <strong>${esc(pd ? pd.nome : 'outro queijo')}</strong>, lote ${esc(dono.lote)}.`
+        : (lt && dt ? `<span class="pr-rend-aviso">Ainda não há queijo com leite lançado no lote ${esc(lt)} de ${fmtData(dt)}.</span>` : '');
+    } else {
+      const r = tipo === 'queijo' ? rendimento(leite, pecas) : null;
+      rend.innerHTML = r ? `Rendimento: <strong>${fmtNum(r)} litros por peça</strong>` : '';
+    }
     const lote = form.querySelector('[name="lote"]').value.trim(), id = form.dataset.id || '';
     const aviso = form.querySelector('[data-lote-aviso]');
     const repetido = p && lote && lancamentos.some((l) => l.produto_id === p.id && l.lote.trim().toLowerCase() === lote.toLowerCase() && l.id !== id);
@@ -4626,7 +4668,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       data_fabricacao: form.querySelector('[name="data"]').value,
       lote: form.querySelector('[name="lote"]').value.trim(),
       observacao: form.querySelector('[name="obs"]').value.trim(),
-      leite_litros: null, pecas: null, peso_kg: null
+      leite_litros: null, pecas: null, peso_kg: null, leite_compartilhado: false
     };
     if (!dados.data_fabricacao) { toast('Informe a data de fabricação.'); return null; }
     if (!dados.lote) { toast('Informe o lote.'); return null; }
@@ -4644,10 +4686,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       return null;
     }
     if (p.tipo === 'queijo') {
-      dados.leite_litros = lerNum(form.querySelector('[name="leite"]').value);
+      dados.leite_compartilhado = form.querySelector('[name="compartilhado"]').checked;
+      dados.leite_litros = dados.leite_compartilhado ? null : lerNum(form.querySelector('[name="leite"]').value);
       const pc = lerNum(form.querySelector('[name="pecas"]').value);
       dados.pecas = pc == null ? null : Math.round(pc);
-      if (!(dados.leite_litros > 0) || !(dados.pecas > 0)) { toast('Informe o volume de leite e o número de peças.'); return null; }
+      if (dados.leite_compartilhado) { if (!(dados.pecas > 0)) { toast('Informe o número de peças.'); return null; } }
+      else if (!(dados.leite_litros > 0) || !(dados.pecas > 0)) { toast('Informe o volume de leite e o número de peças.'); return null; }
     } else {
       dados.peso_kg = lerNum(form.querySelector('[name="peso"]').value);
       if (!(dados.peso_kg > 0)) { toast('Informe o peso.'); return null; }
@@ -4664,9 +4708,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       </div>
       <p class="pr-lote-dia" data-lote-dia aria-live="polite"></p>
       <p class="pr-aviso" data-lote-aviso hidden></p>
-      <div class="two" data-campos="queijo" hidden>
-        <label>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
-        <label>Número de peças<input type="number" name="pecas" min="0" step="1" inputmode="numeric" value="${l.pecas == null ? '' : l.pecas}" placeholder="0"></label>
+      <div data-campos="queijo" hidden class="pr-queijo">
+        <label class="check pr-compartilhado"><input type="checkbox" name="compartilhado" ${l.leite_compartilhado ? 'checked' : ''}> Feito com o leite de outro queijo deste lote (ex.: Meia Cura com o leite do Tropical)</label>
+        <div class="two">
+          <label data-bloco-leite>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
+          <label>Número de peças<input type="number" name="pecas" min="0" step="1" inputmode="numeric" value="${l.pecas == null ? '' : l.pecas}" placeholder="0"></label>
+        </div>
       </div>
       <div data-campos="creme" hidden>
         <label>Peso (kg)<input type="number" name="peso" min="0" step="any" inputmode="decimal" value="${l.peso_kg == null ? '' : l.peso_kg}" placeholder="0"></label>
@@ -4700,9 +4747,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const linhas = produtos.map((p) => {
       const ls = lancamentos.filter((l) => l.produto_id === p.id); if (!ls.length) return '';
       const L = ls.reduce((a, l) => a + (l.leite_litros || 0), 0), P = ls.reduce((a, l) => a + (l.pecas || 0), 0), K = ls.reduce((a, l) => a + (l.peso_kg || 0), 0);
-      const r = rendimento(L, P);
+      // Rendimento só dos lançamentos com leite próprio, contando as peças feitas junto com o mesmo leite.
+      const proprios = ls.filter((l) => !l.leite_compartilhado);
+      const r = rendimento(proprios.reduce((a, l) => a + (l.leite_litros || 0), 0), proprios.reduce((a, l) => a + pecasEquivalentes(l), 0));
+      const soJunto = ls.length && !proprios.length;
       return p.tipo === 'queijo'
-        ? `<tr><td><b>${esc(p.nome)}</b></td><td class="num" data-rot="Lançamentos">${ls.length}</td><td class="num" data-rot="Leite">${fmtNum(L)} L</td><td class="num" data-rot="Peças">${fmtNum(P, 0)}</td><td class="num" data-rot="Rendimento">${r ? fmtNum(r) + ' L/peça' : '–'}</td><td class="num vazio">–</td></tr>`
+        ? `<tr><td><b>${esc(p.nome)}</b></td><td class="num" data-rot="Lançamentos">${ls.length}</td><td class="num" data-rot="Leite">${soJunto ? 'no lote de outro queijo' : fmtNum(L) + ' L'}</td><td class="num" data-rot="Peças">${fmtNum(P, 0)}</td><td class="num" data-rot="Rendimento">${r ? fmtNum(r) + ' L/peça' : '–'}</td><td class="num vazio">–</td></tr>`
         : `<tr><td><b>${esc(p.nome)}</b></td><td class="num" data-rot="Lançamentos">${ls.length}</td><td class="num vazio">–</td><td class="num vazio">–</td><td class="num vazio">–</td><td class="num" data-rot="Peso">${fmtNum(K)} kg</td></tr>`;
     }).join('');
     $('prPorProduto').innerHTML = linhas
@@ -4722,30 +4772,52 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function itemHTML(l) {
     const p = produto(l.produto_id) || { nome: 'Produto removido', tipo: l.peso_kg != null ? 'creme' : 'queijo' };
-    const r = rendimento(l.leite_litros, l.pecas);
+    const r = rendimentoLanc(l);
+    let leiteTxt = fmtNum(l.leite_litros) + ' L', extra = '';
+    if (p.tipo === 'queijo' && l.leite_compartilhado) {
+      const dono = donoDoLeite(l), pd = dono && produto(dono.produto_id);
+      leiteTxt = dono ? 'do ' + esc(pd ? pd.nome : 'outro queijo') : 'de outro queijo';
+    } else if (p.tipo === 'queijo') {
+      const juntos = juntosNoLeite(l);
+      if (juntos.length) extra = `<p class="pr-junto">Rendimento conta também ${juntos.map((x) => { const px = produto(x.produto_id); return fmtNum(x.pecas, 0) + ' ' + esc(px ? px.nome : 'peças'); }).join(' e ')} feitos com este leite (${fmtNum(pecasEquivalentes(l))} peças equivalentes).</p>`;
+    }
     const nums = p.tipo === 'queijo'
-      ? `<span><small>Leite</small>${fmtNum(l.leite_litros)} L</span><span><small>Peças</small>${fmtNum(l.pecas, 0)}</span><span><small>Rendimento</small>${r ? fmtNum(r) + ' L/peça' : '–'}</span>`
+      ? `<span><small>Leite</small>${leiteTxt}</span><span><small>Peças</small>${fmtNum(l.pecas, 0)}</span><span><small>Rendimento</small>${r ? fmtNum(r) + ' L/peça' : '–'}</span>`
       : `<span><small>Peso</small>${fmtNum(l.peso_kg)} kg</span>`;
     return `<div class="pr-item" data-id="${l.id}">
       <div class="pr-item-top">
         <b class="pr-nome">${esc(p.nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>
         ${podeEditar ? `<span class="pr-acoes"><button type="button" class="icon-btn" data-acao="editar" aria-label="Editar lançamento"><svg class="i"><use href="#i-edit"/></svg></button><button type="button" class="icon-btn" data-acao="excluir" aria-label="Excluir lançamento"><svg class="i"><use href="#i-trash"/></svg></button></span>` : ''}
       </div>
-      <div class="pr-nums">${nums}</div>
+      <div class="pr-nums">${nums}</div>${extra}
       ${l.observacao ? `<p class="conta-obs" style="margin-left:0">${esc(l.observacao)}</p>` : ''}
       ${l.criado_por ? `<p class="conta-autor" style="margin-left:0">Lançado por ${esc(nomes[l.criado_por] || 'usuário removido')}</p>` : ''}
     </div>`;
   }
 
   /* ---------- Ações ---------- */
+  async function confereLeite(dados, id) {
+    if (!dados.leite_compartilhado) return true;
+    let q = sb.from('producao_lancamentos').select('id').eq('data_fabricacao', dados.data_fabricacao).eq('lote', dados.lote).eq('leite_compartilhado', false).gt('leite_litros', 0).limit(1);
+    if (id) q = q.neq('id', id);
+    const { data, error } = await q;
+    if (error) { console.error(error); toast('Não foi possível conferir o lote. Verifique a conexão.'); return false; }
+    if (!data || !data.length) {
+      toast(`Não há queijo com leite lançado no lote ${dados.lote} de ${fmtData(dados.data_fabricacao)}. Lance primeiro o Tropical (com o leite) ou desmarque "Feito com o leite de outro queijo".`);
+      return false;
+    }
+    return true;
+  }
   async function registrar(e) {
     e.preventDefault();
     const form = $('prForm'); const dados = lerFormulario(form); if (!dados) return;
+    if (!(await confereLeite(dados))) return;
     const botao = $('prSalvar'); botao.disabled = true;
     const { error } = await sb.from('producao_lancamentos').insert(dados).select('id');
     botao.disabled = false;
     if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
     ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
+    form.querySelector('[name="compartilhado"]').checked = false;
     form.querySelector('[name="lote"]').value = diaDoAno(form.querySelector('[name="data"]').value);
     ajustarCampos(form);
     toast('Produção registrada.');
@@ -4761,6 +4833,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       form.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const dados = lerFormulario(form); if (!dados) return;
+        if (!(await confereLeite(dados, l.id))) return;
         const { data, error } = await sb.from('producao_lancamentos').update(dados).eq('id', l.id).select('id');
         if (error || !data || !data.length) { console.error(error); toast('Não foi possível salvar.'); return; }
         SN.ui.closeModal(); toast('Lançamento atualizado.'); atualizar();
@@ -4784,9 +4857,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <input type="text" value="${esc(p.nome)}" data-campo="nome" aria-label="Nome do produto" class="pr-g-nome">
         <select data-campo="tipo" aria-label="Tipo"><option value="queijo" ${p.tipo === 'queijo' ? 'selected' : ''}>Queijo</option><option value="creme" ${p.tipo === 'creme' ? 'selected' : ''}>Creme</option></select>
         <label class="check"><input type="checkbox" data-campo="ativo" ${p.ativo ? 'checked' : ''}> Em uso</label>
+        ${p.tipo === 'queijo' ? `<div class="pr-g-extra">
+          <label>Peso médio da peça (kg)<input type="number" min="0" step="any" inputmode="decimal" data-campo="peso_medio_kg" value="${p.peso_medio_kg == null ? '' : Number(p.peso_medio_kg)}" placeholder="Ex.: 6"></label>
+          <label>Peças por salmoura<input type="number" min="1" step="1" inputmode="numeric" data-campo="pecas_salmoura" value="${p.pecas_salmoura == null ? '' : p.pecas_salmoura}" placeholder="Sem padrão"></label>
+          <label>Peças por secagem<input type="number" min="1" step="1" inputmode="numeric" data-campo="pecas_secagem" value="${p.pecas_secagem == null ? '' : p.pecas_secagem}" placeholder="Sem padrão"></label>
+        </div>` : ''}
       </li>`;
     SN.ui.openModal('Produtos fabricados', `
       <p class="modal-context">Queijos são lançados com leite e número de peças. Cremes são lançados com o peso. Desmarque "Em uso" para tirar um produto da lista sem apagar os lançamentos dele.</p>
+      <p class="hint" style="margin:-6px 0 10px">O peso médio da peça serve para o rendimento quando um queijo é feito com o leite de outro (ex.: Meia Cura de 1 kg vale 1/6 de um Tropical de 6 kg). Peças por salmoura e por secagem são o número que já vem preenchido em cada prateleira no Estoque de Produção; em branco, as peças não são divididas sozinhas.</p>
       <ul class="cat-manage-list" id="prGLista">${produtos.map(linha).join('')}</ul>
       <form class="add-cat-form" id="prGNovo" style="margin-top:14px">
         <input type="text" id="prGNome" placeholder="Novo produto" required>
@@ -4798,7 +4877,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       root.querySelector('#prGLista').addEventListener('change', async (ev) => {
         const el = ev.target.closest('[data-campo]'); if (!el) return;
         const id = el.closest('[data-id]').dataset.id, campo = el.dataset.campo;
-        const valor = campo === 'ativo' ? el.checked : el.value.trim();
+        const numerico = ['peso_medio_kg', 'pecas_salmoura', 'pecas_secagem'].includes(campo);
+        let valor = campo === 'ativo' ? el.checked : el.value.trim();
+        if (numerico) {
+          const n = lerNum(valor);
+          if (valor !== '' && !(n > 0)) { toast('Informe um número maior que zero, ou deixe em branco.'); return; }
+          valor = valor === '' ? null : (campo === 'peso_medio_kg' ? n : Math.round(n));
+        }
         if (campo === 'nome' && !valor) { toast('O nome não pode ficar vazio.'); return; }
         const { error } = await sb.from('producao_produtos').update({ [campo]: valor }).eq('id', id);
         if (error) { toast(String(error.message || '').includes('unique') || String(error.code) === '23505' ? 'Já existe um produto com esse nome.' : 'Não foi possível salvar.'); return; }
@@ -4863,8 +4948,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 (function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  // padrao: peças que cabem numa prateleira em uso normal (valor que já vem preenchido em cada linha)
-  const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h', padrao: 66 }, secagem: { nome: 'Secagem', max: 30, unidade: 'd', padrao: 55 }, estoque: { nome: 'Estoque', max: 0 } };
+  const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
+  // Peças por prateleira em uso normal, por produto (cadastro em Produtos; vem de queijos_padroes()).
+  let padroes = {};
+  function padraoPrateleira(produtoId, etapa) { const p = padroes[produtoId]; const v = p && p[etapa === 'salmoura' ? 'pecas_salmoura' : 'pecas_secagem']; return v > 0 ? v : null; }
   let sb = null, podeEditar = false, carregado = false;
   let posicoes = [], pendentes = [], movimentos = [];
   let lotes = {};
@@ -4909,9 +4996,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 
   /* ---------- Dados ---------- */
   async function carregar() {
-    const [p, pe, m] = await Promise.all([
+    const [p, pe, , m] = await Promise.all([
       sb.from('queijos_posicoes').select('*').order('entrada_em'),
       sb.rpc('queijos_pendentes'),
+      sb.rpc('queijos_padroes').then((r) => { if (!r.error) { const m = {}; (r.data || []).forEach((x) => { m[x.produto_id] = x; }); padroes = m; } return r; }, () => ({})),
       sb.from('queijos_movimentos').select('*').is('desfeito_em', null).order('ordem', { ascending: false }).limit(30)
     ]);
     if (p.error) throw p.error;
@@ -5068,7 +5156,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return { html, primeiraLivre };
   }
   /* max: peças disponíveis; origem: posição de onde saem (ao mover) ou null; unidadeFixa: 'h'/'d' padrão do tempo */
-  function ligarDestino(form, origem, unidadeFixa, max) {
+  function ligarDestino(form, origem, unidadeFixa, max, produtoId) {
+    const lim = (et) => padraoPrateleira(produtoId, et) || Infinity;
     const linhasEl = form.querySelector('[data-linhas]');
     const etapaAtual = () => { const r = form.querySelector('[name="etapa"]:checked'); return r ? r.value : null; };
     const nomeEt = (et) => ETAPAS[et].nome.toLowerCase();
@@ -5120,7 +5209,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (!ehEstoque) {
         // Já divide as peças pelas prateleiras, até o limite de uso normal de cada uma (66 na salmoura, 55 na secagem).
         let resto = max;
-        do { const q = Math.min(ETAPAS[et].padrao, resto); addLinha(et, proximaLivre(et), q); resto -= q; }
+        do { const q = Math.min(lim(et), resto); addLinha(et, proximaLivre(et), q); resto -= q; }
         while (resto > 0 && linhas().length < ETAPAS[et].max);
         form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
       }
@@ -5134,7 +5223,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
     form.querySelector('[data-mais]').addEventListener('click', () => {
       const et = etapaAtual(); if (!et || et === 'estoque') return;
-      addLinha(et, proximaLivre(et), Math.min(ETAPAS[et].padrao, Math.max(0, max - soma())));
+      addLinha(et, proximaLivre(et), Math.min(lim(et), Math.max(0, max - soma())));
       atualizar();
       const ult = linhas().pop(); if (ult) ult.querySelector('select').focus();
     });
@@ -5207,7 +5296,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <form class="form" id="qjForm">${destinoHTML({ max: faltam, rotuloQuando: 'Data e hora da entrada' })}
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar destino</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
-      ligarDestino(form, null, 'd', faltam);
+      ligarDestino(form, null, 'd', faltam, x.produto_id);
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -5258,7 +5347,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <form class="form" id="qjForm">${destinoHTML({ max: p.pecas, rotuloQuando: 'Data e hora da entrada' })}
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
-      ligarDestino(form, p, null, p.pecas);
+      ligarDestino(form, p, null, p.pecas, l.produto_id);
       root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLugar(p.etapa, p.numero));
       form.addEventListener('submit', (e) => {
         e.preventDefault();
