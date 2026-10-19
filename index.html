@@ -759,6 +759,9 @@
   #modalBody .rf-tags { margin: 0 0 8px; }
   .rf-card.defeito { border-color: var(--danger); border-left-color: var(--danger); }
   .rf-card.defeito:hover { border-left-color: var(--danger); }
+  .rf-card.patio-def { background: var(--surface); }
+  .rf-card.urgente { background: var(--danger-soft); border-width: 2px; border-left-width: 6px; box-shadow: 0 2px 10px rgba(163, 18, 27, .15); }
+  .rf-card.urgente .rf-onde { color: var(--danger); }
   .rf-def { color: var(--danger) !important; font-weight: 600; }
   .rf-ok { color: var(--ok); }
   .rf-status { margin: 0 0 10px; font-weight: 700; padding: 8px 12px; border-radius: 8px; }
@@ -6077,10 +6080,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const busca = $('rfBusca').value.trim().toLowerCase();
     let lista = resfs.filter((r) => (filtro === 'fora' ? !r.ativo : r.ativo && (filtro === 'todos' || (filtro === 'defeito' ? r.status === 'defeito' : r.local === filtro))));
     if (busca) lista = lista.filter((r) => r.numero.toLowerCase().includes(busca) || ondeTexto(r).toLowerCase().includes(busca) || (r.marca || '').toLowerCase().includes(busca));
+    // Prioridade: com defeito no produtor (ativo) primeiro, depois com defeito no pátio; o resto na ordem do número.
+    const prioridade = (r) => (r.ativo && r.status === 'defeito' ? (r.local === 'produtor' ? 0 : 1) : 2);
+    if (filtro === 'todos' || filtro === 'defeito') lista = lista.slice().sort((a, b) => prioridade(a) - prioridade(b) || ordemNum(a, b));
     $('rfLista').innerHTML = lista.length ? lista.map((r) => {
       const ult = manutsDe(r.id)[0], nf = fotosDe(r.id).length;
       const def = r.ativo && r.status === 'defeito';
-      return `<button type="button" class="rf-card${r.local === 'patio' ? ' patio' : ''}${r.ativo ? '' : ' fora'}${def ? ' defeito' : ''}" data-id="${r.id}">
+      const urgente = def && r.local === 'produtor';
+      return `<button type="button" class="rf-card${r.local === 'patio' && !def ? ' patio' : ''}${r.local === 'patio' && def ? ' patio-def' : ''}${r.ativo ? '' : ' fora'}${def ? ' defeito' : ''}${urgente ? ' urgente' : ''}" data-id="${r.id}">
         <span class="rf-topo"><span class="rf-num">${esc(r.numero)}</span>${r.capacidade_litros ? `<span class="rf-cap">${fmtNum(r.capacidade_litros)}<small> litros</small></span>` : '<span class="rf-cap sem">sem capacidade</span>'}</span>
         ${tagsHTML(r)}
         ${r.local === 'produtor' ? `<span class="rf-onde">${esc(ondeTexto(r))}</span>` : ''}
@@ -6202,6 +6209,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <p class="rf-status ${def ? 'defeito' : 'ok'}">${def ? 'Com defeito desde ' + fmtData(r.status_desde) + ': ' + esc(r.defeito) : 'Funcionando'}</p>
         ${podeEditar ? `<div class="qj-botoes rf-botoes">
           <button type="button" class="btn btn-small ${def ? 'btn-primary' : ''}" data-acao="status">${def ? 'Voltou a funcionar' : 'Informar defeito'}</button>
+          ${def ? '<button type="button" class="btn btn-small" data-acao="alterar-defeito">Alterar defeito</button>' : ''}
           <button type="button" class="btn ${def ? '' : 'btn-primary'} btn-small" data-acao="mudar">Mudar de lugar</button>
           <button type="button" class="btn btn-small" data-acao="manut">Registrar manutenção</button>
           <button type="button" class="btn btn-small" data-acao="fotos">Adicionar fotos</button>
@@ -6230,6 +6238,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const a = b.dataset.acao;
         if (a === 'mudar') mudar(id);
         if (a === 'status') mudarStatus(id);
+        if (a === 'alterar-defeito') alterarDefeito(id);
         if (a === 'manut') manutencao(id, null);
         if (a === 'fotos') adicionarFotos(id, null);
         if (a === 'editar') editar(id);
@@ -6290,6 +6299,34 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         b.disabled = false;
         if (error) { console.error(error); toast(erroMsg(error)); return; }
         toast(def ? 'Resfriador marcado como funcionando.' : 'Defeito registrado.'); await carregar().catch(console.error); abrir(id);
+      });
+    });
+  }
+
+  function alterarDefeito(id) {
+    const r = resf(id); if (!r || r.status !== 'defeito') return;
+    SN.ui.openModal('Alterar defeito', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}, em ${esc(ondeTexto(r))}. Com defeito desde ${fmtData(r.status_desde)}. Essa data continua a mesma.</p>
+      <form class="form" id="rfForm">
+        <label>Qual o defeito<input type="text" name="defeito" maxlength="200" value="${esc(r.defeito)}" autocomplete="off" required></label>
+        <label>Data da alteração<input type="date" name="data" value="${hojeISO()}" required></label>
+        <label>Observação<input type="text" name="obs" maxlength="150" placeholder="Opcional. Ex.: técnico achou outro problema" autocomplete="off"></label>
+        ${botoesForm('Salvar defeito')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rfForm');
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrir(id));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const defeito = form.querySelector('[name="defeito"]').value.trim();
+        if (!defeito) { toast('Descreva qual é o defeito.'); return; }
+        if (defeito === r.defeito) { toast('O defeito está igual ao anterior.'); return; }
+        const obs = form.querySelector('[name="obs"]').value.trim();
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        const { error } = await sb.rpc('resfriadores_mudar_status', { p_resfriador: id, p_status: 'defeito', p_defeito: defeito,
+          p_data: form.querySelector('[name="data"]').value || hojeISO(), p_observacao: ('Defeito alterado (antes: ' + r.defeito + ')' + (obs ? '. ' + obs : '')).slice(0, 400) });
+        b.disabled = false;
+        if (error) { console.error(error); toast(erroMsg(error)); return; }
+        toast('Defeito alterado.'); await carregar().catch(console.error); abrir(id);
       });
     });
   }
