@@ -245,6 +245,11 @@
   }
 
   .content-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
+  .lv-visao { display: flex; width: 100%; max-width: 440px; margin: 6px 0 18px; }
+  .lv-visao .seg-btn { flex: 1; padding: 11px 12px; font-size: 1rem; }
+  .lv-painel[hidden] { display: none !important; }
+  #lvVisaoLancamentos { margin-bottom: 20px; }
+  .lv-cat-nota { margin: -6px 0 12px; font-size: .85rem; }
   @media (min-width: 1180px) { .content-grid { grid-template-columns: minmax(0, 1fr) 290px; align-items: start; } }
   .panel-head h2 { margin: 0 0 12px; }
   .panel-head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
@@ -1002,7 +1007,12 @@
         <div class="summary-grid" id="summaryGrid"></div>
       </section>
 
-      <div class="content-grid">
+      <div class="segmented lv-visao" id="lvVisao" role="tablist" aria-label="O que mostrar">
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" aria-controls="lvVisaoLancamentos" data-visao="lancamentos">Lançamentos</button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="lvVisaoGastos" data-visao="gastos">Gastos por mês</button>
+      </div>
+
+      <div class="lv-painel" id="lvVisaoLancamentos" role="tabpanel">
         <section class="panel table-panel">
           <div class="panel-head"><h2>Lançamentos</h2></div>
           <div class="filters">
@@ -1039,24 +1049,27 @@
           <p class="filter-summary" id="vencFilterSummary" hidden></p>
           <div id="contasBody" class="contas-list"></div>
         </section>
+      </div>
+
+      <div class="content-grid lv-painel" id="lvVisaoGastos" role="tabpanel" hidden>
+        <section class="panel gastos-mes-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Gastos por mês</h2>
+            <select id="gastosMesSelect" class="select-inline" aria-label="Mês"></select>
+          </div>
+          <p class="filter-summary" id="gastosMesSummary"></p>
+          <div id="gastosMesGrafico" class="gm-grafico"></div>
+          <div id="gastosMesBars" class="gastos-mes-bars"></div>
+        </section>
 
         <aside class="side-col">
           <section class="panel">
             <div class="panel-head panel-head-row"><h2>Por categoria</h2><button type="button" class="link-btn" id="btnGerenciarCategorias">Gerenciar</button></div>
+            <p class="muted-note lv-cat-nota">Valores em aberto no período do Resumo.</p>
             <div id="categoryBars"></div>
           </section>
         </aside>
       </div>
-
-      <section class="panel gastos-mes-panel">
-        <div class="panel-head panel-head-row">
-          <h2>Gastos por mês</h2>
-          <select id="gastosMesSelect" class="select-inline" aria-label="Mês"></select>
-        </div>
-        <p class="filter-summary" id="gastosMesSummary"></p>
-        <div id="gastosMesGrafico" class="gm-grafico"></div>
-        <div id="gastosMesBars" class="gastos-mes-bars"></div>
-      </section>
 
       <p class="fatal" id="fatalMessage" hidden></p>
     </section>
@@ -2696,6 +2709,20 @@ function renderGastosMensais() {
       </label>`;
     }).join('')}`;
 }
+/* Duas visões no Livro de contas: "Lançamentos" e "Gastos por mês" (lembra a última neste aparelho). */
+function mostrarVisaoLivro(v) {
+  if (v !== 'gastos') v = 'lancamentos';
+  document.querySelectorAll('#lvVisao [data-visao]').forEach((b) => { const on = b.dataset.visao === v; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  document.getElementById('lvVisaoLancamentos').hidden = v !== 'lancamentos';
+  document.getElementById('lvVisaoGastos').hidden = v !== 'gastos';
+  try { localStorage.setItem('sn_livro_visao', v); } catch (e) { /* ok */ }
+}
+function ligarVisaoLivro() {
+  let v = 'lancamentos';
+  try { v = localStorage.getItem('sn_livro_visao') || v; } catch (e) { /* ok */ }
+  mostrarVisaoLivro(v);
+  document.getElementById('lvVisao').addEventListener('click', (e) => { const b = e.target.closest('[data-visao]'); if (b) mostrarVisaoLivro(b.dataset.visao); });
+}
 function ligarGastosMensais() {
   els.gastosMesBars.addEventListener('change', (e) => {
     const cb = e.target.closest('[data-gm-cat]'); if (!cb) return;
@@ -3974,6 +4001,7 @@ async function init(ctx) {
   els.btnContasRecorrentes.addEventListener('click', openRecorrenciasModal);
   els.btnGerenciarCategorias.addEventListener('click', openCategoriasModal);
   ligarGastosMensais();
+  ligarVisaoLivro();
   els.gastosMesSelect.addEventListener('change', () => {
     gastosMesSelecionado = els.gastosMesSelect.value;
     renderGastosMensais();
