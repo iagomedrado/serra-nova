@@ -308,6 +308,52 @@
   .select-inline { width: auto; }
   .gastos-mes-bars { max-width: 760px; }
   .gastos-mes-panel .filter-summary { background: var(--bg); color: var(--ink); }
+  .gastos-mes-panel #gastosMesSummary { display: grid; gap: 2px; padding: 12px 14px; font-weight: 400; max-width: 760px; }
+  .gm-rotulo { color: var(--muted); font-size: .88rem; }
+  .gm-total { font-family: Merriweather, Georgia, serif; font-size: 1.7rem; font-weight: 900; line-height: 1.15; }
+  .gm-det, .gm-comp { font-size: .88rem; color: var(--muted); }
+  .gm-sobe { color: var(--danger); font-weight: 700; }
+  .gm-desce { color: var(--ok); font-weight: 700; }
+  .gm-acoes { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; font-size: .88rem; color: var(--muted); margin-bottom: 12px; }
+  .gm-linha { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .gm-linha input { width: 18px; height: 18px; min-height: 0; margin: 2px 0 0; flex: none; accent-color: var(--vermelho); }
+  .gm-conteudo { flex: 1; min-width: 0; display: block; }
+  .gm-conteudo .cat-bar-label, .gm-conteudo .cat-bar-track { display: flex; }
+  .gm-conteudo .cat-bar-track { display: block; }
+  .gm-conteudo .cat-bar-fill { display: block; }
+  .gm-linha small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+  .gm-fora .cat-bar-label { color: var(--muted); }
+  .gm-fora .cat-bar-fill { background: var(--line); }
+  .gm-falta { font-size: .88rem; color: var(--ink); }
+  .gm-track { display: flex !important; gap: 2px; background: var(--bg); }
+  .gm-track .cat-bar-fill { flex: none; }
+  .gm-fill-falta { display: block; height: 100%; flex: none; border-radius: 999px; background: repeating-linear-gradient(45deg, var(--bar) 0 2px, transparent 2px 5px); opacity: .55; }
+  .gm-cat-falta { display: block; font-size: .8rem; color: var(--muted); margin-top: 3px; }
+  .gm-fora .gm-fill-falta { background: repeating-linear-gradient(45deg, var(--line) 0 2px, transparent 2px 5px); opacity: 1; }
+  .gm-grafico { max-width: 760px; margin: 0 0 18px; }
+  .gm-graf-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 6px; }
+  .gm-graf-tit { font-size: .88rem; color: var(--muted); font-weight: 600; }
+  .gm-legenda { display: flex; gap: 12px; font-size: .8rem; color: var(--muted); }
+  .gm-legenda span { display: inline-flex; align-items: center; gap: 5px; }
+  .gm-legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+  .gm-l-pago { background: var(--bar); }
+  .gm-l-falta { background: repeating-linear-gradient(45deg, var(--bar) 0 2px, transparent 2px 5px); opacity: .7; border: 1px solid var(--bar); }
+  .gm-graf { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; align-items: end; height: 170px; border-bottom: 1px solid var(--line); }
+  .gm-col { display: grid; grid-template-rows: auto 1fr; height: 100%; padding: 0 2px; background: transparent; border: 0; border-radius: 6px; cursor: pointer; color: var(--muted); font: inherit; position: relative; }
+  .gm-col:disabled { cursor: default; }
+  .gm-col:not(:disabled):hover { background: var(--bg); }
+  .gm-val { font-size: .74rem; text-align: center; white-space: nowrap; align-self: end; padding-bottom: 3px; }
+  .gm-col.sel .gm-val { color: var(--ink); font-weight: 700; }
+  .gm-pilha { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; height: 100%; min-height: 0; }
+  .gm-seg { display: block; width: min(34px, 70%); min-height: 2px; }
+  .gm-seg.pago { background: var(--bar); opacity: .45; border-radius: 0 0 0 0; }
+  .gm-seg:first-child { border-radius: 4px 4px 0 0; }
+  .gm-seg.falta { background: repeating-linear-gradient(45deg, var(--bar) 0 2px, transparent 2px 5px); opacity: .5; box-shadow: inset 0 0 0 1px var(--bar); }
+  .gm-col.sel .gm-seg.pago { opacity: 1; }
+  .gm-col.sel .gm-seg.falta { opacity: .8; }
+  .gm-mes { position: absolute; left: 0; right: 0; bottom: -20px; text-align: center; font-size: .74rem; }
+  .gm-col.sel .gm-mes { color: var(--ink); font-weight: 700; }
+  .gm-grafico { padding-bottom: 22px; }
   .fatal { color: var(--danger); font-weight: 600; }
 
   /* ---------- Painel de filtros ---------- */
@@ -1008,6 +1054,7 @@
           <select id="gastosMesSelect" class="select-inline" aria-label="Mês"></select>
         </div>
         <p class="filter-summary" id="gastosMesSummary"></p>
+        <div id="gastosMesGrafico" class="gm-grafico"></div>
         <div id="gastosMesBars" class="gastos-mes-bars"></div>
       </section>
 
@@ -2360,6 +2407,7 @@ function cacheEls() {
     gastosMesSelect: document.getElementById('gastosMesSelect'),
     gastosMesSummary: document.getElementById('gastosMesSummary'),
     gastosMesBars: document.getElementById('gastosMesBars'),
+    gastosMesGrafico: document.getElementById('gastosMesGrafico'),
     btnImprimirLancamentos: document.getElementById('btnImprimirLancamentos'),
     printHeaderMeta: document.getElementById('printHeaderMeta'),
     printReport: document.getElementById('printReport'),
@@ -2491,50 +2539,180 @@ function mesLabel(mesStr) {
   const [y, m] = mesStr.split('-').map(Number);
   return `${MESES_PT[m - 1]} de ${y}`;
 }
+/* ===================== Gastos por mês =====================
+   Soma só as categorias marcadas. A escolha fica salva no banco (livro_preferencias,
+   uma linha por usuário), para valer em todos os aparelhos; o aparelho guarda uma cópia
+   para abrir rápido e para quando estiver sem internet. */
+const GM_CHAVE = 'sn_livro_gastos_fora';
+let gastosForaSoma = (() => { try { return new Set(JSON.parse(localStorage.getItem(GM_CHAVE) || '[]')); } catch (e) { return new Set(); } })();
+let sbLivro = null, gmTimer = null;
+function salvarGastosFora() {
+  try { localStorage.setItem(GM_CHAVE, JSON.stringify([...gastosForaSoma])); } catch (e) { /* sem armazenamento no aparelho */ }
+  if (!sbLivro) return;
+  clearTimeout(gmTimer);
+  gmTimer = setTimeout(async () => {
+    const { error } = await sbLivro.from('livro_preferencias').upsert({ gastos_fora: [...gastosForaSoma] }, { onConflict: 'usuario_id' });
+    if (error) console.error(error);
+  }, 600);
+}
+async function carregarGastosFora(sb) {
+  sbLivro = sb;
+  try {
+    const { data, error } = await sb.from('livro_preferencias').select('gastos_fora').maybeSingle();
+    if (error) throw error;
+    if (data) {
+      gastosForaSoma = new Set(data.gastos_fora || []);
+      try { localStorage.setItem(GM_CHAVE, JSON.stringify([...gastosForaSoma])); } catch (e) { /* ok */ }
+      renderGastosMensais();
+    } else if (gastosForaSoma.size) {
+      salvarGastosFora(); // primeira vez: leva para o banco o que já estava escolhido neste aparelho
+    }
+  } catch (e) { console.error(e); }
+}
+function mesAnterior(mesStr, n) { const [y, m] = mesStr.split('-').map(Number); const d = new Date(y, m - 1 - (n == null ? 1 : n), 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function mesCurto(mesStr) { const [y, m] = mesStr.split('-').map(Number); return MESES_PT[m - 1].slice(0, 3) + '/' + String(y).slice(2); }
+function valorCurto(v) {
+  if (v >= 1000000) return (v / 1000000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mi';
+  if (v >= 1000) return (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: v >= 10000 ? 0 : 1 }) + ' mil';
+  return Math.round(v).toLocaleString('pt-BR');
+}
+/* Pago por mês (data do pagamento) e a pagar por mês (saldo das parcelas em aberto, pelo vencimento). */
 function computeGastosPorMes(list) {
   const mapa = {};
+  const mes = (k) => (mapa[k] = mapa[k] || { total: 0, count: 0, porCategoria: {}, aPagar: {}, aPagarCount: 0, vencidas: 0 });
+  const hoje = localISODate();
   for (const c of list) {
     const cat = c.categoria || 'Sem categoria';
     for (const p of (c.parcelas || [])) {
-      if (p.pago && p.dataPagamento) {
-        const mesStr = p.dataPagamento.slice(0, 7);
-        if (!mapa[mesStr]) mapa[mesStr] = { total: 0, count: 0, porCategoria: {} };
-        const valor = p.valorPago || 0;
-        mapa[mesStr].total += valor;
-        mapa[mesStr].count++;
-        mapa[mesStr].porCategoria[cat] = (mapa[mesStr].porCategoria[cat] || 0) + valor;
+      if ((p.valorPago || 0) > 0 && p.dataPagamento) {
+        const m = mes(p.dataPagamento.slice(0, 7));
+        m.total += p.valorPago; m.count++;
+        m.porCategoria[cat] = (m.porCategoria[cat] || 0) + p.valorPago;
+      }
+      const falta = remaining(p);
+      if (falta > 0 && p.dataVencimento) {
+        const m = mes(p.dataVencimento.slice(0, 7));
+        m.aPagar[cat] = (m.aPagar[cat] || 0) + falta; m.aPagarCount++;
+        if (p.dataVencimento < hoje) m.vencidas++;
       }
     }
   }
   return mapa;
 }
 function renderGastosMensais() {
+  if (!els.gastosMesBars) return;
   const mapa = computeGastosPorMes(contas);
-  const meses = Object.keys(mapa).sort().reverse();
+  // Meses com pagamento ou com parcela a vencer (até 12 meses à frente).
+  const limite = mesAnterior(localISODate().slice(0, 7), -12);
+  const meses = Object.keys(mapa).filter((m) => m <= limite).sort().reverse();
   if (meses.length === 0) {
     els.gastosMesSelect.innerHTML = '';
     els.gastosMesSelect.hidden = true;
     els.gastosMesSummary.hidden = true;
+    els.gastosMesGrafico.innerHTML = '';
     els.gastosMesBars.innerHTML = `<p class="muted-note">Nenhum pagamento registrado ainda. Assim que você marcar uma conta como paga, o resumo do mês aparece aqui.</p>`;
     return;
   }
   els.gastosMesSelect.hidden = false;
   els.gastosMesSummary.hidden = false;
-  if (!gastosMesSelecionado || !mapa[gastosMesSelecionado]) {
-    const atual = localISODate().slice(0, 7);
-    gastosMesSelecionado = mapa[atual] ? atual : meses[0];
-  }
+  const atual = localISODate().slice(0, 7);
+  if (!gastosMesSelecionado || !mapa[gastosMesSelecionado]) gastosMesSelecionado = mapa[atual] ? atual : meses.find((m) => m <= atual) || meses[meses.length - 1];
   els.gastosMesSelect.innerHTML = meses.map(m => `<option value="${m}" ${m === gastosMesSelecionado ? 'selected' : ''}>${mesLabel(m)}</option>`).join('');
   const dados = mapa[gastosMesSelecionado];
-  els.gastosMesSummary.textContent = `Total pago em ${mesLabel(gastosMesSelecionado)}: ${fmtCur(dados.total)} (${dados.count} ${plural(dados.count, 'pagamento', 'pagamentos')})`;
-  const entries = Object.entries(dados.porCategoria).sort((a, b) => b[1] - a[1]);
-  const max = entries.length ? entries[0][1] : 1;
-  els.gastosMesBars.innerHTML = entries.map(([cat, val]) => `
-    <div class="cat-bar-row">
-      <div class="cat-bar-label"><span>${esc(cat)}</span><span>${fmtCur(val)}</span></div>
-      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.max(4, (val / max) * 100)}%"></div></div>
-    </div>
-  `).join('');
+  const entra = (cat) => !gastosForaSoma.has(cat);
+  const somaCat = (obj) => Object.entries(obj || {}).filter(([cat]) => entra(cat)).reduce((a, [, v]) => a + v, 0);
+
+  const cats = [...new Set([...Object.keys(dados.porCategoria), ...Object.keys(dados.aPagar)])];
+  const pagoDe = (cat) => dados.porCategoria[cat] || 0, faltaDe = (cat) => dados.aPagar[cat] || 0;
+  // As que entram na soma primeiro (maior valor pago no topo); as tiradas da soma vão para o fim.
+  cats.sort((a, b) => (entra(b) - entra(a)) || (pagoDe(b) - pagoDe(a)) || (faltaDe(b) - faltaDe(a)) || a.localeCompare(b, 'pt-BR'));
+  const escolhidas = cats.filter(entra);
+  const total = somaCat(dados.porCategoria), falta = somaCat(dados.aPagar);
+  const todas = escolhidas.length === cats.length;
+  const nomeMes = mesLabel(gastosMesSelecionado);
+
+  // Comparação com o mês anterior, somando as mesmas categorias escolhidas.
+  const ant = mesAnterior(gastosMesSelecionado), dadosAnt = mapa[ant];
+  let comparacao = '';
+  if (dadosAnt) {
+    const totAnt = somaCat(dadosAnt.porCategoria);
+    const nomeAnt = MESES_PT[Number(ant.slice(5, 7)) - 1].toLowerCase();
+    if (totAnt > 0) {
+      const dif = total - totAnt, pct = Math.round((dif / totAnt) * 100);
+      comparacao = Math.abs(dif) < 0.005 ? `Pago igual a ${nomeAnt} (${fmtCur(totAnt)}).`
+        : `<span class="${dif > 0 ? 'gm-sobe' : 'gm-desce'}">${dif > 0 ? '▲' : '▼'} ${fmtCur(Math.abs(dif))} (${Math.abs(pct)}%)</span> ${dif > 0 ? 'a mais' : 'a menos'} que em ${nomeAnt} (${fmtCur(totAnt)}).`;
+    } else if (total > 0) comparacao = `Sem pagamentos nessas categorias em ${nomeAnt}.`;
+  }
+  // Quanto ainda falta pagar no mês (parcelas em aberto que vencem nele).
+  const qtdFalta = Object.keys(dados.aPagar).length ? contas.reduce((a, c) => entra(c.categoria || 'Sem categoria') ? a + (c.parcelas || []).filter((p) => remaining(p) > 0 && (p.dataVencimento || '').slice(0, 7) === gastosMesSelecionado).length : a, 0) : 0;
+  const vencidasSel = contas.reduce((a, c) => entra(c.categoria || 'Sem categoria') ? a + (c.parcelas || []).filter((p) => remaining(p) > 0 && (p.dataVencimento || '').slice(0, 7) === gastosMesSelecionado && p.dataVencimento < localISODate()).length : a, 0);
+  const faltaTxt = falta > 0
+    ? `<span class="gm-falta">Ainda a pagar em ${esc(nomeMes.split(' ')[0].toLowerCase())}: <b>${fmtCur(falta)}</b> (${qtdFalta} ${plural(qtdFalta, 'parcela', 'parcelas')}${vencidasSel ? `, <span class="gm-sobe">${vencidasSel} ${plural(vencidasSel, 'vencida', 'vencidas')}</span>` : ''}). Pago + a pagar: ${fmtCur(total + falta)}.</span>`
+    : (gastosMesSelecionado <= atual ? '<span class="gm-det">Nada mais a pagar neste mês nessas categorias.</span>' : '');
+
+  els.gastosMesSummary.innerHTML = `
+    <span class="gm-rotulo">${todas ? 'Total pago em ' + esc(nomeMes) : 'Pago nas categorias escolhidas em ' + esc(nomeMes)}</span>
+    <strong class="gm-total">${fmtCur(total)}</strong>
+    <span class="gm-det">${todas ? `Todas as ${cats.length} categorias` : `${escolhidas.length} de ${cats.length} categorias`}, ${dados.count} ${plural(dados.count, 'pagamento', 'pagamentos')} no mês.${todas || Math.abs(dados.total - total) < 0.005 ? '' : ` Pago no mês, em todas as categorias: ${fmtCur(dados.total)}.`}</span>
+    ${faltaTxt}
+    ${comparacao ? `<span class="gm-comp">${comparacao}</span>` : ''}`;
+
+  // Gráfico: 6 meses até o mês escolhido (pago + ainda a pagar), nas categorias escolhidas.
+  const seis = [5, 4, 3, 2, 1, 0].map((n) => mesAnterior(gastosMesSelecionado, n));
+  const valores = seis.map((m) => ({ m, pago: somaCat(mapa[m] && mapa[m].porCategoria), falta: somaCat(mapa[m] && mapa[m].aPagar) }));
+  const maxG = Math.max(1, ...valores.map((v) => v.pago + v.falta));
+  const temFalta = valores.some((v) => v.falta > 0);
+  els.gastosMesGrafico.innerHTML = `
+    <div class="gm-graf-cab"><span class="gm-graf-tit">Últimos 6 meses${todas ? '' : ' (categorias escolhidas)'}</span>
+      <span class="gm-legenda"><span><i class="gm-l-pago"></i>Pago</span>${temFalta ? '<span><i class="gm-l-falta"></i>A pagar</span>' : ''}</span></div>
+    <div class="gm-graf" role="group" aria-label="Pago por mês nos últimos 6 meses">
+      ${valores.map((v) => {
+        const sel = v.m === gastosMesSelecionado, tem = !!mapa[v.m];
+        const hP = (v.pago / maxG) * 100, hF = (v.falta / maxG) * 100;
+        const dica = `${mesLabel(v.m)}: pago ${fmtCur(v.pago)}${v.falta > 0 ? ', a pagar ' + fmtCur(v.falta) : ''}`;
+        return `<button type="button" class="gm-col${sel ? ' sel' : ''}" ${tem ? `data-gm-mes="${v.m}"` : 'disabled'} title="${esc(dica)}" aria-label="${esc(dica)}${tem && !sel ? '. Toque para ver este mês' : ''}">
+          <span class="gm-val">${v.pago + v.falta > 0 ? valorCurto(v.pago + (sel ? v.falta : 0)) : '–'}</span>
+          <span class="gm-pilha">${v.falta > 0 ? `<span class="gm-seg falta" style="height:${hF}%"></span>` : ''}${v.pago > 0 ? `<span class="gm-seg pago" style="height:${hP}%"></span>` : ''}</span>
+          <span class="gm-mes">${mesCurto(v.m)}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+
+  const max = Math.max(1, ...escolhidas.map((c) => pagoDe(c) + faltaDe(c)), ...(escolhidas.length ? [] : cats.map((c) => pagoDe(c) + faltaDe(c))));
+  els.gastosMesBars.innerHTML = `
+    <div class="gm-acoes"><span>Marque as categorias que entram na soma:</span>
+      <button type="button" class="link-btn" data-gm="todas">Marcar todas</button>
+      <button type="button" class="link-btn" data-gm="nenhuma">Desmarcar todas</button></div>
+    ${cats.map((cat) => {
+      const dentro = entra(cat), val = pagoDe(cat), fl = faltaDe(cat);
+      const pct = dentro && total > 0 && val > 0 ? Math.round((val / total) * 100) : null;
+      return `<label class="cat-bar-row gm-linha${dentro ? '' : ' gm-fora'}">
+        <input type="checkbox" data-gm-cat="${esc(cat)}" ${dentro ? 'checked' : ''}>
+        <span class="gm-conteudo">
+          <span class="cat-bar-label"><span>${esc(cat)}</span><span>${fmtCur(val)}${dentro ? (pct != null ? ` <small>${pct}%</small>` : '') : ' <small>fora da soma</small>'}</span></span>
+          <span class="cat-bar-track gm-track">${val > 0 ? `<span class="cat-bar-fill" style="width:${Math.max(2, (val / max) * 100)}%"></span>` : ''}${fl > 0 ? `<span class="gm-fill-falta" style="width:${Math.max(2, (fl / max) * 100)}%"></span>` : ''}</span>
+          ${fl > 0 ? `<span class="gm-cat-falta">A pagar: ${fmtCur(fl)}</span>` : ''}
+        </span>
+      </label>`;
+    }).join('')}`;
+}
+function ligarGastosMensais() {
+  els.gastosMesBars.addEventListener('change', (e) => {
+    const cb = e.target.closest('[data-gm-cat]'); if (!cb) return;
+    const cat = cb.dataset.gmCat;
+    if (cb.checked) gastosForaSoma.delete(cat); else gastosForaSoma.add(cat);
+    salvarGastosFora(); renderGastosMensais();
+  });
+  els.gastosMesBars.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-gm]'); if (!b) return;
+    const dados = computeGastosPorMes(contas)[gastosMesSelecionado]; if (!dados) return;
+    [...Object.keys(dados.porCategoria), ...Object.keys(dados.aPagar)].forEach((cat) => { if (b.dataset.gm === 'todas') gastosForaSoma.delete(cat); else gastosForaSoma.add(cat); });
+    salvarGastosFora(); renderGastosMensais();
+  });
+  els.gastosMesGrafico.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-gm-mes]'); if (!b) return;
+    gastosMesSelecionado = b.dataset.gmMes; renderGastosMensais();
+  });
 }
 
 function parcelaCorrespondeAoRelatorio(p, todayStr, vencAtivo, win, statusFiltro) {
@@ -3795,6 +3973,7 @@ async function init(ctx) {
   els.btnNovaConta.addEventListener('click', openNovaContaModal);
   els.btnContasRecorrentes.addEventListener('click', openRecorrenciasModal);
   els.btnGerenciarCategorias.addEventListener('click', openCategoriasModal);
+  ligarGastosMensais();
   els.gastosMesSelect.addEventListener('change', () => {
     gastosMesSelecionado = els.gastosMesSelect.value;
     renderGastosMensais();
@@ -3867,6 +4046,7 @@ async function init(ctx) {
   });
 
   db = createSupabaseStore(ctx.sb);
+  carregarGastosFora(ctx.sb);
   try {
     const { data } = await ctx.sb.rpc('nomes_usuarios');
     (data || []).forEach(u => { nomesUsuarios[u.id] = u.nome || 'sem nome'; });
