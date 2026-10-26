@@ -841,6 +841,71 @@
   .rf-grande img { display: block; max-width: 100%; max-height: 65vh; margin: 0 auto; border-radius: 8px; }
   .rf-grande figcaption { margin-top: 8px; color: var(--muted); font-size: .9rem; text-align: center; }
 
+  /* ---------- Resfriadores: réguas (aferição) ---------- */
+  #rfVisao { margin-top: -8px; }
+  .rg-consulta { margin-bottom: 20px; border-top: 4px solid var(--ouro); }
+  .rg-consulta h2 { margin-bottom: 10px; }
+  .rg-consulta-campos { display: grid; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  @media (max-width: 560px) { .rg-consulta-campos { grid-template-columns: 1fr; } }
+  .rg-resultado { margin-top: 12px; }
+  .rg-resultado:empty { display: none; }
+  .rg-litros { font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1.1; }
+  .rg-litros small { font-family: "Source Sans 3", sans-serif; font-weight: 600; font-size: 1rem; color: var(--muted); }
+  .rg-resultado p { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+  .rg-resultado .rg-fora { color: var(--warn); font-weight: 600; }
+  .rg-resumo small { display: block; color: var(--muted); font-size: .82rem; }
+  @media (max-width: 560px) { .rg-resumo div { flex-wrap: wrap; } .rg-resumo small { flex-basis: 100%; } }
+  .rf-card.rg-sem { border-left-color: var(--line); }
+  .rf-card.rg-andamento { border-left-color: var(--warn); }
+  .rf-tag.rg-ok { color: var(--ok); background: var(--ok-soft); }
+  .rf-tag.rg-sem { color: var(--muted); background: transparent; }
+  .rf-tag.rg-and { color: var(--warn); background: var(--warn-soft); }
+  .rg-linha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 10px; }
+  .rg-faixa { border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 8px; padding: 10px 12px; margin: 0 0 14px; background: var(--warn-soft); }
+  .rg-faixa p { margin: 0 0 6px; }
+  .rg-info { margin: 0 0 12px; }
+  .rg-consulta-mini { display: grid; gap: 10px; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); align-items: end; margin: 6px 0 4px; }
+  @media (max-width: 560px) { .rg-consulta-mini { grid-template-columns: 1fr; } }
+  .rg-avisos { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+  .rg-avisos li { border-left: 4px solid var(--danger); background: var(--danger-soft); border-radius: 6px; padding: 7px 10px; font-size: .93rem; }
+  .rg-avisos li.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+  .rg-avisos li.info { border-left-color: var(--line); background: var(--bg); }
+  .rg-grafico { width: 100%; height: auto; display: block; margin-top: 6px; color: var(--ink); }
+  .rg-grafico .grade { stroke: var(--line); stroke-width: 1; }
+  .rg-grafico .eixo { fill: var(--muted); font-size: 12px; font-family: "Source Sans 3", sans-serif; }
+  .rg-grafico .linha { fill: none; stroke: var(--vermelho); stroke-width: 2.5; stroke-linejoin: round; }
+  .rg-grafico .ponto { fill: var(--surface); stroke: var(--vinho); stroke-width: 2; }
+  .rg-grafico .ponto.ruim { fill: var(--danger); stroke: var(--danger); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rg-grafico .ponto { stroke: var(--ouro); } }
+  :root[data-theme="dark"] .rg-grafico .ponto { stroke: var(--ouro); }
+  .rg-hist { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
+  .rg-hist b, .rg-hist small { display: block; }
+  .rg-hist small { color: var(--muted); }
+  .rg-hist.atual b::after { content: " (em uso)"; color: var(--ok); font-weight: 600; }
+  /* lançamento dos pontos */
+  .rg-andamento { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--bg); }
+  .rg-andamento span { color: var(--muted); }
+  .rg-andamento b { color: var(--ink); font-size: 1.05rem; }
+  .rg-entrada { border: 2px solid var(--vermelho); border-radius: 10px; padding: 12px; display: grid; gap: 10px; }
+  .rg-entrada.corrigindo { border-color: var(--ouro); }
+  .rg-entrada h3 { margin: 0; font-family: Merriweather, Georgia, serif; font-size: 1rem; }
+  .rg-entrada .two { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; align-items: end; }
+  .rg-entrada .segmented { display: flex; }
+  .rg-entrada .seg-btn { flex: 1; padding: 9px 8px; }
+  .rg-entrada input { font-size: 1.15rem; font-weight: 700; }
+  .rg-dica { margin: 0; font-size: .9rem; color: var(--muted); min-height: 1.3em; }
+  .rg-dica.ruim { color: var(--danger); font-weight: 600; }
+  .rg-pontos { margin-top: 14px; }
+  .rg-ponto { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; padding: 8px 2px; border-bottom: 1px solid var(--line); }
+  .rg-ponto:last-child { border-bottom: 0; }
+  .rg-ponto .n { color: var(--muted); font-weight: 700; }
+  .rg-ponto .mm { font-family: Merriweather, Georgia, serif; font-weight: 900; white-space: nowrap; }
+  .rg-ponto small { grid-column: 2 / -1; color: var(--muted); }
+  .rg-ponto.ruim { background: var(--danger-soft); }
+  .rg-ponto.ruim small { color: var(--danger); font-weight: 600; }
+  .rg-ponto .vd-acoes { grid-column: 2 / -1; margin-left: 0; }
+  #rfImpressao { display: none; }
+
   /* ---------- Impressão do relatório ---------- */
   .print-header, .print-report { display: none; }
   @media print {
@@ -861,6 +926,31 @@
     .print-table th.num, .print-table td.num { text-align: right; }
     .print-table td { padding: 6px 8px; border-bottom: 1px solid #ccc; white-space: normal; }
     .print-table tfoot td { font-weight: 700; border-top: 2px solid #000; border-bottom: none; padding-top: 8px; }
+  }
+
+  /* ---------- Impressão da tabela da régua (resfriadores) ---------- */
+  @media print {
+    body.rg-imprimindo { background: #fff !important; color: #000 !important; height: auto; }
+    body.rg-imprimindo > *:not(#rfImpressao) { display: none !important; }
+    body.rg-imprimindo #rfImpressao { display: block !important; }
+    .rgp-pagina { break-after: page; page-break-after: always; font: 11px/1.25 "Source Sans 3", Arial, sans-serif; color: #000; }
+    .rgp-pagina:last-child { break-after: auto; page-break-after: auto; }
+    .rgp-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 8px; }
+    .rgp-topo b { font-family: Merriweather, Georgia, serif; font-size: 14px; }
+    .rgp-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px 16px; margin: 0 0 10px; font-size: 11.5px; }
+    .rgp-info span { color: #444; }
+    .rgp-cols { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 10px; }
+    .rgp-cols table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .rgp-cols th { text-align: right; font-weight: 700; padding: 1px 4px; border-bottom: 1.5px solid #000; color: #000; white-space: nowrap; }
+    .rgp-cols td { text-align: right; padding: 0 4px; height: 14px; border-bottom: 1px solid #ddd; color: #000; white-space: nowrap; }
+    .rgp-cols tr.forte td { font-weight: 700; border-bottom-color: #888; }
+    .rgp-nota { margin: 10px 0 0; font-size: 10.5px; color: #333; }
+    .rgp-pontos { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+    .rgp-cols.rgp-cols2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+    .rgp-pontos th, .rgp-pontos td { text-align: right; padding: 1px 6px; border-bottom: 1px solid #ccc; color: #000; }
+    .rgp-pontos th { border-bottom: 1.5px solid #000; }
+    .rgp-assin { display: flex; gap: 40px; margin-top: 28px; font-size: 11px; }
+    .rgp-assin div { flex: 1; border-top: 1px solid #000; padding-top: 3px; text-align: center; }
   }
 </style>
 </head>
@@ -1258,9 +1348,15 @@
     <section data-tab="resfriadores" aria-labelledby="t-resfriadores" id="resfriadoresRoot">
       <div class="page-head">
         <div><h1 id="t-resfriadores">Resfriadores</h1><p>Onde está cada resfriador de leite, por onde já passou, manutenções e fotos.</p></div>
-        <div class="actions"><button type="button" class="btn" id="rfProdutores">Produtores</button><button type="button" class="btn btn-primary" id="rfNovo" hidden>Novo resfriador</button></div>
+        <div class="actions" id="rfAcoes"><button type="button" class="btn" id="rfProdutores">Produtores</button><button type="button" class="btn btn-primary" id="rfNovo" hidden>Novo resfriador</button></div>
       </div>
       <p class="test-note" id="rfNota" hidden></p>
+      <div class="segmented lv-visao" id="rfVisao" role="tablist" aria-label="O que mostrar">
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" aria-controls="rfPainelLista" data-visao="lista">Resfriadores</button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="rfPainelReguas" data-visao="reguas">Réguas</button>
+      </div>
+
+      <div id="rfPainelLista" role="tabpanel" aria-label="Resfriadores">
       <div class="rf-avisos" id="rfAvisos" hidden aria-live="polite"><p id="rfAvisosTexto"></p><div class="actions" id="rfAvisosAcoes"></div></div>
       <div class="ledger pr-resumo" id="rfResumo"></div>
 
@@ -1278,6 +1374,29 @@
       <div class="qj-grid2 rf-grid">
         <section class="panel" aria-label="Lista de resfriadores"><div class="rf-lista" id="rfLista"><p class="empty-state-msg">Carregando…</p></div></section>
         <section class="panel" aria-labelledby="h-rf-ult"><h2 id="h-rf-ult">Últimas manutenções</h2><p class="muted-note" id="rfAno"></p><div id="rfUltimas"></div></section>
+      </div>
+      </div>
+
+      <div id="rfPainelReguas" role="tabpanel" aria-label="Réguas" hidden>
+        <section class="panel rg-consulta" aria-labelledby="h-rg-consulta">
+          <h2 id="h-rg-consulta">Consultar volume</h2>
+          <div class="rg-consulta-campos">
+            <label>Resfriador<select id="rgConsultaResf"></select></label>
+            <label>Leitura da régua (mm)<input type="number" id="rgConsultaMm" min="0" step="1" inputmode="numeric" placeholder="Ex.: 735" autocomplete="off"></label>
+          </div>
+          <div class="rg-resultado" id="rgConsultaRes" aria-live="polite"></div>
+        </section>
+        <div class="ledger rg-resumo" id="rgResumo"></div>
+        <div class="rf-ferramentas">
+          <label class="rf-busca">Buscar<input type="search" id="rgBusca" placeholder="Número ou produtor" autocomplete="off"></label>
+          <div class="segmented" id="rgFiltro" role="group" aria-label="Mostrar">
+            <button type="button" class="seg-btn is-active" data-filtro="todos">Todos</button>
+            <button type="button" class="seg-btn" data-filtro="com">Com régua</button>
+            <button type="button" class="seg-btn" data-filtro="sem">Sem régua</button>
+            <button type="button" class="seg-btn" data-filtro="andamento">Em andamento</button>
+          </div>
+        </div>
+        <section class="panel" aria-label="Réguas dos resfriadores"><div class="rf-lista" id="rgLista"><p class="empty-state-msg">Carregando…</p></div></section>
       </div>
     </section>
 
@@ -1303,6 +1422,7 @@
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div id="rfImpressao" aria-hidden="true"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok" crossorigin="anonymous"></script>
 <script>
@@ -6208,7 +6328,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
   const BUCKET = 'resfriadores';
   let sb = null, podeEditar = false, carregado = false, filtro = 'todos';
-  let resfs = [], produtores = [], manuts = [], fotos = [], locais = [], statusHist = [];
+  let resfs = [], produtores = [], manuts = [], fotos = [], locais = [], statusHist = [], afers = [];
+  let rgFiltro = 'todos';
   const nomes = {}, urls = {};
 
   /* ---------- Utilidades ---------- */
@@ -6243,18 +6364,22 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 
   /* ---------- Dados ---------- */
   async function carregar() {
-    const [r, p, m, f, l, st] = await Promise.all([
+    const [r, p, m, f, l, st, af] = await Promise.all([
       sb.from('resfriadores').select('*'),
       sb.from('resfriadores_produtores').select('*').order('nome'),
       sb.from('resfriadores_manutencoes').select('*'),
       sb.from('resfriadores_fotos').select('*'),
       sb.from('resfriadores_locais').select('*'),
-      sb.from('resfriadores_status').select('*')
+      sb.from('resfriadores_status').select('*'),
+      sb.from('resfriadores_afericoes').select('*')
     ]);
     for (const x of [r, p, m, f, l, st]) if (x.error) throw x.error;
     resfs = (r.data || []).sort(ordemNum); produtores = p.data || []; manuts = m.data || []; fotos = f.data || []; locais = l.data || []; statusHist = st.data || [];
+    // As réguas não podem derrubar o resto da aba se derem erro.
+    if (af.error) console.error(af.error); else afers = af.data || [];
     carregado = true;
     render();
+    renderReguas();
   }
   let timer = null;
   function atualizar() {
@@ -6302,6 +6427,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${def ? `<span class="rf-info rf-def">${esc(r.defeito)}</span>` : ''}
         <span class="rf-info">${marcaOrdTexto(r) ? esc(marcaOrdTexto(r)) + '. ' : ''}${r.local === 'patio' ? 'No pátio desde ' : 'Desde '}${fmtData(r.local_desde)}</span>
         <span class="rf-info">${ult ? 'Última manutenção: ' + fmtData(ult.data) : 'Sem manutenção registrada'}${nf ? ' · ' + (nf === 1 ? '1 foto' : nf + ' fotos') : ''}</span>
+        ${vigente(r.id) ? `<span class="rf-info">Régua aferida em ${fmtData(vigente(r.id).data)}</span>` : ''}
       </button>`;
     }).join('') : `<p class="empty-state-msg">${resfs.length ? 'Nenhum resfriador encontrado.' : 'Nenhum resfriador cadastrado ainda.' + (podeEditar ? ' Use o botão "Novo resfriador".' : '')}</p>`;
 
@@ -6415,6 +6541,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <p class="modal-context"><b>${esc(ondeTexto(r))}</b> desde ${fmtData(r.local_desde)}.${detalhesTexto(r) ? ' ' + esc(detalhesTexto(r)) + '.' : ''}${r.observacao ? ' ' + esc(r.observacao) : ''}${r.ativo ? '' : ' <b>Fora de uso.</b>'}</p>
         ${tagsHTML(r)}
         <p class="rf-status ${def ? 'defeito' : 'ok'}">${def ? 'Com defeito desde ' + fmtData(r.status_desde) + ': ' + esc(r.defeito) : 'Funcionando'}</p>
+        <p class="rg-linha"><span>${vigente(id) ? 'Régua aferida em <b>' + fmtData(vigente(id).data) + '</b>' : 'Sem régua aferida'}${emAndamento(id) ? ' · aferição em andamento' : ''}</span>
+          <button type="button" class="link-btn" data-acao="regua">${vigente(id) ? 'Ver régua' : (podeEditar ? 'Aferir régua' : 'Ver régua')}</button></p>
         ${podeEditar ? `<div class="qj-botoes rf-botoes">
           <button type="button" class="btn btn-small ${def ? 'btn-primary' : ''}" data-acao="status">${def ? 'Voltou a funcionar' : 'Informar defeito'}</button>
           ${def ? '<button type="button" class="btn btn-small" data-acao="alterar-defeito">Alterar defeito</button>' : ''}
@@ -6444,6 +6572,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const ft = e.target.closest('[data-foto]'); if (ft) { verFoto(ft.dataset.foto); return; }
         const b = e.target.closest('[data-acao]'); if (!b) return;
         const a = b.dataset.acao;
+        if (a === 'regua') abrirRegua(id);
         if (a === 'mudar') mudar(id);
         if (a === 'status') mudarStatus(id);
         if (a === 'alterar-defeito') alterarDefeito(id);
@@ -6753,6 +6882,637 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     });
   }
 
+  /* =====================================================
+     RÉGUAS: aferição dos resfriadores com água (tabela resfriadores_afericoes).
+     pontos = [{ q: quanto foi colocado naquela vez (L, ou kg na balança), mm: leitura da régua depois }],
+     na ordem em que foram colocados. A tabela mm → litros liga os pontos em linha reta.
+     Vale a aferição CONCLUÍDA mais recente; a que está em andamento não substitui a anterior.
+     ===================================================== */
+  const DENSIDADE = 0.998; // kg por litro de água, por volta de 20 °C (1 kg = 1,002 L)
+  const METODOS = { balde: 'Balde', balanca: 'Balança', hidrometro: 'Hidrômetro', outro: 'Outro' };
+  const DICA_METODO = {
+    balde: 'Pese o balde cheio uma vez para saber quantos litros ele leva de verdade (1 kg de água ≈ 1 litro).',
+    balanca: 'As quantidades são digitadas em kg. O sistema converte para litros (1 kg de água = 1,002 L).',
+    hidrometro: 'Dá para digitar o total que o hidrômetro marca; o sistema calcula quanto entrou em cada vez.',
+    outro: ''
+  };
+  const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ok */ } };
+  const fmtL = (n) => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  const fmtQ = (n) => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  const fmtDec = (n, c) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: c, maximumFractionDigits: c });
+  const ordAf = (a, b) => String(b.data).localeCompare(String(a.data)) || String(b.criado_em).localeCompare(String(a.criado_em));
+  const afer = (id) => afers.find((a) => a.id === id);
+  const afersDe = (id) => afers.filter((a) => a.resfriador_id === id).sort(ordAf);
+  const vigente = (id) => afersDe(id).find((a) => a.concluida && nos(acumular(a)).length >= 2) || null;
+  const emAndamento = (id) => afersDe(id).find((a) => !a.concluida) || null;
+  const unid = (af) => (af.unidade === 'kg' ? 'kg' : 'L');
+  const emLitros = (af, q) => (af.unidade === 'kg' ? q / DENSIDADE : q);
+  function mediana(v) { const s = v.slice().sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+
+  /* ---------- Cálculo ---------- */
+  // Total acumulado em litros depois de cada ponto.
+  function acumular(af, lista) {
+    let t = 0;
+    return (lista || af.pontos || []).map((p, i) => { const q = Number(p.q) || 0; t += emLitros(af, q); return { n: i + 1, q, mm: Number(p.mm), litros: t }; });
+  }
+  // Pontos usados na tabela: régua sempre subindo. Se a régua repete a leitura, vale o último volume.
+  function nos(ac) {
+    const k = [];
+    for (const p of ac) {
+      if (!isFinite(p.mm) || p.mm < 0) continue;
+      const u = k[k.length - 1];
+      if (u && p.mm < u.mm) continue;
+      if (u && p.mm === u.mm) { u.litros = p.litros; continue; }
+      k.push({ mm: p.mm, litros: p.litros });
+    }
+    if (k.length && k[0].mm > 0) k.unshift({ mm: 0, litros: 0 });
+    return k;
+  }
+  function volumeEm(knots, mm) {
+    if (!knots || knots.length < 2 || mm == null || !isFinite(mm) || mm < 0) return null;
+    const ult = knots[knots.length - 1];
+    if (mm > ult.mm) return null;
+    for (let i = 1; i < knots.length; i++) {
+      const a = knots[i - 1], b = knots[i];
+      if (mm <= b.mm) return a.litros + (b.litros - a.litros) * (mm - a.mm) / (b.mm - a.mm);
+    }
+    return ult.litros;
+  }
+  function inclinacao(pts) { // litros por mm, pela reta que passa mais perto dos pontos
+    const n = pts.length; if (n < 2) return null;
+    const mx = pts.reduce((a, p) => a + p.mm, 0) / n, my = pts.reduce((a, p) => a + p.litros, 0) / n;
+    let sxy = 0, sxx = 0;
+    pts.forEach((p) => { sxy += (p.mm - mx) * (p.litros - my); sxx += (p.mm - mx) * (p.mm - mx); });
+    return sxx ? sxy / sxx : null;
+  }
+  // Litros por mm esperados no passo k, pela tendência dos passos vizinhos (até 3 de cada lado).
+  // Usa uma reta e não a média, porque no fundo do tanque a quantidade por mm muda aos poucos.
+  function taxaEsperada(lista, k, ignorar) {
+    const v = [];
+    for (let j = k - 3; j <= k + 3; j++) if (j !== k && lista[j] && lista[j].taxa != null && !ignorar.has(j)) v.push({ x: lista[j].meio, y: lista[j].taxa });
+    if (v.length < 3) return null;
+    const n = v.length, mx = v.reduce((a, p) => a + p.x, 0) / n, my = v.reduce((a, p) => a + p.y, 0) / n;
+    let sxy = 0, sxx = 0;
+    v.forEach((p) => { sxy += (p.x - mx) * (p.y - my); sxx += (p.x - mx) * (p.x - mx); });
+    const prev = sxx ? my + (sxy / sxx) * (lista[k].meio - mx) : my;
+    return prev > 0 ? prev : mediana(v.map((p) => p.y));
+  }
+  const foraDoPadrao = (dmm, esperado) => Math.abs(dmm - esperado) > Math.max(2.5, 0.35 * esperado);
+  const NAO_ENTROU = ' Este ponto não entrou na tabela.';
+  function analisar(af, lista) {
+    const ac = acumular(af, lista), avisos = {}, fora = new Set(); // fora = pontos que não entram na tabela
+    ac.forEach((p, i) => { if (!isFinite(p.mm) || p.mm < 0) { avisos[p.n] = 'Leitura da régua inválida.' + NAO_ENTROU; fora.add(i); } });
+    // Régua que desce: decide se o erro é deste ponto (alto demais) ou do seguinte (baixo demais).
+    for (let i = 0; i < ac.length - 1; i++) {
+      if (fora.has(i) || fora.has(i + 1) || ac[i + 1].mm >= ac[i].mm) continue;
+      // Compara os dois com o caminho entre o ponto válido de antes e o de depois do par.
+      let a = i - 1; while (a >= 0 && fora.has(a)) a--;
+      let culpado = i + 1; // sem ponto depois, a dúvida fica com o último lançado
+      if (i + 2 < ac.length) {
+        const P = a >= 0 ? ac[a] : { mm: 0, litros: 0 }, Q = ac[i + 2];
+        const longe = (c) => Math.abs(c.mm - (P.mm + (Q.mm - P.mm) * (c.litros - P.litros) / (Q.litros - P.litros)));
+        culpado = longe(ac[i]) >= longe(ac[i + 1]) ? i : i + 1;
+      }
+      if (culpado === i) {
+        avisos[ac[i].n] = `Leitura alta demais: o ponto seguinte marcou ${fmtQ(ac[i + 1].mm)} mm, menos que este. Confira a anotação.` + NAO_ENTROU; fora.add(i);
+      } else {
+        avisos[ac[i + 1].n] = `A régua marcou ${fmtQ(ac[i + 1].mm)} mm, menos que no ponto anterior (${fmtQ(ac[i].mm)} mm). Confira a anotação.` + NAO_ENTROU; fora.add(i + 1);
+      }
+    }
+    // Passos entre pontos válidos.
+    const lst = [];
+    ac.forEach((p, i) => {
+      if (fora.has(i)) return;
+      const ant = lst.length ? ac[lst[lst.length - 1].i] : { mm: 0, litros: 0 };
+      const dmm = p.mm - ant.mm, dl = p.litros - ant.litros;
+      lst.push({ i, n: p.n, dmm, dl, antMm: ant.mm, meio: (ant.mm + p.mm) / 2, taxa: ant.mm > 0 && dmm > 0 && dl > 0 ? dl / dmm : null });
+    });
+    const parado = new Set();
+    lst.forEach((ps, k) => { if (ps.dmm === 0 && ps.antMm > 0 && ps.dl > 0) { avisos[ps.n] = `A régua não subiu (continuou em ${fmtQ(ps.antMm)} mm) mesmo com mais ${fmtL(ps.dl)} L.`; parado.add(k); } });
+    // Passo fora do padrão dos vizinhos. Uma leitura errada estraga dois passos seguidos
+    // (um sobe demais e o outro de menos); nesse caso só o ponto do meio é marcado e sai da tabela.
+    const desvio = lst.map((ps, k) => {
+      if (ps.taxa == null || parado.has(k)) return null;
+      const taxa = taxaEsperada(lst, k, parado); if (!taxa) return null;
+      const esperado = ps.dl / taxa;
+      return foraDoPadrao(ps.dmm, esperado) ? { esperado, sinal: Math.sign(ps.dmm - esperado), taxa } : null;
+    });
+    for (let k = 0; k < lst.length; k++) {
+      const d = desvio[k]; if (!d) continue;
+      const prox = desvio[k + 1];
+      if (prox && prox.sinal === -d.sinal) {
+        const juntos = lst[k].dmm + lst[k + 1].dmm, esperado = (lst[k].dl + lst[k + 1].dl) / d.taxa;
+        if (!foraDoPadrao(juntos, esperado)) {
+          avisos[lst[k].n] = `A leitura parece errada: pelos pontos vizinhos, a régua deveria estar perto de ${fmtL(lst[k].antMm + d.esperado)} mm. Confira a anotação.` + NAO_ENTROU;
+          fora.add(lst[k].i); k++; continue;
+        }
+      }
+      avisos[lst[k].n] = `Subiu ${fmtQ(lst[k].dmm)} mm com ${fmtL(lst[k].dl)} L; pelos pontos vizinhos deveria subir uns ${fmtL(d.esperado)} mm. Confira a anotação.`;
+    }
+    // Passos finais (para mostrar), já sem os pontos que ficaram de fora.
+    const passos = ac.map(() => null); let ant = { mm: 0, litros: 0 };
+    ac.forEach((p, i) => {
+      if (fora.has(i)) return;
+      const dmm = p.mm - ant.mm, dl = p.litros - ant.litros;
+      passos[i] = { n: p.n, dmm, dl, antMm: ant.mm, taxa: ant.mm > 0 && dmm > 0 && dl > 0 ? dl / dmm : null };
+      ant = p;
+    });
+    const knots = nos(ac.filter((p, i) => !fora.has(i))), max = knots.length ? knots[knots.length - 1] : null;
+    const cima = max ? knots.filter((k) => k.mm > 0 && k.mm >= max.mm / 2) : [];
+    const taxaCima = cima.length >= 3 ? inclinacao(cima) : null;
+    const diamEq = taxaCima && taxaCima > 0 ? 2 * Math.sqrt(taxaCima * 1e6 / Math.PI) : null;
+    return { ac, passos, avisos, fora, knots, max, taxaCima, diamEq };
+  }
+
+  /* ---------- Painel "Réguas" ---------- */
+  function mostrarVisao(v) {
+    if (v !== 'reguas') v = 'lista';
+    document.querySelectorAll('#rfVisao [data-visao]').forEach((b) => { const on = b.dataset.visao === v; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    $('rfPainelLista').hidden = v !== 'lista';
+    $('rfPainelReguas').hidden = v !== 'reguas';
+    $('rfAcoes').hidden = v !== 'lista';
+  }
+  function renderReguas() {
+    if (!carregado) return;
+    const ativos = resfs.filter((r) => r.ativo);
+    const com = ativos.filter((r) => vigente(r.id)), andam = ativos.filter((r) => emAndamento(r.id));
+    const ultima = afers.filter((a) => a.concluida).sort(ordAf)[0];
+    $('rgResumo').innerHTML = `
+      <div><span>Com régua</span><strong>${com.length}</strong><small>de ${ativos.length} resfriadores em uso</small></div>
+      <div><span>Sem régua</span><strong>${ativos.length - com.length}</strong><small>${andam.length ? (andam.length === 1 ? '1 aferição em andamento' : andam.length + ' aferições em andamento') : 'nenhuma aferição em andamento'}</small></div>
+      <div><span>Última aferição</span><strong>${ultima ? fmtData(ultima.data) : '–'}</strong><small>${ultima && resf(ultima.resfriador_id) ? 'Resfriador ' + esc(resf(ultima.resfriador_id).numero) : 'nenhuma ainda'}</small></div>`;
+
+    const busca = $('rgBusca').value.trim().toLowerCase();
+    let lista = ativos.filter((r) => rgFiltro === 'todos' || (rgFiltro === 'com' ? vigente(r.id) : rgFiltro === 'sem' ? !vigente(r.id) : emAndamento(r.id)));
+    if (busca) lista = lista.filter((r) => r.numero.toLowerCase().includes(busca) || ondeTexto(r).toLowerCase().includes(busca));
+    $('rgLista').innerHTML = lista.length ? lista.map((r) => {
+      const v = vigente(r.id), a = emAndamento(r.id), an = v ? analisar(v) : null;
+      const nAv = an ? Object.keys(an.avisos).length : 0;
+      return `<button type="button" class="rf-card${v ? '' : ' rg-sem'}${a ? ' rg-andamento' : ''}" data-id="${r.id}">
+        <span class="rf-topo"><span class="rf-num">${esc(r.numero)}</span>${r.capacidade_litros ? `<span class="rf-cap">${fmtNum(r.capacidade_litros)}<small> litros</small></span>` : '<span class="rf-cap sem">sem capacidade</span>'}</span>
+        <span class="rf-tags">${v ? '<span class="rf-tag rg-ok">Com régua</span>' : '<span class="rf-tag rg-sem">Sem régua</span>'}${a ? '<span class="rf-tag rg-and">Em andamento</span>' : ''}</span>
+        <span class="rf-onde">${esc(ondeTexto(r))}</span>
+        <span class="rf-info">${v ? 'Aferida em ' + fmtData(v.data) + '. Até ' + fmtL(an.max.mm) + ' mm (' + fmtL(an.max.litros) + ' L)' : 'Ainda não aferida'}</span>
+        ${nAv ? `<span class="rf-info rf-def">${nAv === 1 ? '1 ponto' : nAv + ' pontos'} para conferir</span>` : ''}
+        ${a ? `<span class="rf-info">Em andamento: ${(a.pontos || []).length} ${(a.pontos || []).length === 1 ? 'ponto lançado' : 'pontos lançados'}</span>` : ''}
+      </button>`;
+    }).join('') : `<p class="empty-state-msg">${ativos.length ? 'Nenhum resfriador encontrado.' : 'Nenhum resfriador cadastrado ainda.'}</p>`;
+
+    const sel = $('rgConsultaResf'), atual = sel.value || lsGet('sn_rg_consulta') || '';
+    const opc = ativos.filter((r) => vigente(r.id));
+    sel.innerHTML = opc.length
+      ? '<option value="">Escolha o resfriador</option>' + opc.map((r) => `<option value="${r.id}"${r.id === atual ? ' selected' : ''}>Nº ${esc(r.numero)}, ${esc(ondeTexto(r))}</option>`).join('')
+      : '<option value="">Nenhum resfriador com régua ainda</option>';
+    consultar();
+  }
+  function resultadoHTML(v, mm) {
+    if (!v) return '<p>Este resfriador ainda não tem régua aferida.</p>';
+    const an = analisar(v);
+    if (mm == null) return `<p>Régua aferida em ${fmtData(v.data)}, de 0 a ${fmtL(an.max.mm)} mm. Digite a leitura da régua.</p>`;
+    if (mm < 0) return '<p class="rg-fora">Digite uma leitura válida.</p>';
+    const l = volumeEm(an.knots, mm);
+    if (l == null) return `<p class="rg-fora">A leitura passa da última medida da aferição (${fmtL(an.max.mm)} mm = ${fmtL(an.max.litros)} L). Acima disso a régua não tem tabela.</p>`;
+    return `<div class="rg-litros">${fmtL(l)} <small>litros</small></div><p>Com ${fmtQ(mm)} mm na régua. Aferida em ${fmtData(v.data)}.</p>`;
+  }
+  function consultar() {
+    const id = $('rgConsultaResf').value;
+    $('rgConsultaRes').innerHTML = id ? resultadoHTML(vigente(id), lerNum($('rgConsultaMm').value)) : '';
+  }
+
+  /* ---------- Gráfico ---------- */
+  function passoBonito(max) { const alvo = (max || 1) / 5, p = Math.pow(10, Math.floor(Math.log10(alvo))), m = alvo / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+  function graficoSVG(an) {
+    if (an.knots.length < 2) return '';
+    const W = 640, H = 280, ml = 58, mr = 16, mt = 12, mb = 40;
+    const pts = an.ac.filter((p) => isFinite(p.mm) && p.mm >= 0);
+    const maxX = Math.max(...an.knots.map((k) => k.mm), ...pts.map((p) => p.mm)), maxY = Math.max(...an.knots.map((k) => k.litros), ...pts.map((p) => p.litros));
+    const sx = passoBonito(maxX), sy = passoBonito(maxY), topX = Math.ceil(maxX / sx) * sx || sx, topY = Math.ceil(maxY / sy) * sy || sy;
+    const X = (v) => ml + (W - ml - mr) * v / topX, Y = (v) => H - mb - (H - mt - mb) * v / topY;
+    let g = '';
+    for (let v = 0; v <= topY + 1e-9; v += sy) g += `<line class="grade" x1="${ml}" x2="${W - mr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="eixo" x="${ml - 6}" y="${Y(v) + 4}" text-anchor="end">${fmtL(v)}</text>`;
+    for (let v = 0; v <= topX + 1e-9; v += sx) g += `<text class="eixo" x="${X(v)}" y="${H - mb + 16}" text-anchor="middle">${fmtL(v)}</text>`;
+    const linha = an.knots.map((k) => X(k.mm).toFixed(1) + ',' + Y(k.litros).toFixed(1)).join(' ');
+    const bolas = pts.map((p) => `<circle class="ponto${an.avisos[p.n] ? ' ruim' : ''}" cx="${X(p.mm).toFixed(1)}" cy="${Y(p.litros).toFixed(1)}" r="${an.avisos[p.n] ? 5 : 3.5}"><title>Ponto ${p.n}: ${fmtQ(p.mm)} mm, ${fmtL(p.litros)} L</title></circle>`).join('');
+    return `<svg class="rg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico da régua: litros conforme a leitura em milímetros">
+      ${g}<polyline class="linha" points="${linha}"/>${bolas}
+      <text class="eixo" x="${(ml + W - mr) / 2}" y="${H - 4}" text-anchor="middle">Leitura da régua (mm)</text>
+      <text class="eixo" x="12" y="${(mt + H - mb) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(mt + H - mb) / 2})">Litros</text></svg>`;
+  }
+  function diametroHTML(af, an) {
+    if (!an.taxaCima) return '';
+    const txt = `Na parte de cima, cada mm da régua vale ${fmtDec(an.taxaCima, 2)} L, o que corresponde a um tanque de uns ${fmtL(an.diamEq)} mm de diâmetro interno.`;
+    if (!af.diametro_mm) return `<li class="info">${txt} Se medir o diâmetro com a trena, confira se bate.</li>`;
+    const esperado = Math.PI * Math.pow(af.diametro_mm / 2, 2) / 1e6, dif = an.taxaCima / esperado - 1;
+    if (Math.abs(dif) <= 0.03) return `<li class="ok">${txt} Confere com o diâmetro medido (${fmtL(af.diametro_mm)} mm).</li>`;
+    return `<li>${txt} O diâmetro medido foi ${fmtL(af.diametro_mm)} mm, uma diferença de ${fmtDec(Math.abs(dif) * 100, 1)}% no volume. Confira o diâmetro ou quanto cabe no balde.</li>`;
+  }
+
+  /* ---------- Janela da régua de um resfriador ---------- */
+  function abrirRegua(id, afId) {
+    const r = resf(id); if (!r) return;
+    const lista = afersDe(id), v = vigente(id), a = emAndamento(id);
+    const ver = (afId && afer(afId)) || v || a || null;
+    const an = ver ? analisar(ver) : null, temTabela = an && an.knots.length >= 2;
+    const nAv = an ? Object.keys(an.avisos).length : 0;
+    const quantos = (af) => { const n = (af.pontos || []).length; return n === 1 ? '1 ponto' : n + ' pontos'; };
+    let corpo = '';
+    if (!ver) {
+      corpo = `<p class="empty-state-msg">Este resfriador ainda não tem régua aferida.${podeEditar ? ' Use "Começar aferição" quando for encher o tanque com água.' : ''}</p>`;
+    } else {
+      corpo = `
+        ${a && a !== ver ? `<div class="rg-faixa"><p><b>Aferição em andamento</b> desde ${fmtData(a.data)}, com ${quantos(a)}. Enquanto não for concluída, continua valendo a régua abaixo.</p>
+          ${podeEditar ? `<button type="button" class="btn btn-small btn-primary" data-acao="pontos" data-af="${a.id}">Continuar aferição</button>` : ''}</div>` : ''}
+        ${!ver.concluida ? `<div class="rg-faixa"><p><b>Aferição em andamento.</b> ${v ? 'A régua que vale ainda é a de ' + fmtData(v.data) + '.' : 'Ainda não vale como régua deste resfriador.'} Quando terminar de lançar os pontos, use "Concluir aferição".</p></div>` : ''}
+        <p class="rg-info"><b>${ver.concluida ? 'Aferida' : 'Começada'} em ${fmtData(ver.data)}</b>${ver.responsavel ? ' por ' + esc(ver.responsavel) : ''}, ${esc(METODOS[ver.metodo] || ver.metodo).toLowerCase()}${ver.unidade === 'kg' ? ' (em kg)' : ''}.
+          ${quantos(ver)}${temTabela ? `, de 0 a ${fmtL(an.max.mm)} mm (até ${fmtL(an.max.litros)} L)` : ''}.${ver.observacao ? ' ' + esc(ver.observacao) : ''}</p>
+        ${temTabela ? `<h3 class="qj-sub">Consultar</h3>
+          <div class="rg-consulta-mini"><label>Leitura da régua (mm)<input type="number" min="0" step="1" inputmode="numeric" data-mm autocomplete="off"></label><div class="rg-resultado" data-res></div></div>` : ''}
+        <h3 class="qj-sub">Conferência</h3>
+        <ul class="rg-avisos">
+          ${an.ac.filter((p) => an.avisos[p.n]).map((p) => `<li><b>Ponto ${p.n} (${fmtQ(p.mm)} mm):</b> ${esc(an.avisos[p.n])}</li>`).join('')}
+          ${!nAv && an.ac.length >= 3 ? '<li class="ok">Nenhum ponto fora do padrão.</li>' : ''}
+          ${diametroHTML(ver, an)}
+          ${temTabela && r.capacidade_litros && an.max.litros < r.capacidade_litros * 0.95 ? `<li class="info">A aferição foi até ${fmtL(an.max.litros)} L e a capacidade é ${fmtNum(r.capacidade_litros)} L. Acima de ${fmtL(an.max.mm)} mm a régua não tem tabela.</li>` : ''}
+          ${an.ac.length < 3 ? '<li class="info">Poucos pontos ainda para conferir.</li>' : ''}
+        </ul>
+        ${temTabela ? '<h3 class="qj-sub">Gráfico</h3>' + graficoSVG(an) : ''}`;
+    }
+    const outros = lista.length > 1 || (lista.length === 1 && lista[0] !== ver);
+    const hist = outros ? `<h3 class="qj-sub">Aferições deste resfriador</h3>${lista.map((x) => `<div class="rg-hist${x === v ? ' atual' : ''}"><div><b>${fmtData(x.data)}, ${x.concluida ? 'concluída' : 'em andamento'}</b>
+        <small>${quantos(x)}${x.responsavel ? ', ' + esc(x.responsavel) : ''}</small></div>${x === ver ? '<small>aberta acima</small>' : `<button type="button" class="link-btn" data-acao="ver-af" data-af="${x.id}">Ver</button>`}</div>`).join('')}` : '';
+    const botoes = [];
+    if (podeEditar && ver) botoes.push(`<button type="button" class="btn btn-ghost" data-acao="excluir" data-af="${ver.id}">Excluir aferição</button>`);
+    if (podeEditar && ver) botoes.push(`<button type="button" class="btn" data-acao="pontos" data-af="${ver.id}">${ver.concluida ? 'Corrigir pontos' : 'Lançar pontos'}</button>`);
+    if (podeEditar && !a) botoes.push(`<button type="button" class="btn${ver ? '' : ' btn-primary'}" data-acao="nova">${ver ? 'Nova aferição' : 'Começar aferição'}</button>`);
+    if (temTabela) botoes.push(`<button type="button" class="btn btn-primary" data-acao="imprimir" data-af="${ver.id}">Imprimir / PDF</button>`);
+    SN.ui.openModal('Régua do resfriador ' + r.numero, `
+      <div data-regua>
+        <p class="modal-context"><b>${esc(ondeTexto(r))}</b>.${detalhesTexto(r) ? ' ' + esc(detalhesTexto(r)) + '.' : ''}</p>
+        ${corpo}${hist}
+      </div>
+      <div class="modal-actions">${botoes.join('')}<button type="button" class="btn" data-fechar>Fechar</button></div>`, (root) => {
+      root.querySelector('[data-fechar]').addEventListener('click', SN.ui.closeModal);
+      const inp = root.querySelector('[data-mm]');
+      if (inp) {
+        const mostrar = () => { root.querySelector('[data-res]').innerHTML = resultadoHTML(ver, lerNum(inp.value)); };
+        inp.addEventListener('input', mostrar); mostrar();
+      }
+      root.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b) return;
+        const ac = b.dataset.acao, alvo = b.dataset.af;
+        if (ac === 'ver-af') abrirRegua(id, alvo);
+        if (ac === 'pontos') lancarPontos(alvo);
+        if (ac === 'nova') dadosAfericao(id, null);
+        if (ac === 'imprimir') imprimir(alvo);
+        if (ac === 'excluir') excluirAfericao(alvo);
+      });
+    });
+  }
+  function excluirAfericao(afId) {
+    const af = afer(afId); if (!af) return;
+    const id = af.resfriador_id;
+    SN.ui.confirmar({ titulo: 'Excluir aferição', mensagem: `Excluir a aferição de ${fmtData(af.data)} do resfriador ${resf(id)?.numero || ''}, com ${(af.pontos || []).length} pontos? Não dá para desfazer.`, botao: 'Excluir', perigo: true,
+      acao: async () => {
+        const { data, error } = await sb.from('resfriadores_afericoes').delete().eq('id', afId).select('id');
+        if (error || !(data || []).length) { console.error(error); toast(error ? erroMsg(error) : 'Você não tem permissão para excluir.'); return; }
+        afers = afers.filter((x) => x.id !== afId);
+        toast('Aferição excluída.'); renderReguas(); render(); abrirRegua(id);
+      } });
+  }
+
+  /* ---------- Dados da aferição (nova ou editar) ---------- */
+  function dadosAfericao(id, afId) {
+    const r = resf(id), af = afId ? afer(afId) : null;
+    if (!af) { const a = emAndamento(id); if (a) { lancarPontos(a.id); return; } }
+    const nome = (window.SN && SN.perfil && SN.perfil.nome) || '';
+    const quem = [...new Set(afers.map((x) => x.responsavel).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const met = af ? af.metodo : (METODOS[lsGet('sn_rg_metodo')] ? lsGet('sn_rg_metodo') : 'balde');
+    SN.ui.openModal(af ? 'Dados da aferição' : 'Nova aferição', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}, em ${esc(ondeTexto(r))}.${af ? '' : ' Antes de começar: tanque vazio e nivelado, agitador desligado e a régua encaixada sempre no mesmo ponto.'}</p>
+      <form class="form" id="rgForm">
+        <div class="two">
+          <label>Data da aferição<input type="date" name="data" value="${af ? af.data : hojeISO()}" required></label>
+          <label>Quem está aferindo<input type="text" name="resp" maxlength="120" list="rgQuem" value="${esc(af ? af.responsavel : nome)}" autocomplete="off"></label>
+        </div>
+        <datalist id="rgQuem">${quem.map((q) => `<option value="${esc(q)}">`).join('')}</datalist>
+        <fieldset class="qj-destino"><legend>Como vai medir a água</legend><div class="qj-opcoes">
+          ${Object.keys(METODOS).map((k) => `<label><input type="radio" name="metodo" value="${k}" ${k === met ? 'checked' : ''}> ${METODOS[k]}${k === 'balanca' ? ' (kg)' : ''}</label>`).join('')}
+        </div></fieldset>
+        <p class="muted-note" data-dica-met></p>
+        <label>Diâmetro interno do tanque (mm)<input type="number" name="diam" min="1" step="1" inputmode="numeric" value="${af && af.diametro_mm ? Number(af.diametro_mm) : ''}" placeholder="Opcional, serve para conferir a medição"></label>
+        <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(af ? af.observacao : '')}" placeholder="Ex.: régua encaixada na boca de inspeção" autocomplete="off"></label>
+        ${botoesForm(af ? 'Salvar' : 'Começar a lançar os pontos')}
+      </form>`, (root) => {
+      const form = root.querySelector('#rgForm');
+      const dica = () => { root.querySelector('[data-dica-met]').textContent = DICA_METODO[form.querySelector('[name="metodo"]:checked').value] || ''; };
+      form.querySelectorAll('[name="metodo"]').forEach((x) => x.addEventListener('change', dica)); dica();
+      root.querySelector('[data-cancelar]').addEventListener('click', () => (af ? lancarPontos(af.id) : abrirRegua(id)));
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const metodo = form.querySelector('[name="metodo"]:checked').value, unidade = metodo === 'balanca' ? 'kg' : 'L';
+        if (af && (af.pontos || []).length && unidade !== unid(af)) { toast(`Os pontos já foram lançados em ${unid(af) === 'kg' ? 'kg' : 'litros'}. Para mudar, comece uma nova aferição.`); return; }
+        const reg = { data: form.querySelector('[name="data"]').value || hojeISO(), responsavel: form.querySelector('[name="resp"]').value.trim(), metodo, unidade,
+          diametro_mm: lerNum(form.querySelector('[name="diam"]').value), observacao: form.querySelector('[name="obs"]').value.trim() };
+        if (reg.diametro_mm != null && reg.diametro_mm <= 0) reg.diametro_mm = null;
+        const b = form.querySelector('[type="submit"]'); b.disabled = true;
+        let res;
+        if (af) res = await sb.from('resfriadores_afericoes').update(reg).eq('id', af.id).select('*').single();
+        else res = await sb.from('resfriadores_afericoes').insert({ resfriador_id: id, ...reg, pontos: [], concluida: false }).select('*').single();
+        b.disabled = false;
+        if (res.error) { console.error(res.error); toast(erroMsg(res.error)); return; }
+        lsSet('sn_rg_metodo', metodo);
+        afers = afers.filter((x) => x.id !== res.data.id).concat(res.data);
+        renderReguas(); render();
+        lancarPontos(res.data.id);
+      });
+    });
+  }
+
+  /* ---------- Lançar os pontos ---------- */
+  function lancarPontos(afId) {
+    const af = afer(afId); if (!af) return;
+    const r = resf(af.resfriador_id), u = unid(af);
+    let pontos = (af.pontos || []).map((p) => ({ q: Number(p.q), mm: Number(p.mm) }));
+    let editando = null, excluindo = null, salvando = false, concluirConfirmar = false;
+    let modo = lsGet('sn_rg_modo') || (af.metodo === 'hidrometro' ? 'total' : 'vez');
+    if (modo !== 'total') modo = 'vez';
+    const arred = (x) => Math.round(x * 1000) / 1000;
+    const totalAntes = (i) => arred(pontos.slice(0, i).reduce((a, p) => a + p.q, 0)); // na unidade digitada
+    SN.ui.openModal('Aferição do resfriador ' + r.numero, `
+      <p class="modal-context">${esc(ondeTexto(r))}. Começada em ${fmtData(af.data)}${af.responsavel ? ' por ' + esc(af.responsavel) : ''}, ${esc(METODOS[af.metodo] || '').toLowerCase()}. <b data-sit>${af.concluida ? 'Concluída' : 'Em andamento'}</b>. Cada ponto é salvo na hora.</p>
+      <div class="rg-andamento" data-resumo></div>
+      ${podeEditar ? `<form class="rg-entrada" data-entrada novalidate>
+        <h3 data-titulo>Novo ponto</h3>
+        <div class="segmented" data-modo role="group" aria-label="Como digitar a quantidade">
+          <button type="button" class="seg-btn" data-m="vez">Digitar o que pus agora</button>
+          <button type="button" class="seg-btn" data-m="total">Digitar o total</button>
+        </div>
+        <div class="two">
+          <label><span data-rot-q></span><input type="number" name="q" min="0" step="any" inputmode="decimal" autocomplete="off"></label>
+          <label>Régua marcou (mm)<input type="number" name="mm" min="0" step="any" inputmode="decimal" autocomplete="off"></label>
+        </div>
+        <p class="rg-dica" data-dica></p>
+        <div class="qj-botoes" style="margin-top:0">
+          <button type="submit" class="btn btn-primary" data-salvar>Adicionar ponto</button>
+          <button type="button" class="btn btn-ghost" data-cancelar-edicao hidden>Cancelar correção</button>
+        </div>
+      </form>` : ''}
+      <div class="rg-pontos" data-lista></div>
+      <div class="modal-actions">
+        ${podeEditar ? '<button type="button" class="btn btn-ghost" data-dados>Dados da aferição</button>' : ''}
+        <button type="button" class="btn" data-ver>Ver régua</button>
+        ${podeEditar && !af.concluida ? '<button type="button" class="btn btn-primary" data-concluir>Concluir aferição</button>' : ''}
+        <button type="button" class="btn" data-fechar>Fechar</button>
+      </div>`, (root) => {
+      const form = root.querySelector('[data-entrada]');
+      const inQ = form && form.querySelector('[name="q"]'), inMm = form && form.querySelector('[name="mm"]');
+      const btnConcluir = root.querySelector('[data-concluir]');
+
+      function desenhar() {
+        const an = analisar(af, pontos), ult = an.ac[an.ac.length - 1], nAv = Object.keys(an.avisos).length;
+        root.querySelector('[data-resumo]').innerHTML = `<span>Pontos <b>${pontos.length}</b></span>
+          <span>Total colocado <b>${fmtL(ult ? ult.litros : 0)} L</b>${u === 'kg' && ult ? ' (' + fmtQ(totalAntes(pontos.length)) + ' kg)' : ''}</span>
+          <span>Régua em <b>${ult ? fmtQ(ult.mm) : 0} mm</b></span>${nAv ? `<span class="rf-def">${nAv === 1 ? '1 ponto' : nAv + ' pontos'} para conferir</span>` : ''}`;
+        root.querySelector('[data-lista]').innerHTML = pontos.length ? an.ac.slice().reverse().map((p) => {
+          const i = p.n - 1, ps = an.passos[i], aviso = an.avisos[p.n];
+          const obs = aviso || (p.mm === 0 ? 'A água ainda não chegou na régua.' : (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm` + (ps.taxa ? ` (${fmtDec(ps.taxa, 2)} L por mm)` : '') : ''));
+          const acoes = !podeEditar ? '' : excluindo === i
+            ? `<span class="vd-acoes"><b>Excluir este ponto?</b><button type="button" class="link-btn" data-a="sim">Sim, excluir</button><button type="button" class="link-btn" data-a="nao">Não</button></span>`
+            : `<span class="vd-acoes"><button type="button" class="link-btn" data-a="corrigir">Corrigir</button><button type="button" class="link-btn" data-a="excluir">Excluir</button></span>`;
+          return `<div class="rg-ponto${aviso ? ' ruim' : ''}" data-i="${i}"><span class="n">${p.n}</span>
+            <span>+${fmtQ(p.q)} ${u} → <b>${fmtL(p.litros)} L</b></span><span class="mm">${fmtQ(p.mm)} mm</span>
+            ${obs ? `<small>${esc(obs)}</small>` : ''}${acoes}</div>`;
+        }).join('') : '<p class="empty-state-msg">Nenhum ponto ainda. Coloque a primeira quantidade de água, leia a régua e lance aqui.</p>';
+        if (btnConcluir) btnConcluir.textContent = concluirConfirmar ? 'Concluir mesmo assim' : 'Concluir aferição';
+      }
+
+      function prepararForm() {
+        if (!form) return;
+        const idx = editando == null ? pontos.length : editando;
+        form.classList.toggle('corrigindo', editando != null);
+        form.querySelector('[data-titulo]').textContent = editando == null ? 'Ponto ' + (pontos.length + 1) : 'Corrigindo o ponto ' + (editando + 1);
+        form.querySelector('[data-salvar]').textContent = editando == null ? 'Adicionar ponto' : 'Salvar correção';
+        form.querySelector('[data-cancelar-edicao]').hidden = editando == null;
+        form.querySelectorAll('[data-m]').forEach((b) => b.classList.toggle('is-active', b.dataset.m === modo));
+        form.querySelector('[data-rot-q]').textContent = (modo === 'vez' ? 'Pus agora' : 'Total até agora') + ' (' + (u === 'kg' ? 'kg' : 'L') + ')';
+        if (editando != null) {
+          const p = pontos[editando];
+          inQ.value = modo === 'vez' ? p.q : totalAntes(editando + 1);
+          inMm.value = p.mm;
+        } else {
+          const ultQ = pontos.length ? pontos[pontos.length - 1].q : '';
+          inQ.value = modo === 'vez' ? ultQ : (ultQ !== '' ? arred(totalAntes(idx) + ultQ) : '');
+          inMm.value = '';
+        }
+        dicaAoVivo();
+      }
+      // Quantidade desta vez, na unidade digitada (null se inválida).
+      function lerQ() {
+        const v = lerNum(inQ.value); if (v == null) return null;
+        const idx = editando == null ? pontos.length : editando;
+        return modo === 'vez' ? v : v - totalAntes(idx);
+      }
+      function dicaAoVivo() {
+        if (!form) return;
+        const el = form.querySelector('[data-dica]'), idx = editando == null ? pontos.length : editando;
+        const q = lerQ(), mm = lerNum(inMm.value);
+        el.classList.remove('ruim'); el.textContent = '';
+        if (modo === 'total' && q != null && q <= 0) { el.classList.add('ruim'); el.textContent = `O total precisa ser maior que o anterior (${fmtQ(totalAntes(idx))} ${u}).`; return; }
+        if (q == null || mm == null) { if (modo === 'total' && idx) el.textContent = `Total anterior: ${fmtQ(totalAntes(idx))} ${u}.`; return; }
+        const teste = pontos.slice(); if (editando == null) teste.push({ q, mm }); else teste[editando] = { q, mm };
+        const an = analisar(af, teste), ps = an.passos[idx], aviso = an.avisos[idx + 1];
+        if (aviso) { el.classList.add('ruim'); el.textContent = aviso; return; }
+        if (mm === 0) { el.textContent = 'A água ainda não chegou na régua: tudo bem, continue colocando.'; return; }
+        el.textContent = (modo === 'total' ? `Desta vez entraram ${fmtQ(q)} ${u}. ` : '') + (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm.` : '');
+      }
+      async function salvar(novos) {
+        salvando = true;
+        const b = form && form.querySelector('[data-salvar]'); if (b) b.disabled = true;
+        const { data, error } = await sb.from('resfriadores_afericoes').update({ pontos: novos }).eq('id', afId).select('id');
+        salvando = false; if (b) b.disabled = false;
+        if (error || !(data || []).length) { console.error(error); toast(error ? erroMsg(error) : 'Não foi possível salvar o ponto.'); return false; }
+        pontos = novos; af.pontos = novos; concluirConfirmar = false;
+        return true;
+      }
+
+      if (form) {
+        form.querySelector('[data-modo]').addEventListener('click', (e) => {
+          const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === modo) return;
+          modo = b.dataset.m; lsSet('sn_rg_modo', modo); prepararForm(); inQ.focus();
+        });
+        inQ.addEventListener('input', dicaAoVivo); inMm.addEventListener('input', dicaAoVivo);
+        form.querySelector('[data-cancelar-edicao]').addEventListener('click', () => { editando = null; prepararForm(); inMm.focus(); });
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault(); if (salvando) return;
+          const q = lerQ(), mm = lerNum(inMm.value);
+          if (q == null || q <= 0) { toast(modo === 'vez' ? 'Informe quanto foi colocado.' : 'O total precisa ser maior que o anterior.'); inQ.focus(); return; }
+          if (mm == null || mm < 0) { toast('Informe quanto a régua marcou, em mm.'); inMm.focus(); return; }
+          const novos = pontos.map((p) => ({ ...p })), ponto = { q: arred(q), mm };
+          if (editando == null) novos.push(ponto);
+          else {
+            // No modo "total", corrigir o total de um ponto não pode mexer no total marcado no ponto seguinte.
+            if (modo === 'total' && novos[editando + 1]) {
+              const qProx = arred(totalAntes(editando + 2) - totalAntes(editando) - ponto.q);
+              if (qProx <= 0) { toast(`O total precisa ficar abaixo do total do ponto ${editando + 2} (${fmtQ(totalAntes(editando + 2))} ${u}).`); return; }
+              novos[editando + 1].q = qProx;
+            }
+            novos[editando] = ponto;
+          }
+          const eraEdicao = editando != null;
+          if (!(await salvar(novos))) return;
+          toast(eraEdicao ? 'Ponto corrigido.' : 'Ponto ' + novos.length + ' salvo.');
+          editando = null; excluindo = null;
+          desenhar(); prepararForm(); inMm.focus();
+        });
+      }
+      root.querySelector('[data-lista]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-a]'); if (!b || salvando) return;
+        const i = Number(b.closest('[data-i]').dataset.i), a = b.dataset.a;
+        if (a === 'corrigir') { editando = i; excluindo = null; desenhar(); prepararForm(); form.scrollIntoView({ block: 'nearest' }); inMm.focus(); return; }
+        if (a === 'excluir') { excluindo = i; desenhar(); return; }
+        if (a === 'nao') { excluindo = null; desenhar(); return; }
+        if (a === 'sim') {
+          const novos = pontos.filter((_, j) => j !== i);
+          if (!(await salvar(novos))) return;
+          excluindo = null; if (editando != null) editando = null;
+          toast('Ponto excluído.'); desenhar(); prepararForm();
+        }
+      });
+      const dep = () => { renderReguas(); render(); };
+      root.querySelector('[data-fechar]').addEventListener('click', () => { SN.ui.closeModal(); dep(); });
+      root.querySelector('[data-ver]').addEventListener('click', () => { dep(); abrirRegua(af.resfriador_id, afId); });
+      const bd = root.querySelector('[data-dados]'); if (bd) bd.addEventListener('click', () => dadosAfericao(af.resfriador_id, afId));
+      if (btnConcluir) btnConcluir.addEventListener('click', async () => {
+        const an = analisar(af, pontos), nAv = Object.keys(an.avisos).length;
+        if (pontos.length < 3 || an.knots.length < 2) { toast('Lance pelo menos 3 pontos, com a água já marcando na régua.'); return; }
+        if (nAv && !concluirConfirmar) { concluirConfirmar = true; desenhar(); toast(nAv === 1 ? 'Há 1 ponto para conferir. Clique de novo para concluir mesmo assim.' : `Há ${nAv} pontos para conferir. Clique de novo para concluir mesmo assim.`); return; }
+        btnConcluir.disabled = true;
+        const { data, error } = await sb.from('resfriadores_afericoes').update({ concluida: true }).eq('id', afId).select('id');
+        btnConcluir.disabled = false;
+        if (error || !(data || []).length) { console.error(error); toast(error ? erroMsg(error) : 'Não foi possível concluir.'); return; }
+        af.concluida = true;
+        toast('Aferição concluída. Esta passa a ser a régua do resfriador.');
+        dep(); abrirRegua(af.resfriador_id, afId);
+      });
+      desenhar(); prepararForm();
+      if (inMm) setTimeout(() => (pontos.length ? inMm : inQ).focus(), 0);
+    });
+  }
+
+  /* ---------- Imprimir / PDF ---------- */
+  const PASSOS = [1, 2, 5, 10], COLUNAS = 5, LINHAS_P1 = 50, LINHAS = 56;
+  function linhasTabela(an, passo) {
+    const max = an.max.mm, linhas = [];
+    for (let i = 0; i * passo <= max + 1e-9; i++) linhas.push({ mm: i * passo, litros: volumeEm(an.knots, i * passo) });
+    if (linhas[linhas.length - 1].mm < max) linhas.push({ mm: max, litros: an.max.litros });
+    return linhas;
+  }
+  function paginar(linhas) {
+    const paginas = []; let i = 0;
+    while (i < linhas.length) { const cab = (paginas.length ? LINHAS : LINHAS_P1) * COLUNAS; paginas.push(linhas.slice(i, i + cab)); i += cab; }
+    return paginas;
+  }
+  function imprimir(afId) {
+    const af = afer(afId); if (!af) return;
+    const r = resf(af.resfriador_id), an = analisar(af), nAv = Object.keys(an.avisos).length;
+    let passo = Number(lsGet('sn_rg_passo')); if (!PASSOS.includes(passo)) passo = 1;
+    SN.ui.openModal('Imprimir tabela da régua', `
+      <p class="modal-context">Resfriador ${esc(r.numero)}, ${esc(ondeTexto(r))}. A tabela vai de 0 a ${fmtL(an.max.mm)} mm (até ${fmtL(an.max.litros)} L). Na janela de impressão, escolha a impressora ou "Salvar como PDF".</p>
+      ${nAv ? `<div class="rg-faixa"><p><b>${nAv === 1 ? 'Há 1 ponto' : 'Há ' + nAv + ' pontos'} para conferir</b> nesta aferição. Se for erro de anotação, a tabela sai errada nesse trecho.</p></div>` : ''}
+      ${af.concluida ? '' : '<div class="rg-faixa"><p><b>Esta aferição ainda está em andamento.</b> A tabela sai com os pontos lançados até agora.</p></div>'}
+      <form class="form" id="rgImp">
+        <fieldset class="qj-destino"><legend>De quantos em quantos mm</legend><div class="qj-opcoes">
+          ${PASSOS.map((p) => `<label><input type="radio" name="passo" value="${p}" ${p === passo ? 'checked' : ''}> ${p === 1 ? 'De 1 em 1 mm' : 'De ' + p + ' em ' + p + ' mm'}</label>`).join('')}
+        </div></fieldset>
+        <p class="muted-note" data-paginas></p>
+        <label class="check"><input type="checkbox" name="pontos" ${lsGet('sn_rg_pontos') === '1' ? 'checked' : ''}> Incluir no fim a lista dos pontos medidos</label>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Voltar</button><button type="submit" class="btn btn-primary">Imprimir / Salvar PDF</button></div>
+        <p class="muted-note" data-depois hidden>Se a janela de impressão não abriu, aperte <b>Ctrl+P</b> (ou <b>Cmd+P</b> no Mac). No celular, use "Compartilhar" e depois "Imprimir".</p>
+      </form>`, (root) => {
+      const form = root.querySelector('#rgImp');
+      const lerPasso = () => Number(form.querySelector('[name="passo"]:checked').value);
+      const contar = () => { const n = paginar(linhasTabela(an, lerPasso())).length + (form.querySelector('[name="pontos"]').checked ? Math.ceil(an.ac.length / (PONTOS_COL * 2)) : 0); root.querySelector('[data-paginas]').textContent = n === 1 ? 'Cabe em 1 página.' : 'Fica com ' + n + ' páginas.'; };
+      form.querySelectorAll('[name="passo"], [name="pontos"]').forEach((x) => x.addEventListener('change', contar)); contar();
+      root.querySelector('[data-voltar]').addEventListener('click', () => { limparImpressao(); abrirRegua(af.resfriador_id, afId); });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const p = lerPasso(), comPontos = form.querySelector('[name="pontos"]').checked;
+        lsSet('sn_rg_passo', String(p)); lsSet('sn_rg_pontos', comPontos ? '1' : '0');
+        montarImpressao(af, r, an, p, comPontos);
+        root.querySelector('[data-depois]').hidden = false;
+        try { window.print(); } catch (err) { console.error(err); }
+      });
+    });
+  }
+  const PONTOS_COL = 55;
+  function montarImpressao(af, r, an, passo, comPontos) {
+    const linhas = linhasTabela(an, passo), paginas = paginar(linhas);
+    const pgPontos = comPontos ? Math.ceil(an.ac.length / (PONTOS_COL * 2)) : 0, total = paginas.length + pgPontos;
+    const forteCada = passo <= 2 ? 10 : passo === 5 ? 50 : 100;
+    const validos = an.ac.length - an.fora.size;
+    const topo = (n) => `<div class="rgp-topo"><b>Tabela da régua · Resfriador nº ${esc(r.numero)}</b><span>Laticínio Serra Nova · página ${n} de ${total}</span></div>`;
+    const info = `<div class="rgp-info">
+      <div><span>Onde está:</span> <b>${esc(ondeTexto(r))}</b></div>
+      <div><span>Capacidade:</span> ${r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' litros' : 'não informada'}</div>
+      <div><span>Marca:</span> ${esc(marcaOrdTexto(r) || 'não informada')}</div>
+      <div><span>Aferida em:</span> <b>${fmtData(af.data)}</b>${af.concluida ? '' : ' (em andamento)'}</div>
+      <div><span>Feita por:</span> ${esc(af.responsavel || 'não informado')}</div>
+      <div><span>Medição:</span> ${esc(METODOS[af.metodo] || af.metodo)}, ${an.ac.length} pontos</div>
+      <div><span>Faixa:</span> 0 a ${fmtL(an.max.mm)} mm</div>
+      <div><span>Volume máximo aferido:</span> ${fmtL(an.max.litros)} litros</div>
+      <div><span>Tabela:</span> de ${passo} em ${passo} mm</div></div>`;
+    const colunas = (fatia, porCol) => {
+      let h = '<div class="rgp-cols">';
+      for (let c = 0; c < COLUNAS; c++) {
+        const parte = fatia.slice(c * porCol, (c + 1) * porCol); if (!parte.length) break;
+        h += '<table><thead><tr><th>mm</th><th>litros</th></tr></thead><tbody>' +
+          parte.map((l) => `<tr${l.mm % forteCada === 0 ? ' class="forte"' : ''}><td>${fmtQ(l.mm)}</td><td>${fmtL(l.litros)}</td></tr>`).join('') + '</tbody></table>';
+      }
+      return h + '</div>';
+    };
+    const nota = `<p class="rgp-nota">Volumes em litros, calculados ligando em linha reta os ${validos} pontos medidos na aferição com água${an.fora.size ? ` (${an.fora.size === 1 ? '1 ponto com leitura errada ficou de fora' : an.fora.size + ' pontos com leitura errada ficaram de fora'})` : ''}. Acima de ${fmtL(an.max.mm)} mm não houve medição.${af.unidade === 'kg' ? ' Água pesada em balança: 1 kg = 1,002 litro.' : ''} Impresso em ${fmtData(hojeISO())}.</p>`;
+    const assin = '<div class="rgp-assin"><div>Responsável pela aferição</div><div>Conferido por</div></div>';
+    let html = paginas.map((fatia, i) => {
+      const porCol = i === 0 ? LINHAS_P1 : LINHAS;
+      const ultima = i === paginas.length - 1;
+      return `<div class="rgp-pagina">${topo(i + 1)}${i === 0 ? info : ''}${colunas(fatia, Math.min(porCol, Math.ceil(fatia.length / COLUNAS)))}${ultima ? nota + assin : ''}</div>`;
+    }).join('');
+    const tabPontos = (parte) => `<table class="rgp-pontos"><thead><tr><th>Nº</th><th>Colocado (${unid(af) === 'kg' ? 'kg' : 'L'})</th><th>Total (L)</th><th>Régua (mm)</th></tr></thead><tbody>
+      ${parte.map((p) => `<tr><td>${p.n}</td><td>${fmtQ(p.q)}</td><td>${fmtL(p.litros)}</td><td>${fmtQ(p.mm)}${an.fora.has(p.n - 1) ? ' *' : ''}</td></tr>`).join('')}</tbody></table>`;
+    for (let k = 0; k < pgPontos; k++) {
+      const parte = an.ac.slice(k * PONTOS_COL * 2, (k + 1) * PONTOS_COL * 2);
+      html += `<div class="rgp-pagina">${topo(paginas.length + k + 1)}<p class="rgp-nota" style="margin-top:0"><b>Pontos medidos na aferição</b>${an.fora.size ? ' (* leitura errada, ficou fora da tabela)' : ''}</p>
+        <div class="rgp-cols rgp-cols2">${tabPontos(parte.slice(0, PONTOS_COL))}${parte.length > PONTOS_COL ? tabPontos(parte.slice(PONTOS_COL)) : ''}</div></div>`;
+    }
+    $('rfImpressao').innerHTML = html;
+    document.body.classList.add('rg-imprimindo');
+  }
+  function limparImpressao() {
+    document.body.classList.remove('rg-imprimindo');
+    const el = $('rfImpressao'); if (el) el.innerHTML = '';
+  }
+
+  function ligarReguas() {
+    mostrarVisao(lsGet('sn_rf_visao'));
+    $('rfVisao').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-visao]'); if (!b) return;
+      mostrarVisao(b.dataset.visao); lsSet('sn_rf_visao', b.dataset.visao);
+    });
+    $('rgLista').addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) abrirRegua(c.dataset.id); });
+    $('rgBusca').addEventListener('input', renderReguas);
+    $('rgFiltro').addEventListener('click', (e) => {
+      const b = e.target.closest('.seg-btn'); if (!b) return;
+      rgFiltro = b.dataset.filtro;
+      $('rgFiltro').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
+      renderReguas();
+    });
+    $('rgConsultaResf').addEventListener('change', () => { lsSet('sn_rg_consulta', $('rgConsultaResf').value); consultar(); });
+    $('rgConsultaMm').addEventListener('input', consultar);
+    window.addEventListener('afterprint', () => { if (document.body.classList.contains('rg-imprimindo')) setTimeout(limparImpressao, 300); });
+    window.addEventListener('hashchange', limparImpressao);
+  }
+
   /* ---------- Avisos no celular (notificações) ---------- */
   const PUSH_CHAVE = 'BPEfqIGgANgUSmj-xx_XJyVbjqUnbrQUEbFVhamkctGnwdfb97fQMppbXuqnWozkCrLWo18RKuT89Nam_K_hgws';
   function chaveBytes(b64) {
@@ -6868,10 +7628,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       $('rfFiltro').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
       render();
     });
+    ligarReguas();
     try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
     try { await carregar(); }
     catch (e) { console.error(e); $('rfLista').innerHTML = '<p class="fatal">Não foi possível carregar os resfriadores. Recarregue a página.</p>'; return; }
-    ['resfriadores', 'resfriadores_locais', 'resfriadores_manutencoes', 'resfriadores_fotos', 'resfriadores_produtores', 'resfriadores_status'].forEach((t) => {
+    ['resfriadores', 'resfriadores_locais', 'resfriadores_manutencoes', 'resfriadores_fotos', 'resfriadores_produtores', 'resfriadores_status', 'resfriadores_afericoes'].forEach((t) => {
       sb.channel('sn-rf-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
     });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
