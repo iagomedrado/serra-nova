@@ -7245,8 +7245,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       ${podeEditar ? `<form class="rg-entrada" data-entrada novalidate>
         <h3 data-titulo>Novo ponto</h3>
         <div class="segmented" data-modo role="group" aria-label="Como digitar a quantidade">
-          <button type="button" class="seg-btn" data-m="vez">Digitar o que pus agora</button>
-          <button type="button" class="seg-btn" data-m="total">Digitar o total</button>
+          <button type="button" class="seg-btn" data-m="vez">Quantidade adicionada</button>
+          <button type="button" class="seg-btn" data-m="total">Total acumulado</button>
         </div>
         <div class="two">
           <label><span data-rot-q></span><input type="number" name="q" min="0" step="any" inputmode="decimal" autocomplete="off"></label>
@@ -7295,7 +7295,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         form.querySelector('[data-salvar]').textContent = editando == null ? 'Adicionar ponto' : 'Salvar correção';
         form.querySelector('[data-cancelar-edicao]').hidden = editando == null;
         form.querySelectorAll('[data-m]').forEach((b) => b.classList.toggle('is-active', b.dataset.m === modo));
-        form.querySelector('[data-rot-q]').textContent = (modo === 'vez' ? 'Pus agora' : 'Total até agora') + ' (' + (u === 'kg' ? 'kg' : 'L') + ')';
+        form.querySelector('[data-rot-q]').textContent = (modo === 'vez' ? 'Quantidade adicionada' : 'Total acumulado') + ' (' + (u === 'kg' ? 'kg' : 'L') + ')';
         if (editando != null) {
           const p = pontos[editando];
           inQ.value = modo === 'vez' ? p.q : totalAntes(editando + 1);
@@ -7324,7 +7324,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const an = analisar(af, teste), ps = an.passos[idx], aviso = an.avisos[idx + 1];
         if (aviso) { el.classList.add('ruim'); el.textContent = aviso; return; }
         if (mm === 0) { el.textContent = 'A água ainda não chegou na régua: tudo bem, continue colocando.'; return; }
-        el.textContent = (modo === 'total' ? `Desta vez entraram ${fmtQ(q)} ${u}. ` : '') + (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm.` : '');
+        el.textContent = (modo === 'total' ? `Quantidade adicionada: ${fmtQ(q)} ${u}. ` : '') + (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm.` : '');
       }
       async function salvar(novos) {
         salvando = true;
