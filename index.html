@@ -248,6 +248,17 @@
   .lv-visao { display: flex; width: 100%; max-width: 440px; margin: 6px 0 18px; }
   .lv-visao .seg-btn { flex: 1; padding: 11px 12px; font-size: 1rem; }
   .lv-painel[hidden] { display: none !important; }
+  .pd-visao { display: flex; flex-wrap: nowrap; width: 100%; max-width: 640px; margin: 0 0 18px; }
+  .pd-visao .seg-btn { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 8px; font-size: 1rem; white-space: nowrap; }
+  .pd-visao .seg-btn[hidden] + .seg-btn { border-left: 0; }
+  .pd-num { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--ouro); color: #3a2a00; font-size: .78rem; font-weight: 700; line-height: 20px; text-align: center; }
+  @media (max-width: 480px) { .pd-visao .seg-btn { flex: 1 1 auto; gap: 3px; padding: 10px 4px; font-size: .9rem; } }
+  @media (max-width: 350px) { .pd-visao .seg-btn { padding: 9px 2px; font-size: .82rem; } .pd-num { min-width: 17px; height: 17px; padding: 0 4px; font-size: .72rem; line-height: 17px; } }
+  #producaoRoot[data-visao="lancamento"] #qjResumo, #producaoRoot[data-visao="lancamento"] #qjNota,
+  #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not([data-visao="lancamento"]) #prNota { display: none !important; }
+  .pr-col .pr-form { position: static; }
+  #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
+  #pdPainelSalmoura > #qjFilaBloco { margin-bottom: 20px; }
   #lvVisaoLancamentos { margin-bottom: 20px; }
   .lv-cat-nota { margin: -6px 0 12px; font-size: .85rem; }
   @media (min-width: 1180px) { .content-grid { grid-template-columns: minmax(0, 1fr) 290px; align-items: start; } }
@@ -1010,8 +1021,7 @@
         <li><a href="#inicio"><svg class="i"><use href="#i-home"/></svg>Início</a></li>
         <li class="sep" role="presentation"></li>
         <li data-modulo="livro"><a href="#livro"><svg class="i"><use href="#i-livro"/></svg>Livro de contas</a></li>
-        <li data-modulo="producao"><a href="#producao"><svg class="i"><use href="#i-producao"/></svg>Lançamento de produção</a></li>
-        <li data-modulo="queijos"><a href="#queijos"><svg class="i"><use href="#i-queijo"/></svg>Estoque de Produção</a></li>
+        <li data-modulo="producao queijos"><a href="#producao"><svg class="i"><use href="#i-producao"/></svg>Produção</a></li>
         <li data-modulo="vendas"><a href="#vendas"><svg class="i"><use href="#i-vendas"/></svg>Gerenciamento de vendas</a></li>
         <li data-modulo="estoque"><a href="#estoque"><svg class="i"><use href="#i-estoque"/></svg>Controle de estoque</a></li>
         <li data-modulo="resfriadores"><a href="#resfriadores"><svg class="i"><use href="#i-frio"/></svg>Resfriadores</a></li>
@@ -1063,8 +1073,8 @@
           <p class="sem-acesso" id="semAcesso" hidden>Você ainda não tem acesso a nenhuma área. Fale com o administrador do sistema.</p>
           <ul class="areas">
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="producao"><a href="#producao"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Lançamento de produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="queijos"><a href="#queijos"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Estoque de Produção</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="producao"><a href="#producao/lancamento"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="queijos"><a href="#producao/estoque"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Salmoura, secagem e estoque</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Nos produtores e no pátio</span></span><span class="fig" id="homeResfFig">…<small>&nbsp;</small></span></a></li>
@@ -1175,84 +1185,94 @@
       <p class="fatal" id="fatalMessage" hidden></p>
     </section>
 
-    <!-- ================= LANÇAMENTO DE PRODUÇÃO ================= -->
-    <section data-tab="producao" aria-labelledby="t-producao" id="producaoRoot">
+    <!-- ================= PRODUÇÃO (lançamento, salmoura, secagem e estoque) ================= -->
+    <section data-tab="producao" aria-labelledby="t-producao" id="producaoRoot" data-visao="lancamento">
       <div class="page-head">
-        <div><h1 id="t-producao">Lançamento de produção</h1><p>Fabricação de queijos e cremes: leite utilizado, peças, peso e rendimento.</p></div>
-        <div class="actions"><button type="button" class="btn" id="prGerenciar">Produtos</button></div>
+        <div><h1 id="t-producao">Produção</h1><p>Fabricação de queijos e cremes e o caminho de cada lote: salmoura, secagem e estoque embalado.</p></div>
+        <div class="actions" id="prAcoes" data-modulo="producao"><button type="button" class="btn" id="prGerenciar">Produtos</button></div>
+      </div>
+      <div class="segmented pd-visao" id="pdVisao" role="tablist" aria-label="O que mostrar">
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" aria-controls="pdPainelLancamento" data-visao="lancamento" data-modulo="producao">Lançamento<span class="pd-num" id="pdNumLancamento" hidden></span></button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSalmoura" data-visao="salmoura" data-modulo="queijos">Salmoura<span class="pd-num" id="pdNumSalmoura" hidden></span></button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSecagem" data-visao="secagem" data-modulo="queijos">Secagem<span class="pd-num" id="pdNumSecagem" hidden></span></button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelEstoque" data-visao="estoque" data-modulo="queijos">Estoque</button>
       </div>
       <p class="test-note" id="prNota" hidden></p>
-
-      <div class="lv-row">
-        <h2>Resumo</h2>
-        <div class="summary-controls">
-          <div class="segmented" id="prPeriodo" role="group" aria-label="Período">
-            <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
-            <button type="button" class="seg-btn is-active" data-periodo="semana">Esta semana</button>
-            <button type="button" class="seg-btn" data-periodo="mes">Este mês</button>
-            <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
-          </div>
-          <div class="custom-range" id="prCustom" hidden>
-            <input type="date" id="prDe" aria-label="De"><span>até</span><input type="date" id="prAte" aria-label="Até">
-          </div>
-        </div>
-      </div>
-      <div class="ledger pr-resumo" id="prResumo"></div>
-
-      <div class="pr-grid">
-        <form class="panel form pr-form" id="prForm"></form>
-        <div class="stack">
-          <section class="panel">
-            <h2>Por produto</h2>
-            <div id="prPorProduto"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-head panel-head-row">
-              <h2>Lançamentos</h2>
-              <select id="prFiltro" class="select-inline" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
-            </div>
-            <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
-          </section>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= ESTOQUE DE QUEIJOS ================= -->
-    <section data-tab="queijos" aria-labelledby="t-queijos" id="queijosRoot">
-      <div class="page-head">
-        <div><h1 id="t-queijos">Estoque de Produção</h1><p>O caminho de cada lote depois da produção: salmoura, secagem e estoque embalado.</p></div>
-      </div>
       <p class="test-note" id="qjNota" hidden></p>
-      <div class="ledger pr-resumo" id="qjResumo"></div>
+      <div class="ledger pr-resumo" id="qjResumo" data-modulo="queijos"></div>
 
-      <section class="panel qj-bloco" aria-labelledby="h-qj-fila">
-        <h2 id="h-qj-fila">Aguardando destino</h2>
-        <p class="muted-note">Lotes de queijo lançados na produção que ainda não foram para a salmoura, a secagem ou o estoque.</p>
-        <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
-      </section>
+      <div id="pdPainelLancamento" role="tabpanel" aria-label="Lançamento">
+        <div data-modulo="producao">
+          <div class="lv-row">
+            <h2>Resumo</h2>
+            <div class="summary-controls">
+              <div class="segmented" id="prPeriodo" role="group" aria-label="Período">
+                <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
+                <button type="button" class="seg-btn is-active" data-periodo="semana">Esta semana</button>
+                <button type="button" class="seg-btn" data-periodo="mes">Este mês</button>
+                <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
+              </div>
+              <div class="custom-range" id="prCustom" hidden>
+                <input type="date" id="prDe" aria-label="De"><span>até</span><input type="date" id="prAte" aria-label="Até">
+              </div>
+            </div>
+          </div>
+          <div class="ledger pr-resumo" id="prResumo"></div>
+        </div>
 
-      <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
-        <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
-          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
-        <div class="qj-mapa" id="qjSalmoura"></div>
-      </section>
+        <div class="pr-grid">
+          <div class="stack pr-col" id="pdColForm">
+            <form class="panel form pr-form" id="prForm" data-modulo="producao"></form>
+            <section class="panel" id="qjFilaBloco" aria-labelledby="h-qj-fila" data-modulo="queijos">
+              <h2 id="h-qj-fila">Aguardando destino</h2>
+              <p class="muted-note">Lotes de queijo lançados que ainda não foram para a salmoura, a secagem ou o estoque.</p>
+              <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
+            </section>
+          </div>
+          <div class="stack" data-modulo="producao">
+            <section class="panel">
+              <h2>Por produto</h2>
+              <div id="prPorProduto"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head panel-head-row">
+                <h2>Lançamentos</h2>
+                <select id="prFiltro" class="select-inline" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
+              </div>
+              <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
+            </section>
+          </div>
+        </div>
+      </div>
 
-      <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
-        <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
-          <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
-        <div class="qj-mapa" id="qjSecagem"></div>
-      </section>
-
-      <div class="qj-grid2">
-        <section class="panel" aria-labelledby="h-qj-est">
-          <div class="qj-cab"><h2 id="h-qj-est">Estoque embalado</h2><button type="button" class="btn btn-primary btn-small" id="qjSaidaBtn" hidden>Registrar saída</button></div>
-          <p class="muted-note">Na saída, o cliente, o preço e a forma de pagamento são definidos em Gerenciamento de vendas.</p>
-          <div id="qjEstoque"></div>
+      <div id="pdPainelSalmoura" role="tabpanel" aria-label="Salmoura" hidden>
+        <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
+          <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+          <div class="qj-mapa" id="qjSalmoura"></div>
         </section>
-        <section class="panel" aria-labelledby="h-qj-mov">
-          <h2 id="h-qj-mov">Últimas movimentações</h2>
-          <div id="qjMovimentos"></div>
+      </div>
+
+      <div id="pdPainelSecagem" role="tabpanel" aria-label="Secagem" hidden>
+        <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
+          <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+          <div class="qj-mapa" id="qjSecagem"></div>
         </section>
+      </div>
+
+      <div id="pdPainelEstoque" role="tabpanel" aria-label="Estoque" hidden>
+        <div class="qj-grid2">
+          <section class="panel" aria-labelledby="h-qj-est">
+            <div class="qj-cab"><h2 id="h-qj-est">Estoque embalado</h2><button type="button" class="btn btn-primary btn-small" id="qjSaidaBtn" hidden>Registrar saída</button></div>
+            <p class="muted-note">Na saída, o cliente, o preço e a forma de pagamento são definidos em Gerenciamento de vendas.</p>
+            <div id="qjEstoque"></div>
+          </section>
+          <section class="panel" aria-labelledby="h-qj-mov">
+            <h2 id="h-qj-mov">Últimas movimentações</h2>
+            <div id="qjMovimentos"></div>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -1445,14 +1465,14 @@
   const SB_KEY = "sb_publishable_40DxBqS_v77ueO_X-M8bnw_I7GJtoZL";
   const MODULOS = [
     { id: "livro", nome: "Livro de contas" },
-    { id: "producao", nome: "Lançamento de produção" },
-    { id: "queijos", nome: "Estoque de Produção" },
+    { id: "producao", nome: "Produção: lançamento" },
+    { id: "queijos", nome: "Produção: salmoura, secagem e estoque" },
     { id: "vendas", nome: "Gerenciamento de vendas" },
     { id: "estoque", nome: "Controle de estoque" },
     { id: "resfriadores", nome: "Resfriadores" }
   ];
-  const TABS = { inicio: "Início", livro: "Livro de contas", producao: "Lançamento de produção",
-    queijos: "Estoque de Produção", vendas: "Gerenciamento de vendas", estoque: "Controle de estoque", resfriadores: "Resfriadores", usuarios: "Usuários" };
+  const TABS = { inicio: "Início", livro: "Livro de contas", producao: "Produção",
+    vendas: "Gerenciamento de vendas", estoque: "Controle de estoque", resfriadores: "Resfriadores", usuarios: "Usuários" };
 
   const SN = window.SN = {
     sb: null, usuario: null, perfil: null, permissoes: {},
@@ -1507,11 +1527,14 @@
   function permitido(id) {
     if (id === "inicio") return true;
     if (id === "usuarios") return !!(SN.perfil && SN.perfil.admin);
+    if (id === "producao") return SN.pode("producao", "ver") || SN.pode("queijos", "ver");
     return SN.pode(id, "ver");
   }
   function show() {
-    let id = (location.hash || "#inicio").slice(1);
+    let [id, sub] = (location.hash || "#inicio").slice(1).split("/");
+    if (id === "queijos") { id = "producao"; sub = sub || "estoque"; } // endereço antigo do Estoque de Produção
     if (!TABS[id] || !permitido(id)) id = "inicio";
+    if (id === "producao") mostrarProducao(sub, !!sub);
     document.querySelectorAll("section[data-tab]").forEach((s) => s.classList.toggle("active", s.dataset.tab === id));
     document.querySelectorAll("nav a").forEach((a) => {
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -1523,6 +1546,33 @@
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", () => { if (SN.perfil) show(); });
+
+  /* ---------- Produção: sub-abas Lançamento, Salmoura, Secagem e Estoque ---------- */
+  const PD_VISOES = ["lancamento", "salmoura", "secagem", "estoque"];
+  const pdPermitidas = () => PD_VISOES.filter((v) => SN.pode(v === "lancamento" ? "producao" : "queijos", "ver"));
+  function mostrarProducao(v, guardar) {
+    const ok = pdPermitidas(); if (!ok.length) return;
+    if (!ok.includes(v)) {
+      let salva = null; try { salva = localStorage.getItem("sn_producao_visao"); } catch (e) { /* ok */ }
+      v = ok.includes(salva) ? salva : ok[0];
+    } else if (guardar) { try { localStorage.setItem("sn_producao_visao", v); } catch (e) { /* ok */ } }
+    $("producaoRoot").dataset.visao = v;
+    document.querySelectorAll("#pdVisao [data-visao]").forEach((b) => { const on = b.dataset.visao === v; b.classList.toggle("is-active", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
+    PD_VISOES.forEach((x) => { $("pdPainel" + x.charAt(0).toUpperCase() + x.slice(1)).hidden = x !== v; });
+  }
+  $("pdVisao").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-visao]"); if (!b) return;
+    mostrarProducao(b.dataset.visao, true);
+    history.replaceState(null, "", "#producao/" + b.dataset.visao);
+  });
+  function arrumarProducao() {
+    // Sem acesso ao lançamento, a fila "Aguardando destino" vai para o topo da Salmoura.
+    const fila = $("qjFilaBloco");
+    if (SN.pode("producao", "ver")) $("pdColForm").appendChild(fila);
+    else $("pdPainelSalmoura").prepend(fila);
+    $("pdVisao").hidden = pdPermitidas().length < 2;
+  }
+  function pdNum(id, n, titulo) { const el = $(id); el.textContent = n || ""; el.hidden = !n; el.title = n ? titulo : ""; }
 
   /* ---------- Início ---------- */
   const d = new Date();
@@ -1556,9 +1606,9 @@
     if (!SN.pode("producao", "ver")) { att.hidden = true; return; }
     if (r.hoje) {
       const partes = [r.hojeLeite ? n1(r.hojeLeite) + " L de leite" : "", r.hojePecas ? n1(r.hojePecas, 0) + " peças" : "", r.hojePeso ? n1(r.hojePeso) + " kg de creme" : ""].filter(Boolean);
-      att.innerHTML = '<span class="dot ok"></span><span><strong>Produção de hoje registrada</strong><span class="muted">' + partes.join(", ") + '.</span></span><a href="#producao">Ver</a>';
+      att.innerHTML = '<span class="dot ok"></span><span><strong>Produção de hoje registrada</strong><span class="muted">' + partes.join(", ") + '.</span></span><a href="#producao/lancamento">Ver</a>';
     } else {
-      att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao">Ver</a>';
+      att.innerHTML = '<span class="dot"></span><span><strong>Nenhuma produção lançada hoje</strong><span class="muted">Lance a fabricação do dia quando terminar.</span></span><a href="#producao/lancamento">Ver</a>';
     }
     att.hidden = false;
   });
@@ -1589,17 +1639,20 @@
   });
   document.addEventListener("queijos:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
+    pdNum("pdNumLancamento", r.pendentesLotes, pl(r.pendentesLotes, "lote aguardando destino", "lotes aguardando destino"));
+    pdNum("pdNumSalmoura", r.prontosSalmoura, pl(r.prontosSalmoura, "salmoura com tempo cumprido", "salmouras com tempo cumprido"));
+    pdNum("pdNumSecagem", r.prontosSecagem, pl(r.prontosSecagem, "secagem com tempo cumprido", "secagens com tempo cumprido"));
     $("homeQueijosFig").innerHTML = n1(r.estoque, 0) + " peças<small>" + n1(r.salmoura, 0) + " na salmoura · " + n1(r.secagem, 0) + " na secagem</small>";
     const att = $("attQueijos");
     const pend = r.pendentesLotes ? pl(r.pendentesLotes, "lote", "lotes") + " da produção (" + pl(r.pendentesPecas, "peça", "peças") + ") sem destino." : "";
     if (r.lugaresProntos.length) {
       const l = r.lugaresProntos, lista = l.length > 4 ? l.slice(0, 4).join(", ") + " e mais " + (l.length - 4) : l.join(", ");
       att.innerHTML = '<span class="dot"></span><span><strong>Queijos com tempo cumprido</strong><span class="muted">' + esc(lista) + "." +
-        (pend ? " Também há " + esc(pend.charAt(0).toLowerCase() + pend.slice(1)) : "") + '</span></span><a href="#queijos">Ver</a>';
+        (pend ? " Também há " + esc(pend.charAt(0).toLowerCase() + pend.slice(1)) : "") + '</span></span><a href="#producao/' + (r.prontosSalmoura ? "salmoura" : "secagem") + '">Ver</a>';
       att.hidden = false;
     } else if (r.pendentesLotes) {
       att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.pendentesLotes, "lote aguardando destino", "lotes aguardando destino") +
-        '</strong><span class="muted">' + esc(pend) + '</span></span><a href="#queijos">Ver</a>';
+        '</strong><span class="muted">' + esc(pend) + '</span></span><a href="#producao/lancamento">Ver</a>';
       att.hidden = false;
     } else { att.hidden = true; }
   });
@@ -1728,8 +1781,9 @@
     if (perfil.admin) Usuarios.carregar();
   }
   function aplicarPermissoes() {
-    document.querySelectorAll("[data-modulo]").forEach((el) => { el.hidden = !SN.pode(el.dataset.modulo, "ver"); });
+    document.querySelectorAll("[data-modulo]").forEach((el) => { el.hidden = !el.dataset.modulo.split(" ").some((m) => SN.pode(m, "ver")); });
     document.querySelectorAll("[data-somente-admin]").forEach((el) => { el.hidden = !SN.perfil.admin; });
+    arrumarProducao();
     const algum = MODULOS.some((m) => SN.pode(m.id, "ver"));
     $("semAcesso").hidden = algum;
   }
@@ -5370,6 +5424,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const lugares = [...new Set(prontas.map((p) => lugar(p.etapa, p.numero)))];
     document.dispatchEvent(new CustomEvent('queijos:resumo', { detail: {
       carregado: true, estoque: soma('estoque'), salmoura: soma('salmoura'), secagem: soma('secagem'), lugaresProntos: lugares,
+      prontosSalmoura: new Set(prontas.filter((p) => p.etapa === 'salmoura').map((p) => p.numero)).size,
+      prontosSecagem: new Set(prontas.filter((p) => p.etapa === 'secagem').map((p) => p.numero)).size,
       pendentesLotes: pendentes.length, pendentesPecas: pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0)
     } }));
   }
