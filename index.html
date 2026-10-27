@@ -6941,7 +6941,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (u && p.mm === u.mm) { u.litros = p.litros; continue; }
       k.push({ mm: p.mm, litros: p.litros });
     }
-    if (k.length && k[0].mm > 0) k.unshift({ mm: 0, litros: 0 });
+    // A régua não encosta no fundo: na marca 0 mm já existe o volume que fica abaixo da ponta dela.
+    // Estima esse volume prolongando a reta dos dois primeiros pontos com leitura até 0 mm, sem passar
+    // do primeiro ponto e sem ficar abaixo do último volume que ainda marcava 0 mm (se houver).
+    const temZero = k.length && k[0].mm === 0, pos = k.filter((x) => x.mm > 0);
+    if (pos.length >= 2) {
+      const a = pos[0], b = pos[1], prolong = a.litros - (b.litros - a.litros) / (b.mm - a.mm) * a.mm;
+      const minimo = temZero ? k[0].litros : 0, v0 = Math.min(a.litros, Math.max(minimo, prolong));
+      if (temZero) { if (v0 > k[0].litros + 1e-9) { k[0].litros = v0; k[0].est = true; } }
+      else k.unshift({ mm: 0, litros: Math.max(0, v0), est: true });
+    } else if (!temZero && k.length) k.unshift({ mm: 0, litros: 0, est: true });
     return k;
   }
   function volumeEm(knots, mm) {
@@ -7177,7 +7186,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
     if (an.regua && an.regua < an.max.mm) it.push(`<li class="info">Há pontos medidos acima do tamanho da régua (${fmtL(an.regua)} mm). A tabela para no fim da régua.</li>`);
     const prim = an.knots[1];
-    if (an.knots[0].litros === 0 && prim && prim.mm > 80) it.push(`<li class="info">Abaixo de ${fmtL(prim.mm)} mm não há ponto medido: a tabela liga em linha reta do zero até ali. Para o fundo ficar certo, meça alguns pontos no começo.</li>`);
+    if (an.knots[0].est) it.push(`<li class="info">A régua não encosta no fundo, então na marca 0 mm já há água no tanque. Esse volume foi estimado em <b>${fmtL(an.knots[0].litros)} L</b>, prolongando os primeiros pontos. Para ficar exato, lance como ponto o volume em que a água encosta na ponta da régua, com 0 mm.</li>`);
+    if (prim && prim.mm > 80) it.push(`<li class="info">O primeiro ponto com leitura está em ${fmtL(prim.mm)} mm: abaixo disso a tabela é uma estimativa. Para o fundo ficar certo, meça alguns pontos no começo.</li>`);
     return it.join('');
   }
   function diametroHTML(af, an) {
@@ -7407,14 +7417,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         root.querySelector('[data-lista]').innerHTML = pontos.length ? an.ac.slice().reverse().map((p) => {
           const i = p.n - 1, ps = an.passos[i], aviso = an.avisos[p.n];
           const cf = p.c ? an.conferencias.find((x) => x.n === p.n) : null, cr = cf ? confResultado(cf) : null;
-          const obs = aviso || (p.mm === 0 ? 'A água ainda não chegou na régua.' : (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm` + (ps.taxa ? ` (${fmtDec(ps.taxa, 2)} L por mm)` : '') : ''));
+          const obs = aviso || (p.mm === 0 ? 'Régua em 0 mm: a água está na ponta da régua (ou ainda não chegou nela).' : (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm` + (ps.taxa ? ` (${fmtDec(ps.taxa, 2)} L por mm)` : '') : ''));
           const acoes = !podeEditar ? '' : excluindo === i
             ? `<span class="vd-acoes"><b>Excluir este ponto?</b><button type="button" class="link-btn" data-a="sim">Sim, excluir</button><button type="button" class="link-btn" data-a="nao">Não</button></span>`
             : `<span class="vd-acoes"><button type="button" class="link-btn" data-a="corrigir">Corrigir</button><button type="button" class="link-btn" data-a="usar">${p.c ? 'Usar na tabela' : 'Tornar conferência'}</button><button type="button" class="link-btn" data-a="excluir">Excluir</button></span>`;
           return `<div class="rg-ponto${aviso || (cr && cr.nivel === 'ruim') ? ' ruim' : ''}${p.c ? ' conf' : ''}" data-i="${i}"><span class="n">${p.n}</span>
             <span>+${fmtQ(p.q)} ${u} → <b>${fmtL(p.litros)} L</b>${p.c ? ' <span class="rf-tag rg-conf">Conferência</span>' : ''}</span><span class="mm">${fmtQ(p.mm)} mm</span>
             ${cr && !aviso ? `<small>${cr.texto}</small>` : obs ? `<small>${esc(obs)}</small>` : ''}${acoes}</div>`;
-        }).join('') : '<p class="empty-state-msg">Nenhum ponto ainda. Coloque a primeira quantidade de água, leia a régua e lance aqui.</p>';
+        }).join('') : '<p class="empty-state-msg">Nenhum ponto ainda. Coloque a primeira quantidade de água, leia a régua e lance aqui. Dica: como a régua não encosta no fundo, vá colocando água aos poucos até ela encostar na ponta da régua e lance esse volume com 0 mm. Não é obrigatório: sem ele, o sistema estima.</p>';
         if (btnConcluir) btnConcluir.textContent = concluirConfirmar ? 'Concluir mesmo assim' : 'Concluir aferição';
       }
 
@@ -7485,7 +7495,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (lerConf() && dicaConf(el, teste, idx + 1)) return;
         const an = analisar(af, teste), ps = an.passos[idx], aviso = an.avisos[idx + 1];
         if (aviso) { el.classList.add('ruim'); el.textContent = aviso; return; }
-        if (mm === 0) { el.textContent = 'A água ainda não chegou na régua: tudo bem, continue colocando.'; return; }
+        if (mm === 0) { el.textContent = 'Régua em 0 mm. O ideal é lançar o volume do momento em que a água encosta na ponta da régua.'; return; }
         el.textContent = (modo === 'total' ? `Quantidade adicionada: ${fmtQ(q)} ${u}. ` : '') + (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm.` : '');
       }
       async function salvar(novos) {
