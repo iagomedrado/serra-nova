@@ -1279,7 +1279,7 @@
     <!-- ================= GERENCIAMENTO DE VENDAS ================= -->
     <section data-tab="vendas" aria-labelledby="t-vendas" id="vendasRoot">
       <div class="page-head">
-        <div><h1 id="t-vendas">Gerenciamento de vendas</h1><p>Cliente, preço por quilo e forma de pagamento das saídas registradas no Estoque de Produção.</p></div>
+        <div><h1 id="t-vendas">Gerenciamento de vendas</h1><p>Cliente, preço por quilo e forma de pagamento das saídas registradas no estoque da aba Produção.</p></div>
         <div class="actions"><button type="button" class="btn" id="vdGerenciar" hidden>Clientes e formas de pagamento</button></div>
       </div>
       <p class="test-note" id="vdNota" hidden></p>
@@ -5261,7 +5261,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       </li>`;
     SN.ui.openModal('Produtos fabricados', `
       <p class="modal-context">Queijos são lançados com leite e número de peças. Cremes são lançados com o peso. Desmarque "Em uso" para tirar um produto da lista sem apagar os lançamentos dele.</p>
-      <p class="hint" style="margin:-6px 0 10px">O peso médio da peça serve para o rendimento quando um queijo é feito com o leite de outro (ex.: Meia Cura de 1 kg vale 1/6 de um Tropical de 6 kg). Peças por salmoura e por secagem são o número que já vem preenchido em cada prateleira no Estoque de Produção; em branco, as peças não são divididas sozinhas.</p>
+      <p class="hint" style="margin:-6px 0 10px">O peso médio da peça serve para o rendimento quando um queijo é feito com o leite de outro (ex.: Meia Cura de 1 kg vale 1/6 de um Tropical de 6 kg). Peças por salmoura e por secagem são o número que já vem preenchido em cada prateleira na salmoura e na secagem; em branco, as peças não são divididas sozinhas.</p>
       <ul class="cat-manage-list" id="prGLista">${produtos.map(linha).join('')}</ul>
       <form class="add-cat-form" id="prGNovo" style="margin-top:14px">
         <input type="text" id="prGNome" placeholder="Novo produto" required>
@@ -6277,7 +6277,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const v = vendas.find((x) => x.id === vendaId); if (!v) return;
     SN.ui.confirmar({
       titulo: 'Voltar para pendente',
-      mensagem: `A venda para ${cliente(v.cliente_id)?.nome || 'o cliente'} volta para "Aguardando dados da venda". Use quando a saída precisar ser corrigida ou desfeita no Estoque de Produção.`,
+      mensagem: `A venda para ${cliente(v.cliente_id)?.nome || 'o cliente'} volta para "Aguardando dados da venda". Use quando a saída precisar ser corrigida ou desfeita no estoque da aba Produção.`,
       botao: 'Voltar para pendente', perigo: false,
       acao: async () => {
         const { error } = await sb.rpc('vendas_reabrir', { p_venda: v.id });
