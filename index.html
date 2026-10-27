@@ -954,15 +954,13 @@
     .rgp-titulo { flex: 1; display: grid; }
     .rgp-titulo > b { font-family: Merriweather, Georgia, serif; font-size: 18px; color: #6E0A10; }
     .rgp-titulo span { font-size: 12px; margin-top: 2px; }
-    .rgp-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 5mm; align-items: start; }
-    .rgp-cruz { width: 100%; border-collapse: collapse; font-size: 9.4px; line-height: 1; font-variant-numeric: tabular-nums; table-layout: fixed; }
-    .rgp-cruz th, .rgp-cruz td { text-align: right; padding: 0 2px; height: 3.5mm; font-size: 9.4px; line-height: 1; border: 1px solid #c9c9c9; color: #000; white-space: nowrap; overflow: hidden; }
+    .rgp-cruz { width: 100%; border-collapse: collapse; font-size: 11.5px; line-height: 1; font-variant-numeric: tabular-nums; table-layout: fixed; }
+    .rgp-cruz th, .rgp-cruz td { text-align: right; padding: 0 6px; height: 3.5mm; font-size: 11.5px; line-height: 1; border: 1px solid #c9c9c9; color: #000; white-space: nowrap; overflow: hidden; }
     .rgp-cruz thead th { background: #6E0A10; color: #fff; text-align: center; font-weight: 700; border-color: #6E0A10; }
-    .rgp-cruz th.dz { width: 11.5%; }
+    .rgp-cruz th.dz { width: 10%; }
     .rgp-cruz tbody th.dz { background: #F3E7C4; font-weight: 700; text-align: right; }
     .rgp-cruz tbody tr:nth-child(even) td { background: #F6F6F4; }
     .rgp-cruz tr.forte th, .rgp-cruz tr.forte td { border-bottom: 1.6px solid #555; }
-    .rgp-cruz.miudo td { font-size: 8.2px; padding: 0 1px; }
     .rgp-cruz td.vazio { background: #fff !important; border-color: #eee; }
   }
 </style>
@@ -7586,17 +7584,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   /* ---------- Imprimir / PDF: tabela cruzada ----------
      Linhas de 10 em 10 mm (dezenas) e colunas de 0 a 9 (unidades): a linha 730 com a coluna 5 = 735 mm.
      Duas tabelas lado a lado por página. */
-  // Linhas (dezenas) por tabela em cada página, medidas com a linha de 3,5 mm.
-  const LINHAS = 70;
+  // Uma tabela por página: linhas (dezenas) por página, medidas com a linha de 3,5 mm.
+  const LINHAS = 72;
   function dezenas(an) { const d = []; for (let x = 0; x <= an.limite + 1e-9; x += 10) d.push(x); return d; }
   function paginarDezenas(ds) {
-    const pags = []; let i = 0;
-    while (i < ds.length) {
-      const resto = ds.length - i, pega = Math.min(resto, 2 * LINHAS), fatia = ds.slice(i, i + pega);
-      const e = pega === 2 * LINHAS ? LINHAS : Math.ceil(pega / 2); // na última página divide o resto ao meio
-      pags.push([fatia.slice(0, e), fatia.slice(e)]);
-      i += pega;
-    }
+    const pags = [];
+    for (let i = 0; i < ds.length; i += LINHAS) pags.push(ds.slice(i, i + LINHAS));
     return pags;
   }
   function imprimir(afId) {
@@ -7630,11 +7623,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <div class="rgp-titulo"><b>Resfriador nº ${esc(r.numero)}</b>
         <span>Capacidade: <b>${r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' litros' : '–'}</b> &nbsp;·&nbsp; Marca: <b>${esc(r.marca || '–')}</b> &nbsp;·&nbsp; Data da aferição: <b>${fmtData(af.data)}</b></span></div></div>`;
     const cab = '<thead><tr><th class="dz">mm</th>' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((u) => `<th>${u}</th>`).join('') + '</tr></thead>';
-    const bloco = (ds) => !ds.length ? '<div></div>' : `<table class="rgp-cruz${an.volLimite >= 9999.5 ? ' miudo' : ''}">${cab}<tbody>${ds.map((d) => `<tr class="${(d / 10) % 5 === 4 ? 'forte' : ''}"><th class="dz">${fmtL(d)}</th>${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((u) => {
+    const bloco = (ds) => !ds.length ? '<div></div>' : `<table class="rgp-cruz">${cab}<tbody>${ds.map((d) => `<tr class="${(d / 10) % 5 === 4 ? 'forte' : ''}"><th class="dz">${fmtL(d)}</th>${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((u) => {
       const l = volume(an, d + u);
       return l == null ? '<td class="vazio"></td>' : `<td>${fmtL(l)}</td>`;
     }).join('')}</tr>`).join('')}</tbody></table>`;
-    $('rfImpressao').innerHTML = pags.map(([esq, dir]) => `<div class="rgp-pagina">${topo}<div class="rgp-duas">${bloco(esq)}${bloco(dir)}</div></div>`).join('');
+    $('rfImpressao').innerHTML = pags.map((ds) => `<div class="rgp-pagina">${topo}${bloco(ds)}</div>`).join('');
     document.body.classList.add('rg-imprimindo');
   }
   function limparImpressao() {
