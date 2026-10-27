@@ -248,15 +248,16 @@
   .lv-visao { display: flex; width: 100%; max-width: 440px; margin: 6px 0 18px; }
   .lv-visao .seg-btn { flex: 1; padding: 11px 12px; font-size: 1rem; }
   .lv-painel[hidden] { display: none !important; }
-  .pd-visao { display: flex; flex-wrap: nowrap; width: 100%; max-width: 640px; margin: 0 0 18px; }
-  .pd-visao .seg-btn { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 8px; font-size: 1rem; white-space: nowrap; }
-  .pd-visao .seg-btn[hidden] + .seg-btn { border-left: 0; }
+  .pd-visao { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line); width: 100%; max-width: 760px; margin: 0 0 18px; }
+  .pd-visao .seg-btn { flex: 1 0 auto; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 8px; font-size: 1rem; white-space: nowrap; border-left: 0; background: var(--surface); }
+  .pd-visao .seg-btn.is-active { background: var(--ink); }
   .pd-num { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--ouro); color: #3a2a00; font-size: .78rem; font-weight: 700; line-height: 20px; text-align: center; }
-  @media (max-width: 480px) { .pd-visao .seg-btn { flex: 1 1 auto; gap: 3px; padding: 10px 4px; font-size: .9rem; } }
+  @media (max-width: 480px) { .pd-visao .seg-btn { gap: 3px; padding: 10px 4px; font-size: .9rem; } }
   @media (max-width: 350px) { .pd-visao .seg-btn { padding: 9px 2px; font-size: .82rem; } .pd-num { min-width: 17px; height: 17px; padding: 0 4px; font-size: .72rem; line-height: 17px; } }
-  #producaoRoot[data-visao="lancamento"] #qjResumo, #producaoRoot[data-visao="lancamento"] #qjNota,
-  #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not([data-visao="lancamento"]) #prNota { display: none !important; }
-  .pr-col .pr-form { position: static; }
+  #producaoRoot:is([data-visao="lancamento"], [data-visao="resumo"]) :is(#qjResumo, #qjNota),
+  #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not(:is([data-visao="lancamento"], [data-visao="resumo"])) #prNota { display: none !important; }
+  .pr-acomp { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
+  @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; } }
   #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
   #pdPainelSalmoura > #qjFilaBloco { margin-bottom: 20px; }
   #lvVisaoLancamentos { margin-bottom: 20px; }
@@ -1073,7 +1074,7 @@
           <p class="sem-acesso" id="semAcesso" hidden>Você ainda não tem acesso a nenhuma área. Fale com o administrador do sistema.</p>
           <ul class="areas">
             <li data-modulo="livro"><a href="#livro"><span class="ico"><svg class="i"><use href="#i-livro"/></svg></span><span><b>Livro de contas</b><span class="muted">A vencer nos próximos 7 dias</span></span><span class="fig" id="homeLivroFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="producao"><a href="#producao/lancamento"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="producao"><a href="#producao/resumo"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="queijos"><a href="#producao/estoque"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Salmoura, secagem e estoque</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
@@ -1196,52 +1197,51 @@
         <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSalmoura" data-visao="salmoura" data-modulo="queijos">Salmoura<span class="pd-num" id="pdNumSalmoura" hidden></span></button>
         <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSecagem" data-visao="secagem" data-modulo="queijos">Secagem<span class="pd-num" id="pdNumSecagem" hidden></span></button>
         <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelEstoque" data-visao="estoque" data-modulo="queijos">Estoque</button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelResumo" data-visao="resumo" id="pdBtnResumo" hidden>Resumo</button>
       </div>
       <p class="test-note" id="prNota" hidden></p>
       <p class="test-note" id="qjNota" hidden></p>
       <div class="ledger pr-resumo" id="qjResumo" data-modulo="queijos"></div>
 
       <div id="pdPainelLancamento" role="tabpanel" aria-label="Lançamento">
-        <div data-modulo="producao">
-          <div class="lv-row">
-            <h2>Resumo</h2>
-            <div class="summary-controls">
-              <div class="segmented" id="prPeriodo" role="group" aria-label="Período">
-                <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
-                <button type="button" class="seg-btn is-active" data-periodo="semana">Esta semana</button>
-                <button type="button" class="seg-btn" data-periodo="mes">Este mês</button>
-                <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
-              </div>
-              <div class="custom-range" id="prCustom" hidden>
-                <input type="date" id="prDe" aria-label="De"><span>até</span><input type="date" id="prAte" aria-label="Até">
-              </div>
+        <div class="pr-grid" id="pdColForm">
+          <form class="panel form pr-form" id="prForm" data-modulo="producao"></form>
+          <section class="panel" id="qjFilaBloco" aria-labelledby="h-qj-fila" data-modulo="queijos">
+            <h2 id="h-qj-fila">Aguardando destino</h2>
+            <p class="muted-note">Lotes de queijo lançados que ainda não foram para a salmoura, a secagem ou o estoque.</p>
+            <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
+          </section>
+        </div>
+      </div>
+
+      <div id="pdPainelResumo" role="tabpanel" aria-label="Resumo" hidden>
+        <div class="lv-row">
+          <h2>Resumo</h2>
+          <div class="summary-controls">
+            <div class="segmented" id="prPeriodo" role="group" aria-label="Período">
+              <button type="button" class="seg-btn" data-periodo="hoje">Hoje</button>
+              <button type="button" class="seg-btn is-active" data-periodo="semana">Esta semana</button>
+              <button type="button" class="seg-btn" data-periodo="mes">Este mês</button>
+              <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
+            </div>
+            <div class="custom-range" id="prCustom" hidden>
+              <input type="date" id="prDe" aria-label="De"><span>até</span><input type="date" id="prAte" aria-label="Até">
             </div>
           </div>
-          <div class="ledger pr-resumo" id="prResumo"></div>
         </div>
-
-        <div class="pr-grid">
-          <div class="stack pr-col" id="pdColForm">
-            <form class="panel form pr-form" id="prForm" data-modulo="producao"></form>
-            <section class="panel" id="qjFilaBloco" aria-labelledby="h-qj-fila" data-modulo="queijos">
-              <h2 id="h-qj-fila">Aguardando destino</h2>
-              <p class="muted-note">Lotes de queijo lançados que ainda não foram para a salmoura, a secagem ou o estoque.</p>
-              <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
-            </section>
-          </div>
-          <div class="stack" data-modulo="producao">
-            <section class="panel">
-              <h2>Por produto</h2>
-              <div id="prPorProduto"></div>
-            </section>
-            <section class="panel">
-              <div class="panel-head panel-head-row">
-                <h2>Lançamentos</h2>
-                <select id="prFiltro" class="select-inline" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
-              </div>
-              <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
-            </section>
-          </div>
+        <div class="ledger pr-resumo" id="prResumo"></div>
+        <div class="pr-acomp">
+          <section class="panel">
+            <h2>Por produto</h2>
+            <div id="prPorProduto"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head panel-head-row">
+              <h2>Lançamentos</h2>
+              <select id="prFiltro" class="select-inline" aria-label="Filtrar por produto"><option value="">Todos os produtos</option></select>
+            </div>
+            <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
+          </section>
         </div>
       </div>
 
@@ -1548,8 +1548,10 @@
   window.addEventListener("hashchange", () => { if (SN.perfil) show(); });
 
   /* ---------- Produção: sub-abas Lançamento, Salmoura, Secagem e Estoque ---------- */
-  const PD_VISOES = ["lancamento", "salmoura", "secagem", "estoque"];
-  const pdPermitidas = () => PD_VISOES.filter((v) => SN.pode(v === "lancamento" ? "producao" : "queijos", "ver"));
+  const PD_VISOES = ["lancamento", "salmoura", "secagem", "estoque", "resumo"];
+  // Resumo (acompanhamento da produção: totais, por produto e lista de lançamentos) é só para a gerência.
+  const podeResumoProducao = () => !!(SN.perfil && SN.perfil.admin) && SN.pode("producao", "ver");
+  const pdPermitidas = () => PD_VISOES.filter((v) => v === "resumo" ? podeResumoProducao() : SN.pode(v === "lancamento" ? "producao" : "queijos", "ver"));
   function mostrarProducao(v, guardar) {
     const ok = pdPermitidas(); if (!ok.length) return;
     if (!ok.includes(v)) {
@@ -1570,6 +1572,7 @@
     const fila = $("qjFilaBloco");
     if (SN.pode("producao", "ver")) $("pdColForm").appendChild(fila);
     else $("pdPainelSalmoura").prepend(fila);
+    $("pdBtnResumo").hidden = !podeResumoProducao();
     $("pdVisao").hidden = pdPermitidas().length < 2;
   }
   function pdNum(id, n, titulo) { const el = $(id); el.textContent = n || ""; el.hidden = !n; el.title = n ? titulo : ""; }
