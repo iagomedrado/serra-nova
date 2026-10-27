@@ -949,17 +949,11 @@
     .rgp-pagina { page: regua; break-after: page; page-break-after: always; font: 11px/1.25 "Source Sans 3", Arial, sans-serif; color: #000; }
     .rgp-pagina:last-child { break-after: auto; page-break-after: auto; }
     .rgp-pagina * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .rgp-topo { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #6E0A10; padding-bottom: 4px; margin-bottom: 6px; }
-    .rgp-topo img { height: 9mm; width: auto; }
-    .rgp-topo.grande img { height: 13mm; }
+    .rgp-topo { display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #6E0A10; padding-bottom: 4px; margin-bottom: 6px; }
+    .rgp-topo img { height: 13mm; width: auto; }
     .rgp-titulo { flex: 1; display: grid; }
-    .rgp-titulo b { font-family: Merriweather, Georgia, serif; font-size: 14px; color: #6E0A10; }
-    .rgp-topo.grande .rgp-titulo b { font-size: 17px; }
-    .rgp-titulo span { font-size: 11.5px; font-weight: 700; }
-    .rgp-pag { font-size: 10px; color: #444; white-space: nowrap; align-self: flex-end; }
-    .rgp-info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 14px; margin: 0 0 5px; font-size: 11px; }
-    .rgp-info span { color: #444; }
-    .rgp-como { margin: 0 0 6px; font-size: 10.5px; padding: 3px 6px; border: 1px solid #F2B81E; background: #FFF8E1; border-radius: 3px; }
+    .rgp-titulo > b { font-family: Merriweather, Georgia, serif; font-size: 18px; color: #6E0A10; }
+    .rgp-titulo span { font-size: 12px; margin-top: 2px; }
     .rgp-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 5mm; align-items: start; }
     .rgp-cruz { width: 100%; border-collapse: collapse; font-size: 9.4px; line-height: 1; font-variant-numeric: tabular-nums; table-layout: fixed; }
     .rgp-cruz th, .rgp-cruz td { text-align: right; padding: 0 2px; height: 3.5mm; font-size: 9.4px; line-height: 1; border: 1px solid #c9c9c9; color: #000; white-space: nowrap; overflow: hidden; }
@@ -968,15 +962,8 @@
     .rgp-cruz tbody th.dz { background: #F3E7C4; font-weight: 700; text-align: right; }
     .rgp-cruz tbody tr:nth-child(even) td { background: #F6F6F4; }
     .rgp-cruz tr.forte th, .rgp-cruz tr.forte td { border-bottom: 1.6px solid #555; }
-    .rgp-cruz td.calc { font-style: italic; }
     .rgp-cruz.miudo td { font-size: 8.2px; padding: 0 1px; }
     .rgp-cruz td.vazio { background: #fff !important; border-color: #eee; }
-    .rgp-nota { margin: 6px 0 0; font-size: 10px; color: #333; }
-    .rgp-pontos { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
-    .rgp-pontos th, .rgp-pontos td { text-align: right; padding: 1px 6px; border-bottom: 1px solid #ccc; color: #000; }
-    .rgp-pontos th { border-bottom: 1.5px solid #000; }
-    .rgp-assin { display: flex; gap: 40px; margin-top: 22px; font-size: 11px; }
-    .rgp-assin div { flex: 1; border-top: 1px solid #000; padding-top: 3px; text-align: center; }
   }
 </style>
 </head>
@@ -7589,90 +7576,55 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   /* ---------- Imprimir / PDF: tabela cruzada ----------
      Linhas de 10 em 10 mm (dezenas) e colunas de 0 a 9 (unidades): a linha 730 com a coluna 5 = 735 mm.
      Duas tabelas lado a lado por página. */
-  // Linhas (dezenas) por tabela em cada página, medidas com a linha de 3,5 mm. NOTA = linhas reservadas na última página para notas e assinaturas.
-  const LINHAS_P1 = 66, LINHAS = 72, NOTA = 9, PONTOS_COL = 55;
+  // Linhas (dezenas) por tabela em cada página, medidas com a linha de 3,5 mm.
+  const LINHAS = 70;
   function dezenas(an) { const d = []; for (let x = 0; x <= an.limite + 1e-9; x += 10) d.push(x); return d; }
   function paginarDezenas(ds) {
     const pags = []; let i = 0;
-    const metade = (fatia) => { const e = Math.ceil(fatia.length / 2); return [fatia.slice(0, e), fatia.slice(e)]; };
     while (i < ds.length) {
-      const por = pags.length ? LINHAS : LINHAS_P1, resto = ds.length - i;
-      let pega;
-      if (resto <= 2 * (por - NOTA)) pega = resto; // última página, com espaço para as notas
-      else if (resto <= 2 * por) pega = Math.ceil(resto / 2); // divide o resto em duas páginas parecidas
-      else pega = 2 * por;
-      const fatia = ds.slice(i, i + pega);
-      pags.push(pega === 2 * por ? [fatia.slice(0, por), fatia.slice(por)] : metade(fatia));
+      const resto = ds.length - i, pega = Math.min(resto, 2 * LINHAS), fatia = ds.slice(i, i + pega);
+      const e = pega === 2 * LINHAS ? LINHAS : Math.ceil(pega / 2); // na última página divide o resto ao meio
+      pags.push([fatia.slice(0, e), fatia.slice(e)]);
       i += pega;
     }
     return pags;
   }
-  const paginasPontos = (an, comPontos) => (comPontos ? Math.ceil(an.ac.length / (PONTOS_COL * 2)) : 0);
   function imprimir(afId) {
     const af = afer(afId); if (!af) return;
     const r = resf(af.resfriador_id), an = analisar(af), nAv = Object.keys(an.avisos).length;
+    const n = paginarDezenas(dezenas(an)).length;
     SN.ui.openModal('Imprimir tabela da régua', `
-      <p class="modal-context">Resfriador ${esc(r.numero)}, ${esc(ondeTexto(r))}. A tabela vai de 0 a ${fmtL(an.limite)} mm (até ${fmtL(an.volLimite)} L)${an.ext ? `, medida até ${fmtL(an.ext.de)} mm e calculada pelo ${an.ext.fonte === 'diametro' ? 'diâmetro' : 'trecho de cima'} até o fim da régua` : ''}.</p>
-      <p class="muted-note">A tabela sai <b>cruzada</b>, de 1 em 1 mm: as linhas vão de 10 em 10 mm e as colunas de 0 a 9 dão a unidade. Ex.: 735 mm = linha 730, coluna 5. Na janela de impressão, escolha a impressora ou "Salvar como PDF".</p>
+      <p class="modal-context">Resfriador ${esc(r.numero)}. A tabela vai de 0 a ${fmtL(an.limite)} mm (até ${fmtL(an.volLimite)} L), de 1 em 1 mm: as linhas vão de 10 em 10 mm e as colunas de 0 a 9 dão a unidade. ${n === 1 ? 'Cabe em 1 página.' : 'Fica com ' + n + ' páginas.'}</p>
       ${nAv ? `<div class="rg-faixa"><p><b>${nAv === 1 ? 'Há 1 ponto' : 'Há ' + nAv + ' pontos'} para conferir</b> nesta aferição. Se for erro de anotação, a tabela sai errada nesse trecho.</p></div>` : ''}
       ${af.concluida ? '' : '<div class="rg-faixa"><p><b>Esta aferição ainda está em andamento.</b> A tabela sai com os pontos lançados até agora.</p></div>'}
       <form class="form" id="rgImp">
-        <label class="check"><input type="checkbox" name="pontos" ${lsGet('sn_rg_pontos') === '1' ? 'checked' : ''}> Incluir no fim a lista dos pontos medidos</label>
-        <p class="muted-note" data-paginas></p>
+        <p class="muted-note">Na janela de impressão, escolha a impressora ou "Salvar como PDF".</p>
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Voltar</button><button type="submit" class="btn btn-primary">Imprimir / Salvar PDF</button></div>
         <p class="muted-note" data-depois hidden>Se a janela de impressão não abriu, aperte <b>Ctrl+P</b> (ou <b>Cmd+P</b> no Mac). No celular, use "Compartilhar" e depois "Imprimir".</p>
       </form>`, (root) => {
       const form = root.querySelector('#rgImp');
-      const contar = () => { const n = paginarDezenas(dezenas(an)).length + paginasPontos(an, form.querySelector('[name="pontos"]').checked); root.querySelector('[data-paginas]').textContent = n === 1 ? 'Cabe em 1 página.' : 'Fica com ' + n + ' páginas.'; };
-      form.querySelector('[name="pontos"]').addEventListener('change', contar); contar();
       root.querySelector('[data-voltar]').addEventListener('click', () => { limparImpressao(); abrirRegua(af.resfriador_id, afId); });
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const comPontos = form.querySelector('[name="pontos"]').checked;
-        lsSet('sn_rg_pontos', comPontos ? '1' : '0');
-        montarImpressao(af, r, an, comPontos);
+        montarImpressao(af, r, an);
         root.querySelector('[data-depois]').hidden = false;
         try { window.print(); } catch (err) { console.error(err); }
       });
     });
   }
-  function montarImpressao(af, r, an, comPontos) {
-    const pags = paginarDezenas(dezenas(an)), pgPontos = paginasPontos(an, comPontos), total = pags.length + pgPontos;
-    const validos = an.knots.filter((k) => !(k.mm === 0 && k.litros === 0)).length;
+  // Folha impressa: só logotipo, número, capacidade, marca, data da aferição e a tabela.
+  function montarImpressao(af, r, an) {
+    const pags = paginarDezenas(dezenas(an));
     const logoEl = document.querySelector('.brand img'), logo = logoEl ? logoEl.src : '';
-    const topo = (n, grande) => `<div class="rgp-topo${grande ? ' grande' : ''}">${logo ? `<img src="${logo}" alt="Laticínio Serra Nova">` : ''}
-      <div class="rgp-titulo"><b>Tabela da régua · Resfriador nº ${esc(r.numero)}</b><span>${esc(ondeTexto(r))}</span></div>
-      <span class="rgp-pag">Página ${n} de ${total}</span></div>`;
-    const info = `<div class="rgp-info">
-      <div><span>Capacidade:</span> ${r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' litros' : 'não informada'}</div>
-      <div><span>Marca:</span> ${esc(marcaOrdTexto(r) || 'não informada')}</div>
-      <div><span>Aferida em:</span> <b>${fmtData(af.data)}</b>${af.concluida ? '' : ' (em andamento)'}</div>
-      <div><span>Feita por:</span> ${esc(af.responsavel || 'não informado')}</div>
-      <div><span>Medição:</span> ${esc(METODOS[af.metodo] || af.metodo)}, ${an.ac.length} pontos</div>
-      <div><span>Régua:</span> 0 a ${fmtL(an.limite)} mm${an.diam ? ' · diâmetro ' + fmtQ(an.diam) + ' mm' : ''}</div></div>`;
-    // Exemplo de leitura com um valor real da tabela.
-    const exMm = an.limite >= 40 ? Math.min(Math.round(an.limite * 0.7 / 10) * 10 + 5, Math.floor(an.limite)) : Math.floor(an.limite);
-    const exL = volume(an, exMm);
-    const comoLer = `<p class="rgp-como"><b>Como ler:</b> procure a dezena na primeira coluna (mm) e a unidade na linha de cima (0 a 9). ${exL != null ? `Ex.: ${fmtL(exMm)} mm = linha ${fmtL(Math.floor(exMm / 10) * 10)}, coluna ${exMm % 10} = <b>${fmtL(exL)} litros</b>.` : ''}</p>`;
+    const topo = `<div class="rgp-topo">${logo ? `<img src="${logo}" alt="Laticínio Serra Nova">` : ''}
+      <div class="rgp-titulo"><b>Resfriador nº ${esc(r.numero)}</b>
+        <span>Capacidade: <b>${r.capacidade_litros ? fmtNum(r.capacidade_litros) + ' litros' : '–'}</b> &nbsp;·&nbsp; Marca: <b>${esc(r.marca || '–')}</b> &nbsp;·&nbsp; Data da aferição: <b>${fmtData(af.data)}</b></span></div></div>`;
     const cab = '<thead><tr><th class="dz">mm</th>' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((u) => `<th>${u}</th>`).join('') + '</tr></thead>';
     const bloco = (ds) => !ds.length ? '<div></div>' : `<table class="rgp-cruz${an.volLimite >= 9999.5 ? ' miudo' : ''}">${cab}<tbody>${ds.map((d) => `<tr class="${(d / 10) % 5 === 4 ? 'forte' : ''}"><th class="dz">${fmtL(d)}</th>${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((u) => {
-      const mm = d + u, l = volume(an, mm);
-      return l == null ? '<td class="vazio"></td>' : `<td${calculado(an, mm) ? ' class="calc"' : ''}>${fmtL(l)}</td>`;
+      const l = volume(an, d + u);
+      return l == null ? '<td class="vazio"></td>' : `<td>${fmtL(l)}</td>`;
     }).join('')}</tr>`).join('')}</tbody></table>`;
-    const nota = `<p class="rgp-nota">${an.diam && (af.diametros_mm || []).length > 1 ? `Diâmetro interno: média de ${af.diametros_mm.length} medidas (${af.diametros_mm.map((d) => fmtQ(Number(d))).join(', ')} mm) = ${fmtQ(an.diam)} mm. ` : ''}Volumes em litros, calculados ligando em linha reta os ${validos} pontos medidos na aferição com água${an.fora.size ? ` (${an.fora.size === 1 ? '1 ponto com leitura errada ficou de fora' : an.fora.size + ' pontos com leitura errada ficaram de fora'})` : ''}.${an.ext ? ` De ${fmtL(an.ext.de)} a ${fmtL(an.ext.ate)} mm (valores em itálico) o volume foi calculado ${an.ext.fonte === 'diametro' ? 'pelo diâmetro interno de ' + fmtQ(an.diam) + ' mm' : 'pelo trecho de cima medido'}: ${fmtDec(an.ext.taxa, 3)} L a cada mm.` : ''}${af.unidade === 'kg' ? ' Água pesada em balança: 1 kg = 1,002 litro.' : ''} Impresso em ${fmtData(hojeISO())}.</p>`;
-    const confs = an.conferencias.filter((c) => c.tab != null);
-    const confTxt = confs.length ? `<p class="rgp-nota"><b>Conferência:</b> ${confs.map((c) => `em ${fmtQ(c.mm)} mm, medido ${fmtL(c.litros)} L e tabela ${fmtL(c.tab)} L (diferença de ${c.dif >= 0 ? '+' : '−'}${fmtDec(Math.abs(c.pct), 2)}%)`).join('; ')}.</p>` : '';
-    const assin = confTxt + '<div class="rgp-assin"><div>Responsável pela aferição</div><div>Conferido por</div></div>';
-    let html = pags.map(([esq, dir], i) => `<div class="rgp-pagina">${topo(i + 1, i === 0)}${i === 0 ? info + comoLer : ''}
-      <div class="rgp-duas">${bloco(esq)}${bloco(dir)}</div>${i === pags.length - 1 ? nota + assin : ''}</div>`).join('');
-    const tabPontos = (parte) => `<table class="rgp-pontos"><thead><tr><th>Nº</th><th>Colocado (${unid(af) === 'kg' ? 'kg' : 'L'})</th><th>Total (L)</th><th>Régua (mm)</th></tr></thead><tbody>
-      ${parte.map((p) => `<tr><td>${p.n}</td><td>${fmtQ(p.q)}</td><td>${fmtL(p.litros)}</td><td>${fmtQ(p.mm)}${an.fora.has(p.n - 1) ? ' *' : ''}${p.c ? ' (conf.)' : ''}</td></tr>`).join('')}</tbody></table>`;
-    for (let k = 0; k < pgPontos; k++) {
-      const parte = an.ac.slice(k * PONTOS_COL * 2, (k + 1) * PONTOS_COL * 2);
-      html += `<div class="rgp-pagina">${topo(pags.length + k + 1, false)}<p class="rgp-nota" style="margin-top:0"><b>Pontos medidos na aferição</b>${an.fora.size ? ' (* leitura errada, ficou fora da tabela)' : ''}</p>
-        <div class="rgp-duas">${tabPontos(parte.slice(0, PONTOS_COL))}${parte.length > PONTOS_COL ? tabPontos(parte.slice(PONTOS_COL)) : '<div></div>'}</div></div>`;
-    }
-    $('rfImpressao').innerHTML = html;
+    $('rfImpressao').innerHTML = pags.map(([esq, dir]) => `<div class="rgp-pagina">${topo}<div class="rgp-duas">${bloco(esq)}${bloco(dir)}</div></div>`).join('');
     document.body.classList.add('rg-imprimindo');
   }
   function limparImpressao() {
