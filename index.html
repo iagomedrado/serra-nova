@@ -880,6 +880,14 @@
   .rg-legenda { margin-top: 4px !important; font-size: .85rem; }
   .rg-leg-med, .rg-leg-calc { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--vermelho); vertical-align: middle; }
   .rg-leg-calc { border-top-style: dashed; }
+  .rg-leg-conf { display: inline-block; width: 9px; height: 9px; background: var(--ouro); border: 2px solid var(--vinho); transform: rotate(45deg); vertical-align: middle; margin: 0 2px; }
+  .rg-grafico .ponto.conf { fill: var(--ouro); stroke: var(--vinho); stroke-width: 2; }
+  .rf-tag.rg-conf { color: var(--ouro-texto); background: var(--warn-soft); font-size: .72rem; margin-left: 4px; }
+  .rg-ponto.conf { border-left: 4px solid var(--ouro); padding-left: 6px; }
+  .rg-diam { display: grid; gap: 8px; }
+  .rg-diam .muted-note { margin: 0; }
+  .rg-diam-lista { display: grid; gap: 8px 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .rg-diam .link-btn { justify-self: start; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rg-grafico .ponto { stroke: var(--ouro); } }
   :root[data-theme="dark"] .rg-grafico .ponto { stroke: var(--ouro); }
   .rg-hist { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 8px 2px; border-bottom: 1px solid var(--line); }
@@ -6911,7 +6919,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const ordAf = (a, b) => String(b.data).localeCompare(String(a.data)) || String(b.criado_em).localeCompare(String(a.criado_em));
   const afer = (id) => afers.find((a) => a.id === id);
   const afersDe = (id) => afers.filter((a) => a.resfriador_id === id).sort(ordAf);
-  const vigente = (id) => afersDe(id).find((a) => a.concluida && nos(acumular(a)).length >= 2) || null;
+  const vigente = (id) => afersDe(id).find((a) => a.concluida && nos(acumular(a).filter((p) => !p.c)).length >= 2) || null;
   const emAndamento = (id) => afersDe(id).find((a) => !a.concluida) || null;
   const unid = (af) => (af.unidade === 'kg' ? 'kg' : 'L');
   const emLitros = (af, q) => (af.unidade === 'kg' ? q / DENSIDADE : q);
@@ -6921,7 +6929,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   // Total acumulado em litros depois de cada ponto.
   function acumular(af, lista) {
     let t = 0;
-    return (lista || af.pontos || []).map((p, i) => { const q = Number(p.q) || 0; t += emLitros(af, q); return { n: i + 1, q, mm: Number(p.mm), litros: t }; });
+    return (lista || af.pontos || []).map((p, i) => { const q = Number(p.q) || 0; t += emLitros(af, q); return { n: i + 1, q, mm: Number(p.mm), litros: t, c: !!p.c }; });
   }
   // Pontos usados na tabela: régua sempre subindo. Se a régua repete a leitura, vale o último volume.
   function nos(ac) {
@@ -6968,29 +6976,33 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const foraDoPadrao = (dmm, esperado) => Math.abs(dmm - esperado) > Math.max(2.5, 0.35 * esperado);
   const NAO_ENTROU = ' Este ponto não entrou na tabela.';
   function analisar(af, lista) {
-    const ac = acumular(af, lista), avisos = {}, fora = new Set(); // fora = pontos que não entram na tabela
-    ac.forEach((p, i) => { if (!isFinite(p.mm) || p.mm < 0) { avisos[p.n] = 'Leitura da régua inválida.' + NAO_ENTROU; fora.add(i); } });
+    const ac = acumular(af, lista), avisos = {}, fora = new Set(); // fora = pontos com leitura errada, que não entram na tabela
+    const conf = new Set(); ac.forEach((p, i) => { if (p.c) conf.add(i); }); // pontos de conferência: só comparam, não entram na tabela
+    const ignora = (i) => fora.has(i) || conf.has(i);
+    ac.forEach((p, i) => { if (!isFinite(p.mm) || p.mm < 0) { avisos[p.n] = 'Leitura da régua inválida.' + (conf.has(i) ? '' : NAO_ENTROU); fora.add(i); } });
     // Régua que desce: decide se o erro é deste ponto (alto demais) ou do seguinte (baixo demais).
-    for (let i = 0; i < ac.length - 1; i++) {
-      if (fora.has(i) || fora.has(i + 1) || ac[i + 1].mm >= ac[i].mm) continue;
+    const ix = ac.map((_, i) => i).filter((i) => !ignora(i));
+    for (let j = 0; j < ix.length - 1; j++) {
+      const i = ix[j], i2 = ix[j + 1];
+      if (fora.has(i) || fora.has(i2) || ac[i2].mm >= ac[i].mm) continue;
       // Compara os dois com o caminho entre o ponto válido de antes e o de depois do par.
-      let a = i - 1; while (a >= 0 && fora.has(a)) a--;
-      let culpado = i + 1; // sem ponto depois, a dúvida fica com o último lançado
-      if (i + 2 < ac.length) {
-        const P = a >= 0 ? ac[a] : { mm: 0, litros: 0 }, Q = ac[i + 2];
+      let a = j - 1; while (a >= 0 && fora.has(ix[a])) a--;
+      let culpado = i2; // sem ponto depois, a dúvida fica com o último lançado
+      if (j + 2 < ix.length) {
+        const P = a >= 0 ? ac[ix[a]] : { mm: 0, litros: 0 }, Q = ac[ix[j + 2]];
         const longe = (c) => Math.abs(c.mm - (P.mm + (Q.mm - P.mm) * (c.litros - P.litros) / (Q.litros - P.litros)));
-        culpado = longe(ac[i]) >= longe(ac[i + 1]) ? i : i + 1;
+        culpado = longe(ac[i]) >= longe(ac[i2]) ? i : i2;
       }
       if (culpado === i) {
-        avisos[ac[i].n] = `Leitura alta demais: o ponto seguinte marcou ${fmtQ(ac[i + 1].mm)} mm, menos que este. Confira a anotação.` + NAO_ENTROU; fora.add(i);
+        avisos[ac[i].n] = `Leitura alta demais: o ponto seguinte marcou ${fmtQ(ac[i2].mm)} mm, menos que este. Confira a anotação.` + NAO_ENTROU; fora.add(i);
       } else {
-        avisos[ac[i + 1].n] = `A régua marcou ${fmtQ(ac[i + 1].mm)} mm, menos que no ponto anterior (${fmtQ(ac[i].mm)} mm). Confira a anotação.` + NAO_ENTROU; fora.add(i + 1);
+        avisos[ac[i2].n] = `A régua marcou ${fmtQ(ac[i2].mm)} mm, menos que no ponto anterior (${fmtQ(ac[i].mm)} mm). Confira a anotação.` + NAO_ENTROU; fora.add(i2);
       }
     }
     // Passos entre pontos válidos.
     const lst = [];
     ac.forEach((p, i) => {
-      if (fora.has(i)) return;
+      if (ignora(i)) return;
       const ant = lst.length ? ac[lst[lst.length - 1].i] : { mm: 0, litros: 0 };
       const dmm = p.mm - ant.mm, dl = p.litros - ant.litros;
       lst.push({ i, n: p.n, dmm, dl, antMm: ant.mm, meio: (ant.mm + p.mm) / 2, taxa: ant.mm > 0 && dmm > 0 && dl > 0 ? dl / dmm : null });
@@ -7020,12 +7032,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     // Passos finais (para mostrar), já sem os pontos que ficaram de fora.
     const passos = ac.map(() => null); let ant = { mm: 0, litros: 0 };
     ac.forEach((p, i) => {
-      if (fora.has(i)) return;
+      if (ignora(i)) return;
       const dmm = p.mm - ant.mm, dl = p.litros - ant.litros;
       passos[i] = { n: p.n, dmm, dl, antMm: ant.mm, taxa: ant.mm > 0 && dmm > 0 && dl > 0 ? dl / dmm : null };
       ant = p;
     });
-    const knots = nos(ac.filter((p, i) => !fora.has(i))), max = knots.length ? knots[knots.length - 1] : null;
+    const knots = nos(ac.filter((p, i) => !ignora(i))), max = knots.length ? knots[knots.length - 1] : null;
     const cima = max ? knots.filter((k) => k.mm > 0 && k.mm >= max.mm / 2) : [];
     const taxaCima = cima.length >= 3 ? inclinacao(cima) : null;
     const diamEq = taxaCima && taxaCima > 0 ? 2 * Math.sqrt(taxaCima * 1e6 / Math.PI) : null;
@@ -7041,8 +7053,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         else limite = max.mm; // sem diâmetro e sem pontos suficientes não dá para calcular acima
       }
     }
-    const an = { ac, passos, avisos, fora, knots, max, taxaCima, diamEq, diam, regua, taxaDiam, ext, limite };
+    const an = { ac, passos, avisos, fora, conf, knots, max, taxaCima, diamEq, diam, regua, taxaDiam, ext, limite };
     an.volLimite = max && knots.length >= 2 ? volume(an, limite) : null;
+    // Conferência: compara o volume medido em cada ponto de conferência com o que a tabela dá.
+    an.conferencias = [...conf].filter((i) => !fora.has(i)).map((i) => {
+      const p = ac[i], tab = knots.length >= 2 ? volume(an, p.mm) : null;
+      return { n: p.n, mm: p.mm, litros: p.litros, tab, dif: tab == null ? null : p.litros - tab, pct: tab ? (p.litros - tab) / tab * 100 : null, calc: tab != null && calculado(an, p.mm) };
+    });
     // Inclinação do último trecho medido (para saber se ele já está na parte reta do tanque).
     const k1 = knots[knots.length - 1], k0 = knots[knots.length - 2];
     an.taxaUltimo = k0 && k1 && k1.mm > k0.mm && k0.mm > 0 ? (k1.litros - k0.litros) / (k1.mm - k0.mm) : null;
@@ -7058,6 +7075,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return null;
   }
   const calculado = (an, mm) => !!(an.ext && mm > an.ext.de + 1e-9);
+  // Resultado de um ponto de conferência: nivel ok (até 0,5%), info (até 1%) ou ruim.
+  function confResultado(c) {
+    if (c.tab == null) return { nivel: 'info', texto: `Em ${fmtQ(c.mm)} mm você mediu ${fmtL(c.litros)} L, mas essa leitura passa do fim da tabela. Não deu para comparar.` };
+    const a = Math.abs(c.pct), sinal = c.dif > 0 ? '+' : c.dif < 0 ? '−' : '';
+    const base = `Em ${fmtQ(c.mm)} mm: medido <b>${fmtL(c.litros)} L</b>, a tabela dá <b>${fmtL(c.tab)} L</b>${c.calc ? ' (trecho calculado)' : ''}. Diferença de ${sinal}${fmtQ(Math.abs(Math.round(c.dif * 10) / 10))} L (${sinal}${fmtDec(a, 2)}%).`;
+    if (a <= 0.5) return { nivel: 'ok', texto: base + ' Confere.' };
+    if (a <= 1) return { nivel: 'info', texto: base + ' Diferença pequena, aceitável.' };
+    return { nivel: 'ruim', texto: base + ' Diferença grande: confira o diâmetro (medido por dentro), quanto cabe no balde e se o tanque está nivelado.' };
+  }
 
   /* ---------- Painel "Réguas" ---------- */
   function mostrarVisao(v) {
@@ -7130,12 +7156,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     for (let v = 0; v <= topX + 1e-9; v += sx) g += `<text class="eixo" x="${X(v)}" y="${H - mb + 16}" text-anchor="middle">${fmtL(v)}</text>`;
     const linha = an.knots.filter((k) => k.mm <= an.limite).concat(an.limite < an.max.mm ? [{ mm: an.limite, litros: an.volLimite }] : []).map((k) => X(k.mm).toFixed(1) + ',' + Y(k.litros).toFixed(1)).join(' ');
     const ext = an.ext ? `<line class="linha calc" x1="${X(an.ext.de).toFixed(1)}" y1="${Y(an.max.litros).toFixed(1)}" x2="${X(an.ext.ate).toFixed(1)}" y2="${Y(an.volLimite).toFixed(1)}"/>` : '';
-    const bolas = pts.map((p) => `<circle class="ponto${an.avisos[p.n] ? ' ruim' : ''}" cx="${X(p.mm).toFixed(1)}" cy="${Y(p.litros).toFixed(1)}" r="${an.avisos[p.n] ? 5 : 3.5}"><title>Ponto ${p.n}: ${fmtQ(p.mm)} mm, ${fmtL(p.litros)} L</title></circle>`).join('');
+    const bolas = pts.map((p) => p.c ? `<rect class="ponto conf" x="${(X(p.mm) - 5).toFixed(1)}" y="${(Y(p.litros) - 5).toFixed(1)}" width="10" height="10" transform="rotate(45 ${X(p.mm).toFixed(1)} ${Y(p.litros).toFixed(1)})"><title>Conferência ${p.n}: ${fmtQ(p.mm)} mm, ${fmtL(p.litros)} L</title></rect>` : `<circle class="ponto${an.avisos[p.n] ? ' ruim' : ''}" cx="${X(p.mm).toFixed(1)}" cy="${Y(p.litros).toFixed(1)}" r="${an.avisos[p.n] ? 5 : 3.5}"><title>Ponto ${p.n}: ${fmtQ(p.mm)} mm, ${fmtL(p.litros)} L</title></circle>`).join('');
     return `<svg class="rg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico da régua: litros conforme a leitura em milímetros">
       ${g}<polyline class="linha" points="${linha}"/>${ext}${bolas}
       <text class="eixo" x="${(ml + W - mr) / 2}" y="${H - 4}" text-anchor="middle">Leitura da régua (mm)</text>
       <text class="eixo" x="12" y="${(mt + H - mb) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(mt + H - mb) / 2})">Litros</text></svg>
-      ${an.ext ? '<p class="muted-note rg-legenda"><span class="rg-leg-med"></span> medido &nbsp; <span class="rg-leg-calc"></span> calculado até o fim da régua</p>' : ''}`;
+      ${an.ext || an.conf.size ? `<p class="muted-note rg-legenda"><span class="rg-leg-med"></span> medido${an.ext ? ' &nbsp; <span class="rg-leg-calc"></span> calculado até o fim da régua' : ''}${an.conf.size ? ' &nbsp; <span class="rg-leg-conf"></span> ponto de conferência' : ''}</p>` : ''}`;
   }
   function calculoHTML(af, an) {
     if (!an.knots || an.knots.length < 2) return '';
@@ -7181,14 +7207,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         ${!ver.concluida ? `<div class="rg-faixa"><p><b>Aferição em andamento.</b> ${v ? 'A régua que vale ainda é a de ' + fmtData(v.data) + '.' : 'Ainda não vale como régua deste resfriador.'} Quando terminar de lançar os pontos, use "Concluir aferição".</p></div>` : ''}
         <p class="rg-info"><b>${ver.concluida ? 'Aferida' : 'Começada'} em ${fmtData(ver.data)}</b>${ver.responsavel ? ' por ' + esc(ver.responsavel) : ''}, ${esc(METODOS[ver.metodo] || ver.metodo).toLowerCase()}${ver.unidade === 'kg' ? ' (em kg)' : ''}.
           ${quantos(ver)}${temTabela ? `, tabela de 0 a ${fmtL(an.limite)} mm (até ${fmtL(an.volLimite)} L)` : ''}.
-          Régua: ${ver.regua_mm ? fmtL(ver.regua_mm) + ' mm' : '<b>não informada</b>'}. Diâmetro: ${ver.diametro_mm ? fmtL(ver.diametro_mm) + ' mm' : '<b>não informado</b>'}.${ver.observacao ? ' ' + esc(ver.observacao) : ''}</p>
+          Régua: ${ver.regua_mm ? fmtL(ver.regua_mm) + ' mm' : '<b>não informada</b>'}. Diâmetro: ${ver.diametro_mm ? fmtQ(Number(ver.diametro_mm)) + ' mm' + ((ver.diametros_mm || []).length > 1 ? ` (média de ${ver.diametros_mm.length} medidas: ${ver.diametros_mm.map((d) => fmtQ(Number(d))).join(', ')})` : '') : '<b>não informado</b>'}.${ver.observacao ? ' ' + esc(ver.observacao) : ''}</p>
         ${temTabela ? `<h3 class="qj-sub">Consultar</h3>
           <div class="rg-consulta-mini"><label>Leitura da régua (mm)<input type="number" min="0" step="1" inputmode="numeric" data-mm autocomplete="off"></label><div class="rg-resultado" data-res></div></div>` : ''}
         <h3 class="qj-sub">Conferência</h3>
         <ul class="rg-avisos">
           ${an.ac.filter((p) => an.avisos[p.n]).map((p) => `<li><b>Ponto ${p.n} (${fmtQ(p.mm)} mm):</b> ${esc(an.avisos[p.n])}</li>`).join('')}
-          ${!nAv && an.ac.length >= 3 ? '<li class="ok">Nenhum ponto fora do padrão.</li>' : ''}
+          ${!nAv && an.ac.length - an.conf.size >= 3 ? '<li class="ok">Nenhum ponto fora do padrão.</li>' : ''}
+          ${an.conferencias.map((c) => { const x = confResultado(c); return `<li class="${x.nivel === 'ruim' ? '' : x.nivel}"><b>Ponto de conferência ${c.n}:</b> ${x.texto}</li>`; }).join('')}
           ${calculoHTML(ver, an)}
+          ${!an.conferencias.length && an.ext ? '<li class="info">Para ter certeza da parte calculada, lance um <b>ponto de conferência</b> lá em cima (por exemplo, com 2/3 da régua). O sistema compara o volume medido com o da tabela.</li>' : ''}
           ${diametroHTML(ver, an)}
           ${temTabela && r.capacidade_litros && an.volLimite < r.capacidade_litros * 0.95 ? `<li class="info">A tabela vai até ${fmtL(an.volLimite)} L e a capacidade do resfriador é ${fmtNum(r.capacidade_litros)} L.</li>` : ''}
           ${an.ac.length < 3 ? '<li class="info">Poucos pontos ainda para conferir.</li>' : ''}
@@ -7259,16 +7287,48 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           ${Object.keys(METODOS).map((k) => `<label><input type="radio" name="metodo" value="${k}" ${k === met ? 'checked' : ''}> ${METODOS[k]}${k === 'balanca' ? ' (kg)' : ''}</label>`).join('')}
         </div></fieldset>
         <p class="muted-note" data-dica-met></p>
-        <div class="two">
-          <label>Tamanho da régua (mm)<input type="number" name="regua" min="1" step="1" inputmode="numeric" value="${af && af.regua_mm ? Number(af.regua_mm) : ''}" placeholder="Ex.: 1000"></label>
-          <label>Diâmetro interno do tanque (mm)<input type="number" name="diam" min="1" step="1" inputmode="numeric" value="${af && af.diametro_mm ? Number(af.diametro_mm) : ''}" placeholder="Ex.: 1140"></label>
-        </div>
+        <label>Tamanho da régua (mm)<input type="number" name="regua" min="1" step="1" inputmode="numeric" value="${af && af.regua_mm ? Number(af.regua_mm) : ''}" placeholder="Ex.: 1000"></label>
+        <fieldset class="qj-destino rg-diam"><legend>Diâmetro interno do tanque (mm)</legend>
+          <p class="muted-note">Meça <b>por dentro</b> do tanque, em cruz (duas direções) e em duas ou três alturas. O sistema usa a média.</p>
+          <div class="rg-diam-lista" data-diams></div>
+          <button type="button" class="link-btn" data-mais-diam>+ Outra medida</button>
+          <p class="rg-dica" data-diam-res></p>
+        </fieldset>
         <p class="muted-note">Com o tamanho da régua e o diâmetro, o sistema calcula toda a graduação: entre os pontos medidos ele liga em linha reta e, acima do último ponto, calcula pelo diâmetro até o fim da régua.</p>
         <label>Observação<input type="text" name="obs" maxlength="200" value="${esc(af ? af.observacao : '')}" placeholder="Ex.: régua encaixada na boca de inspeção" autocomplete="off"></label>
         ${botoesForm(af ? 'Salvar' : 'Começar a lançar os pontos')}
       </form>`, (root) => {
       const form = root.querySelector('#rgForm');
       const dica = () => { root.querySelector('[data-dica-met]').textContent = DICA_METODO[form.querySelector('[name="metodo"]:checked').value] || ''; };
+      // Medidas do diâmetro
+      const caixa = root.querySelector('[data-diams]');
+      const iniciais = af && (af.diametros_mm || []).length ? af.diametros_mm.map(Number) : af && af.diametro_mm ? [Number(af.diametro_mm)] : [];
+      const addDiam = (v) => {
+        const n = caixa.children.length + 1;
+        const l = document.createElement('label');
+        l.innerHTML = `Medida ${n} (mm)<input type="number" name="d" min="1" step="any" inputmode="decimal" autocomplete="off" placeholder="${n === 1 ? 'Ex.: 1140' : ''}">`;
+        if (v != null) l.querySelector('input').value = v;
+        l.querySelector('input').addEventListener('input', resumoDiam);
+        caixa.appendChild(l);
+      };
+      const lerDiams = () => [...caixa.querySelectorAll('[name="d"]')].map((x) => lerNum(x.value)).filter((v) => v != null && v > 0);
+      function resumoDiam() {
+        const el = root.querySelector('[data-diam-res]'), v = lerDiams();
+        el.classList.remove('ruim'); el.textContent = '';
+        if (!v.length) { el.textContent = 'Sem diâmetro, o sistema não calcula acima do último ponto medido.'; return; }
+        const media = v.reduce((a, x) => a + x, 0) / v.length;
+        if (v.length === 1) { el.textContent = `Diâmetro usado: ${fmtQ(media)} mm (cada mm da régua vale ${fmtDec(areaLitrosMm(media), 3)} L). Com mais medidas a média fica mais segura.`; return; }
+        const med = mediana(v), varia = Math.max(...v) - Math.min(...v);
+        const longe = v.length >= 3 ? v.find((x) => Math.abs(x / med - 1) > 0.03) : null;
+        if (v.length === 2 && varia > media * 0.03) { el.classList.add('ruim'); el.textContent = `As duas medidas (${v.map(fmtQ).join(' e ')} mm) estão muito diferentes. Confira se foram digitadas certo ou meça de novo.`; return; }
+        el.textContent = `Média de ${v.length} medidas: ${fmtQ(Math.round(media * 10) / 10)} mm (cada mm da régua vale ${fmtDec(areaLitrosMm(media), 3)} L). Variação entre as medidas: ${fmtQ(varia)} mm.`;
+        if (longe != null) { el.classList.add('ruim'); el.textContent += ` A medida de ${fmtQ(longe)} mm está muito longe das outras: confira se foi digitada certo.`; }
+        else if (varia > Math.max(5, media * 0.005)) { el.classList.add('ruim'); el.textContent += ' As medidas variam bastante: o tanque pode estar ovalado ou amassado. Confira antes de usar.'; }
+      }
+      (iniciais.length ? iniciais : [null, null, null, null]).forEach(addDiam);
+      if (iniciais.length && iniciais.length < 2) addDiam(null);
+      root.querySelector('[data-mais-diam]').addEventListener('click', () => { addDiam(null); caixa.lastElementChild.querySelector('input').focus(); resumoDiam(); });
+      resumoDiam();
       form.querySelectorAll('[name="metodo"]').forEach((x) => x.addEventListener('change', dica)); dica();
       root.querySelector('[data-cancelar]').addEventListener('click', () => (voltar ? voltar() : af ? lancarPontos(af.id) : abrirRegua(id)));
       form.addEventListener('submit', async (e) => {
@@ -7276,8 +7336,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const metodo = form.querySelector('[name="metodo"]:checked').value, unidade = metodo === 'balanca' ? 'kg' : 'L';
         if (af && (af.pontos || []).length && unidade !== unid(af)) { toast(`Os pontos já foram lançados em ${unid(af) === 'kg' ? 'kg' : 'litros'}. Para mudar, comece uma nova aferição.`); return; }
         const reg = { data: form.querySelector('[name="data"]').value || hojeISO(), responsavel: form.querySelector('[name="resp"]').value.trim(), metodo, unidade,
-          diametro_mm: lerNum(form.querySelector('[name="diam"]').value), regua_mm: lerNum(form.querySelector('[name="regua"]').value), observacao: form.querySelector('[name="obs"]').value.trim() };
-        if (reg.diametro_mm != null && reg.diametro_mm <= 0) reg.diametro_mm = null;
+          regua_mm: lerNum(form.querySelector('[name="regua"]').value), observacao: form.querySelector('[name="obs"]').value.trim() };
+        const ds = lerDiams();
+        reg.diametros_mm = ds;
+        reg.diametro_mm = ds.length ? Math.round(ds.reduce((a, x) => a + x, 0) / ds.length * 10) / 10 : null;
         if (reg.regua_mm != null && reg.regua_mm <= 0) reg.regua_mm = null;
         const b = form.querySelector('[type="submit"]'); b.disabled = true;
         let res;
@@ -7297,7 +7359,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function lancarPontos(afId) {
     const af = afer(afId); if (!af) return;
     const r = resf(af.resfriador_id), u = unid(af);
-    let pontos = (af.pontos || []).map((p) => ({ q: Number(p.q), mm: Number(p.mm) }));
+    let pontos = (af.pontos || []).map((p) => (p.c ? { q: Number(p.q), mm: Number(p.mm), c: true } : { q: Number(p.q), mm: Number(p.mm) }));
     let editando = null, excluindo = null, salvando = false, concluirConfirmar = false;
     let modo = lsGet('sn_rg_modo') || (af.metodo === 'hidrometro' ? 'total' : 'vez');
     if (modo !== 'total') modo = 'vez';
@@ -7316,6 +7378,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           <label><span data-rot-q></span><input type="number" name="q" min="0" step="any" inputmode="decimal" autocomplete="off"></label>
           <label>Régua marcou (mm)<input type="number" name="mm" min="0" step="any" inputmode="decimal" autocomplete="off"></label>
         </div>
+        <label class="check"><input type="checkbox" name="conf"> Ponto de conferência (não entra na tabela, só compara com ela)</label>
         <p class="rg-dica" data-dica></p>
         <div class="qj-botoes" style="margin-top:0">
           <button type="submit" class="btn btn-primary" data-salvar>Adicionar ponto</button>
@@ -7335,20 +7398,22 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 
       function desenhar() {
         const an = analisar(af, pontos), ult = an.ac[an.ac.length - 1], nAv = Object.keys(an.avisos).length;
-        root.querySelector('[data-resumo]').innerHTML = `<span>Pontos <b>${pontos.length}</b></span>
+        const nConf = pontos.filter((p) => p.c).length;
+        root.querySelector('[data-resumo]').innerHTML = `<span>Pontos <b>${pontos.length - nConf}</b>${nConf ? ' + ' + nConf + ' de conferência' : ''}</span>
           <span>Total colocado <b>${fmtL(ult ? ult.litros : 0)} L</b>${u === 'kg' && ult ? ' (' + fmtQ(totalAntes(pontos.length)) + ' kg)' : ''}</span>
           <span>Régua em <b>${ult ? fmtQ(ult.mm) : 0} mm</b></span>
-          <span>Tamanho da régua <b>${af.regua_mm ? fmtL(af.regua_mm) + ' mm' : '–'}</b></span><span>Diâmetro <b>${af.diametro_mm ? fmtL(af.diametro_mm) + ' mm' : '–'}</b></span>
+          <span>Tamanho da régua <b>${af.regua_mm ? fmtL(af.regua_mm) + ' mm' : '–'}</b></span><span>Diâmetro <b>${af.diametro_mm ? fmtQ(Number(af.diametro_mm)) + ' mm' : '–'}</b></span>
           ${an.ext ? `<span>Tabela completa até <b>${fmtL(an.limite)} mm = ${fmtL(an.volLimite)} L</b></span>` : (af.regua_mm && af.diametro_mm ? '' : '<span class="rf-def">Informe o tamanho da régua e o diâmetro em "Régua e diâmetro" para o sistema calcular até o fim da régua.</span>')}${nAv ? `<span class="rf-def">${nAv === 1 ? '1 ponto' : nAv + ' pontos'} para conferir</span>` : ''}`;
         root.querySelector('[data-lista]').innerHTML = pontos.length ? an.ac.slice().reverse().map((p) => {
           const i = p.n - 1, ps = an.passos[i], aviso = an.avisos[p.n];
+          const cf = p.c ? an.conferencias.find((x) => x.n === p.n) : null, cr = cf ? confResultado(cf) : null;
           const obs = aviso || (p.mm === 0 ? 'A água ainda não chegou na régua.' : (ps && ps.dmm > 0 ? `Subiu ${fmtQ(ps.dmm)} mm` + (ps.taxa ? ` (${fmtDec(ps.taxa, 2)} L por mm)` : '') : ''));
           const acoes = !podeEditar ? '' : excluindo === i
             ? `<span class="vd-acoes"><b>Excluir este ponto?</b><button type="button" class="link-btn" data-a="sim">Sim, excluir</button><button type="button" class="link-btn" data-a="nao">Não</button></span>`
-            : `<span class="vd-acoes"><button type="button" class="link-btn" data-a="corrigir">Corrigir</button><button type="button" class="link-btn" data-a="excluir">Excluir</button></span>`;
-          return `<div class="rg-ponto${aviso ? ' ruim' : ''}" data-i="${i}"><span class="n">${p.n}</span>
-            <span>+${fmtQ(p.q)} ${u} → <b>${fmtL(p.litros)} L</b></span><span class="mm">${fmtQ(p.mm)} mm</span>
-            ${obs ? `<small>${esc(obs)}</small>` : ''}${acoes}</div>`;
+            : `<span class="vd-acoes"><button type="button" class="link-btn" data-a="corrigir">Corrigir</button><button type="button" class="link-btn" data-a="usar">${p.c ? 'Usar na tabela' : 'Tornar conferência'}</button><button type="button" class="link-btn" data-a="excluir">Excluir</button></span>`;
+          return `<div class="rg-ponto${aviso || (cr && cr.nivel === 'ruim') ? ' ruim' : ''}${p.c ? ' conf' : ''}" data-i="${i}"><span class="n">${p.n}</span>
+            <span>+${fmtQ(p.q)} ${u} → <b>${fmtL(p.litros)} L</b>${p.c ? ' <span class="rf-tag rg-conf">Conferência</span>' : ''}</span><span class="mm">${fmtQ(p.mm)} mm</span>
+            ${cr && !aviso ? `<small>${cr.texto}</small>` : obs ? `<small>${esc(obs)}</small>` : ''}${acoes}</div>`;
         }).join('') : '<p class="empty-state-msg">Nenhum ponto ainda. Coloque a primeira quantidade de água, leia a régua e lance aqui.</p>';
         if (btnConcluir) btnConcluir.textContent = concluirConfirmar ? 'Concluir mesmo assim' : 'Concluir aferição';
       }
@@ -7366,8 +7431,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           const p = pontos[editando];
           inQ.value = modo === 'vez' ? p.q : totalAntes(editando + 1);
           inMm.value = p.mm;
+          form.querySelector('[name="conf"]').checked = !!p.c;
         } else {
-          const ultQ = pontos.length ? pontos[pontos.length - 1].q : '';
+          form.querySelector('[name="conf"]').checked = false;
+          const normais = pontos.filter((p) => !p.c), ultQ = normais.length ? normais[normais.length - 1].q : '';
           inQ.value = modo === 'vez' ? ultQ : (ultQ !== '' ? arred(totalAntes(idx) + ultQ) : '');
           inMm.value = '';
         }
@@ -7386,8 +7453,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (tots.some((t) => Math.abs(t - total) < 1e-6)) return { erro: `Já existe um ponto com o total de ${fmtQ(total)} ${u}. Use "Corrigir" nele.` };
         const k = tots.findIndex((t) => t > total);
         const novosTot = tots.slice(); novosTot.splice(k, 0, total);
-        const mms = pontos.map((p) => p.mm); mms.splice(k, 0, mm);
-        return { k, lista: novosTot.map((t, i) => ({ q: arred(t - (i ? novosTot[i - 1] : 0)), mm: mms[i] })) };
+        const resto = pontos.map((p) => ({ mm: p.mm, c: p.c })); resto.splice(k, 0, { mm, c: lerConf() });
+        return { k, lista: novosTot.map((t, i) => { const p = { q: arred(t - (i ? novosTot[i - 1] : 0)), mm: resto[i].mm }; if (resto[i].c) p.c = true; return p; }) };
+      }
+      const lerConf = () => !!(form && form.querySelector('[name="conf"]').checked);
+      const comConf = (p) => { if (lerConf()) p.c = true; return p; };
+      // Mostra na hora o resultado da conferência do ponto que está sendo digitado.
+      function dicaConf(el, lista, n) {
+        const c = analisar(af, lista).conferencias.find((x) => x.n === n); if (!c) return false;
+        const x = confResultado(c);
+        el.innerHTML = 'Conferência: ' + x.texto; if (x.nivel === 'ruim') el.classList.add('ruim');
+        return true;
       }
       function dicaAoVivo() {
         if (!form) return;
@@ -7397,6 +7473,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (modo === 'total' && editando == null && q != null && q <= 0) {
           const ins = inserirPorTotal(lerNum(inQ.value), mm == null ? 0 : mm);
           if (ins.erro) { el.classList.add('ruim'); el.textContent = ins.erro; return; }
+          if (mm != null && lerConf() && dicaConf(el, ins.lista, ins.k + 1)) return;
           const aviso = mm == null ? null : analisar(af, ins.lista).avisos[ins.k + 1];
           if (aviso) { el.classList.add('ruim'); el.textContent = aviso; return; }
           el.textContent = `Total menor que o último: este ponto vai entrar na posição ${ins.k + 1}, entre ${ins.k ? fmtQ(totalAntes(ins.k)) + ' ' + u : 'o zero'} e ${fmtQ(totalAntes(ins.k + 1))} ${u}.`;
@@ -7404,7 +7481,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         }
         if (modo === 'total' && q != null && q <= 0) { el.classList.add('ruim'); el.textContent = `O total precisa ser maior que o anterior (${fmtQ(totalAntes(idx))} ${u}).`; return; }
         if (q == null || mm == null) { if (modo === 'total' && idx) el.textContent = `Total anterior: ${fmtQ(totalAntes(idx))} ${u}.`; return; }
-        const teste = pontos.slice(); if (editando == null) teste.push({ q, mm }); else teste[editando] = { q, mm };
+        const teste = pontos.slice(); if (editando == null) teste.push(comConf({ q, mm })); else teste[editando] = comConf({ q, mm });
+        if (lerConf() && dicaConf(el, teste, idx + 1)) return;
         const an = analisar(af, teste), ps = an.passos[idx], aviso = an.avisos[idx + 1];
         if (aviso) { el.classList.add('ruim'); el.textContent = aviso; return; }
         if (mm === 0) { el.textContent = 'A água ainda não chegou na régua: tudo bem, continue colocando.'; return; }
@@ -7426,12 +7504,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           modo = b.dataset.m; lsSet('sn_rg_modo', modo); prepararForm(); inQ.focus();
         });
         inQ.addEventListener('input', dicaAoVivo); inMm.addEventListener('input', dicaAoVivo);
+        form.querySelector('[name="conf"]').addEventListener('change', dicaAoVivo);
         form.querySelector('[data-cancelar-edicao]').addEventListener('click', () => { editando = null; prepararForm(); inMm.focus(); });
         form.addEventListener('submit', async (e) => {
           e.preventDefault(); if (salvando) return;
           const q = lerQ(), mm = lerNum(inMm.value);
           if (mm == null || mm < 0) { toast('Informe quanto a régua marcou, em mm.'); inMm.focus(); return; }
-          let novos = pontos.map((p) => ({ ...p })), ponto = { q: arred(q), mm }, posicao = null;
+          let novos = pontos.map((p) => ({ ...p })), ponto = comConf({ q: arred(q), mm }), posicao = null;
           if (modo === 'total' && editando == null && q != null && q <= 0) {
             const ins = inserirPorTotal(lerNum(inQ.value), mm);
             if (ins.erro) { toast(ins.erro); inQ.focus(); return; }
@@ -7460,6 +7539,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (a === 'corrigir') { editando = i; excluindo = null; desenhar(); prepararForm(); form.scrollIntoView({ block: 'nearest' }); inMm.focus(); return; }
         if (a === 'excluir') { excluindo = i; desenhar(); return; }
         if (a === 'nao') { excluindo = null; desenhar(); return; }
+        if (a === 'usar') {
+          const novos = pontos.map((p, j) => { const x = { q: p.q, mm: p.mm }; if (j === i ? !p.c : p.c) x.c = true; return x; });
+          if (!(await salvar(novos))) return;
+          toast(novos[i].c ? 'Ponto marcado como conferência.' : 'O ponto passou a entrar na tabela.'); desenhar(); prepararForm(); return;
+        }
         if (a === 'sim') {
           const novos = pontos.filter((_, j) => j !== i);
           if (!(await salvar(novos))) return;
@@ -7474,7 +7558,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (btnConcluir) btnConcluir.addEventListener('click', async () => {
         const an = analisar(af, pontos), nAv = Object.keys(an.avisos).length;
         const minimo = an.diam ? 2 : 3;
-        if (pontos.length < minimo || an.knots.length < 2) { toast(`Lance pelo menos ${minimo} pontos, com a água já marcando na régua.`); return; }
+        if (pontos.filter((p) => !p.c).length < minimo || an.knots.length < 2) { toast(`Lance pelo menos ${minimo} pontos, com a água já marcando na régua.`); return; }
         if (nAv && !concluirConfirmar) { concluirConfirmar = true; desenhar(); toast(nAv === 1 ? 'Há 1 ponto para conferir. Clique de novo para concluir mesmo assim.' : `Há ${nAv} pontos para conferir. Clique de novo para concluir mesmo assim.`); return; }
         btnConcluir.disabled = true;
         const { data, error } = await sb.from('resfriadores_afericoes').update({ concluida: true }).eq('id', afId).select('id');
@@ -7539,7 +7623,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const linhas = linhasTabela(an, passo), paginas = paginar(linhas);
     const pgPontos = comPontos ? Math.ceil(an.ac.length / (PONTOS_COL * 2)) : 0, total = paginas.length + pgPontos;
     const forteCada = passo <= 2 ? 10 : passo === 5 ? 50 : 100;
-    const validos = an.ac.length - an.fora.size;
+    const validos = an.knots.filter((k) => !(k.mm === 0 && k.litros === 0)).length;
     const topo = (n) => `<div class="rgp-topo"><b>Tabela da régua · Resfriador nº ${esc(r.numero)}</b><span>Laticínio Serra Nova · página ${n} de ${total}</span></div>`;
     const info = `<div class="rgp-info">
       <div><span>Onde está:</span> <b>${esc(ondeTexto(r))}</b></div>
@@ -7560,15 +7644,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       }
       return h + '</div>';
     };
-    const nota = `<p class="rgp-nota">Volumes em litros, calculados ligando em linha reta os ${validos} pontos medidos na aferição com água${an.fora.size ? ` (${an.fora.size === 1 ? '1 ponto com leitura errada ficou de fora' : an.fora.size + ' pontos com leitura errada ficaram de fora'})` : ''}. ${an.ext ? ` De ${fmtL(an.ext.de)} a ${fmtL(an.ext.ate)} mm (valores em itálico) o volume foi calculado ${an.ext.fonte === 'diametro' ? 'pelo diâmetro interno de ' + fmtL(an.diam) + ' mm' : 'pelo trecho de cima medido'}: ${fmtDec(an.ext.taxa, 3)} L a cada mm.` : ''}${af.unidade === 'kg' ? ' Água pesada em balança: 1 kg = 1,002 litro.' : ''} Impresso em ${fmtData(hojeISO())}.</p>`;
-    const assin = '<div class="rgp-assin"><div>Responsável pela aferição</div><div>Conferido por</div></div>';
+    const nota = `<p class="rgp-nota">${an.diam && (af.diametros_mm || []).length > 1 ? `Diâmetro interno: média de ${af.diametros_mm.length} medidas (${af.diametros_mm.map((d) => fmtQ(Number(d))).join(', ')} mm) = ${fmtQ(an.diam)} mm. ` : ''}Volumes em litros, calculados ligando em linha reta os ${validos} pontos medidos na aferição com água${an.fora.size ? ` (${an.fora.size === 1 ? '1 ponto com leitura errada ficou de fora' : an.fora.size + ' pontos com leitura errada ficaram de fora'})` : ''}. ${an.ext ? ` De ${fmtL(an.ext.de)} a ${fmtL(an.ext.ate)} mm (valores em itálico) o volume foi calculado ${an.ext.fonte === 'diametro' ? 'pelo diâmetro interno de ' + fmtL(an.diam) + ' mm' : 'pelo trecho de cima medido'}: ${fmtDec(an.ext.taxa, 3)} L a cada mm.` : ''}${af.unidade === 'kg' ? ' Água pesada em balança: 1 kg = 1,002 litro.' : ''} Impresso em ${fmtData(hojeISO())}.</p>`;
+    const confs = an.conferencias.filter((c) => c.tab != null);
+    const confTxt = confs.length ? `<p class="rgp-nota"><b>Conferência:</b> ${confs.map((c) => `em ${fmtQ(c.mm)} mm, medido ${fmtL(c.litros)} L e tabela ${fmtL(c.tab)} L (diferença de ${c.dif >= 0 ? '+' : '−'}${fmtDec(Math.abs(c.pct), 2)}%)`).join('; ')}.</p>` : '';
+    const assin = confTxt + '<div class="rgp-assin"><div>Responsável pela aferição</div><div>Conferido por</div></div>';
     let html = paginas.map((fatia, i) => {
       const porCol = i === 0 ? LINHAS_P1 : LINHAS;
       const ultima = i === paginas.length - 1;
       return `<div class="rgp-pagina">${topo(i + 1)}${i === 0 ? info : ''}${colunas(fatia, Math.min(porCol, Math.ceil(fatia.length / COLUNAS)))}${ultima ? nota + assin : ''}</div>`;
     }).join('');
     const tabPontos = (parte) => `<table class="rgp-pontos"><thead><tr><th>Nº</th><th>Colocado (${unid(af) === 'kg' ? 'kg' : 'L'})</th><th>Total (L)</th><th>Régua (mm)</th></tr></thead><tbody>
-      ${parte.map((p) => `<tr><td>${p.n}</td><td>${fmtQ(p.q)}</td><td>${fmtL(p.litros)}</td><td>${fmtQ(p.mm)}${an.fora.has(p.n - 1) ? ' *' : ''}</td></tr>`).join('')}</tbody></table>`;
+      ${parte.map((p) => `<tr><td>${p.n}</td><td>${fmtQ(p.q)}</td><td>${fmtL(p.litros)}</td><td>${fmtQ(p.mm)}${an.fora.has(p.n - 1) ? ' *' : ''}${p.c ? ' (conf.)' : ''}</td></tr>`).join('')}</tbody></table>`;
     for (let k = 0; k < pgPontos; k++) {
       const parte = an.ac.slice(k * PONTOS_COL * 2, (k + 1) * PONTOS_COL * 2);
       html += `<div class="rgp-pagina">${topo(paginas.length + k + 1)}<p class="rgp-nota" style="margin-top:0"><b>Pontos medidos na aferição</b>${an.fora.size ? ' (* leitura errada, ficou fora da tabela)' : ''}</p>
