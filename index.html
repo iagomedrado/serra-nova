@@ -4909,15 +4909,18 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const n = Math.round((Date.UTC(a, m - 1, d) - Date.UTC(a, 0, 1)) / 86400000) + 1;
     return String(n).padStart(3, '0');
   }
+  /* Lote novo: dia do ano + tanque + vez no dia nesse tanque. "11" = tanque 1, 1ª vez (27/10/2026 = 30011). */
+  const LOTE_PADRAO = '11';
+  function loteNovo(iso) { const dia = diaDoAno(iso); return dia ? dia + LOTE_PADRAO : ''; }
   function loteConfere(lote, iso) { const dia = diaDoAno(iso); return !!dia && String(lote || '').trim().startsWith(dia); }
   /* Quando a data muda, troca o começo do lote pelo novo dia (ou preenche, se o lote estiver vazio). */
   function ligarLoteNaData(form) {
     const data = form.querySelector('[name="data"]'), lote = form.querySelector('[name="lote"]');
     let anterior = diaDoAno(data.value);
-    if (!lote.value.trim()) lote.value = anterior;
+    if (!lote.value.trim()) lote.value = loteNovo(data.value);
     data.addEventListener('change', () => {
       const novo = diaDoAno(data.value), atual = lote.value.trim();
-      if (novo && (!atual || (anterior && atual.startsWith(anterior)))) lote.value = novo + (anterior && atual.startsWith(anterior) ? atual.slice(anterior.length) : '');
+      if (novo && (!atual || (anterior && atual.startsWith(anterior)))) lote.value = novo + (anterior && atual.startsWith(anterior) ? atual.slice(anterior.length) : LOTE_PADRAO);
       anterior = novo;
       ajustarCampos(form);
     });
@@ -5053,7 +5056,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const futura = !!data && data > hojeISO();
     info.textContent = !dia ? '' : (errado
       ? `O lote precisa começar com ${dia}, porque ${fmtData(data)} é o dia ${Number(dia)} do ano.`
-      : `${fmtData(data)} é o dia ${Number(dia)} do ano: o lote começa com ${dia}.`) + (futura ? ' Atenção: essa data é depois de hoje.' : '');
+      : `${fmtData(data)} é o dia ${Number(dia)} do ano: o lote começa com ${dia}.` + (/^\d{3}[1-9][1-9]$/.test(lote) ? ` Depois vem o tanque ${lote[3]} e a ${lote[4]}ª vez no dia nesse tanque.` : '')) + (futura ? ' Atenção: essa data é depois de hoje.' : '');
     info.classList.toggle('erro', errado || futura);
   }
   function lerFormulario(form) {
@@ -5214,7 +5217,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
     ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
     form.querySelector('[name="compartilhado"]').checked = false;
-    form.querySelector('[name="lote"]').value = diaDoAno(form.querySelector('[name="data"]').value);
+    form.querySelector('[name="lote"]').value = loteNovo(form.querySelector('[name="data"]').value);
     ajustarCampos(form);
     toast('Produção registrada.');
     atualizar();
