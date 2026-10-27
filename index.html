@@ -1466,6 +1466,7 @@
   const MODULOS = [
     { id: "livro", nome: "Livro de contas" },
     { id: "producao", nome: "Produção: lançamento" },
+    { id: "producao_resumo", nome: "Produção: resumo" },
     { id: "queijos", nome: "Produção: salmoura, secagem e estoque" },
     { id: "vendas", nome: "Gerenciamento de vendas" },
     { id: "estoque", nome: "Controle de estoque" },
@@ -1549,8 +1550,9 @@
 
   /* ---------- Produção: sub-abas Lançamento, Salmoura, Secagem e Estoque ---------- */
   const PD_VISOES = ["lancamento", "salmoura", "secagem", "estoque", "resumo"];
-  // Resumo (acompanhamento da produção: totais, por produto e lista de lançamentos) é só para a gerência.
-  const podeResumoProducao = () => !!(SN.perfil && SN.perfil.admin) && SN.pode("producao", "ver");
+  // Resumo (acompanhamento da produção: totais, por produto e lista de lançamentos) é da gerência:
+  // precisa da permissão "Produção: resumo" (módulo producao_resumo) além do acesso ao lançamento.
+  const podeResumoProducao = () => SN.pode("producao_resumo", "ver") && SN.pode("producao", "ver");
   const pdPermitidas = () => PD_VISOES.filter((v) => v === "resumo" ? podeResumoProducao() : SN.pode(v === "lancamento" ? "producao" : "queijos", "ver"));
   function mostrarProducao(v, guardar) {
     const ok = pdPermitidas(); if (!ok.length) return;
