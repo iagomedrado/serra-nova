@@ -2,7 +2,7 @@
 
 Sistema interno da empresa, feito em uma única página: `index.html`, com HTML, CSS e JavaScript no mesmo arquivo.
 Publicado pelo GitHub Pages em https://iagomedrado.github.io/serra-nova/ a partir da branch `main` do repositório `iagomedrado/serra-nova`.
-Junto do `index.html` ficam os arquivos do "app" para celular: `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` e `favicon.png` (feitos com o logotipo, fundo vinho). Há um `sw.js` só para receber as notificações: ele não tem `fetch` nem guarda cópia da página, de propósito, para o celular sempre abrir a versão mais nova. Não adicione cache a ele.
+Junto do `index.html` ficam os arquivos do "app" para celular: `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` e `favicon.png` (feitos com o logotipo, fundo vinho). O `sw.js` recebe as notificações e guarda uma cópia da página para abrir sem internet (ver "Sem internet"). A cópia só é usada quando a internet falha: com internet, a página vem sempre do site (versão mais nova) e a cópia é renovada. Não troque isso por "cópia primeiro", para o celular nunca ficar preso numa versão velha.
 Responsável: Iago (gerente). Escreva sempre em português do Brasil, com linguagem simples e sem termos técnicos desnecessários.
 
 ## Como o sistema funciona
@@ -13,6 +13,17 @@ Responsável: Iago (gerente). Escreva sempre em português do Brasil, com lingua
 - Permissões por aba: sem acesso / ver / editar (tabela `permissoes`). As regras de segurança (RLS) usam `privado.eh_admin()` e `privado.pode(modulo, nivel)`. A tela esconde botões, mas quem garante a segurança é o banco.
 - Módulos: `livro`, `producao`, `producao_resumo`, `queijos`, `vendas`, `estoque`, `resfriadores`. A lista de módulos aparece em três lugares que precisam andar juntos: `MODULOS` no `index.html`, a regra `permissoes_modulo_check` no banco e `MODULOS` na edge function `usuarios`.
 - Objeto global `window.SN` com `sb` (cliente Supabase), `perfil`, `permissoes`, `pode(modulo, nivel)`, `ui` (`toast`, `openModal`, `closeModal`, `confirmar`) e `chamarFuncao`.
+
+## Sem internet (28/10/2026, pedido do Iago: a internet cai na fábrica)
+- **Página:** o `sw.js` (registrado ao abrir o sistema) busca a página no site e guarda uma cópia (cache `sn-pagina-v1`) do `index.html`, ícones, biblioteca do Supabase (jsDelivr) e fontes. Sem internet, ou se a página demorar mais de 8 s, abre a cópia. Só GET; o Supabase não passa pelo `sw.js`.
+- **Dados:** o cliente Supabase usa `fetchComCopia` (`global.fetch`). Toda leitura que dá certo (GET em `/rest/v1/` e as funções de leitura em `LEITURAS_RPC`) fica guardada no cache `sn-dados-v1`, separada por usuário. Se a busca falhar por falta de rede, devolve a última cópia. Aparece a faixa amarela `#faixaOffline` ("Sem internet", com a hora da última conexão, `sn_ultimo_contato`). O evento `sn:conexao` avisa quando cai ou volta; quando volta, o sistema dispara `visibilitychange` para todas as abas recarregarem. "Sair" apaga a cópia dos dados.
+- **Sessão sem internet:** o acesso vence em 1 hora e a biblioteca tentaria renovar por até 30 s antes de cada leitura. Por isso o cliente usa o `armazenamento` próprio: enquanto `semInternet`, entrega a sessão guardada como se valesse (sem gravar isso) e nunca apaga a sessão por falha de renovação. Ao abrir com o acesso vencido, `internetResponde()` confere antes (5 s). Se mesmo assim a biblioteca não der sessão e o aparelho ainda guardar uma, entra com ela em modo `soCopia` (só cópia) até renovar.
+- **Gravações:** só o **lançamento de produção** funciona sem internet. As outras gravações (livro, vendas, salmoura/secagem, estoque etc.) continuam pedindo internet.
+  - Fila no aparelho: `localStorage`, chave `sn_fila_producao` (`[{id, dados, guardado_em, usuario, erro?}]`). O `id` do lançamento é criado na tela (`novoId`) e enviado no insert: se o mesmo item chegar duas vezes, o banco recusa (23505) e conta como enviado.
+  - `registrar` tenta gravar; se falhar por rede, guarda na fila. "Feito com o leite de outro queijo" sem internet: confere no aparelho (lançamentos + fila) e, se não achar o dono do leite, pede um segundo clique (`semConferirOk`); no envio a conferência no banco é refeita.
+  - Painel "Aguardando envio" (`#prFilaEnvio`, topo da sub-aba Lançamento): lista o que está guardado, motivo quando o banco recusou, "Enviar agora" e excluir. Envio automático (`enviarFila`) ao voltar a internet, ao abrir e a cada minuto, na ordem; repete enquanto algum item for enviado (o Meia Cura pode ter sido guardado antes do Tropical). Item recusado fica na fila com o motivo.
+  - "Sair" com itens na fila pede confirmação (os itens continuam guardados e são enviados quando a pessoa entrar de novo nesse aparelho).
+  - Próximo passo combinado: "Dar destino ao lote" e "Mover peças" sem internet.
 
 ## Abas
 - **Início:** resumo das áreas e "Precisa de atenção". Recebe os eventos `livro:resumo`, `estoque:resumo`, `producao:resumo`, `queijos:resumo` e `vendas:resumo`.
