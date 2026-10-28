@@ -214,6 +214,13 @@
      LIVRO DE CONTAS
      ===================================================== */
   [hidden] { display: none !important; }
+  .faixa-offline { background: var(--warn-soft); color: var(--ink); border: 1px solid var(--warn); border-left-width: 5px; border-radius: 8px; padding: 10px 14px; margin: 0 0 18px; font-size: .95rem; line-height: 1.4; }
+  .pr-envio { border-color: var(--warn); margin-bottom: 18px; }
+  .pr-envio-lista { list-style: none; margin: 10px 0 0; padding: 0; }
+  .pr-envio-lista li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .pr-envio-txt { flex: 1; min-width: 0; line-height: 1.45; }
+  .pr-envio-erro { display: block; color: var(--danger); font-weight: 600; margin-top: 4px; }
+  .faixa-offline strong { color: var(--warn); margin-right: 4px; }
   .test-note { font-size: .9rem; color: var(--muted); border: 1px dashed var(--ouro); border-radius: 8px; padding: 8px 12px; margin: -8px 0 22px; }
   .lv-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
   .lv-row h2 { margin: 0; }
@@ -1047,6 +1054,7 @@
   </aside>
 
   <main id="main">
+    <div class="faixa-offline" id="faixaOffline" role="status" hidden><strong>Sem internet.</strong><span id="faixaOfflineQuando"></span> Os lançamentos de produção ficam guardados neste aparelho e são enviados sozinhos quando a internet voltar. As outras alterações precisam de internet.</div>
     <p class="demo" id="demoNote">Layout de demonstração: os números desta tela são exemplos e ainda não vêm do banco de dados.</p>
 
     <!-- ================= INÍCIO ================= -->
@@ -1204,6 +1212,7 @@
       <div class="ledger pr-resumo" id="qjResumo" data-modulo="queijos"></div>
 
       <div id="pdPainelLancamento" role="tabpanel" aria-label="Lançamento">
+        <section class="panel pr-envio" id="prFilaEnvio" aria-labelledby="h-pr-envio" hidden></section>
         <div class="pr-grid" id="pdColForm">
           <form class="panel form pr-form" id="prForm" data-modulo="producao"></form>
           <section class="panel" id="qjFilaBloco" aria-labelledby="h-qj-fila" data-modulo="queijos">
@@ -1514,6 +1523,121 @@
   $("btnCloseModal").addEventListener("click", ui.closeModal);
   $("modalBackdrop").addEventListener("click", (e) => { if (e.target === $("modalBackdrop")) ui.closeModal(); });
 
+  /* ---------- Sem internet ----------
+     Toda leitura do banco que dá certo fica guardada neste aparelho (Cache do navegador, "sn-dados-v1",
+     separada por usuário). Se a internet cair, a página mostra a última cópia e a faixa "Sem internet".
+     Gravações não são guardadas aqui: só o lançamento de produção tem fila própria (SN_Producao). */
+  const COPIA_DADOS = "sn-dados-v1";
+  const SESSAO_GUARDADA = "sb-lxpkigztunalreqlsbul-auth-token";
+  const LEITURAS_RPC = ["sistema_configurado", "nomes_usuarios", "queijos_padroes", "queijos_pendentes", "vendas_a_receber"];
+  let semInternet = navigator.onLine === false;
+  const falhaDeRede = (e) => !!e && e.name !== "AbortError" && (e instanceof TypeError || /failed to fetch|load failed|networkerror|network request failed/i.test(String(e.message || "") + " " + String(e.details || "")));
+  SN.semInternet = () => semInternet;
+  SN.falhaDeRede = (erro) => !!erro && !erro.code && falhaDeRede(erro);
+  function lerHora(iso) {
+    if (!iso) return "";
+    const d = new Date(iso), hoje = new Date();
+    const hora = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return d.toDateString() === hoje.toDateString() ? "hoje às " + hora : d.toLocaleDateString("pt-BR") + " às " + hora;
+  }
+  function mostrarConexao() {
+    const f = $("faixaOffline"); if (!f) return;
+    f.hidden = !semInternet;
+    let contato = null; try { contato = localStorage.getItem("sn_ultimo_contato"); } catch (e) { /* sem acesso ao armazenamento */ }
+    $("faixaOfflineQuando").textContent = contato ? " Os dados na tela são da última conexão, " + lerHora(contato) + "." : "";
+  }
+  function marcarConexao(ok) {
+    if (ok) { try { localStorage.setItem("sn_ultimo_contato", new Date().toISOString()); } catch (e) { /* segue */ } }
+    if (semInternet === !ok) return;
+    semInternet = !ok;
+    mostrarConexao();
+    document.dispatchEvent(new CustomEvent("sn:conexao", { detail: { online: ok } }));
+    // Internet voltou: as abas recarregam os dados (todas já recarregam quando a tela volta a ficar visível).
+    if (ok && sistemaIniciado) document.dispatchEvent(new Event("visibilitychange"));
+  }
+  // soCopia: entrou com a sessão guardada sem conseguir renovar o acesso. Até renovar, os dados vêm só da cópia
+  // (com o acesso vencido o banco devolveria listas vazias, que apagariam a cópia boa).
+  let soCopia = false;
+  async function tentarReconectar() {
+    if (!SN.sb) return;
+    if (!soCopia) { SN.sb.rpc("sistema_configurado").then(() => {}, () => {}); return; }
+    try {
+      const { data } = await SN.sb.auth.getSession();
+      if (data && data.session) { soCopia = false; SN.usuario = data.session.user; marcarConexao(true); }
+    } catch (e) { /* continua sem internet */ }
+  }
+  window.addEventListener("offline", () => marcarConexao(false));
+  window.addEventListener("online", tentarReconectar);
+  setInterval(() => { if (semInternet || soCopia) tentarReconectar(); }, 30000);
+  function chaveCopia(url, init, metodo) {
+    const h = new Headers((init && init.headers) || {});
+    const corpo = init && typeof init.body === "string" ? init.body : "";
+    const quem = SN.usuario ? SN.usuario.id : "anon";
+    return "https://copia.serra-nova/" + quem + "/" + metodo + "?a=" + encodeURIComponent(h.get("Accept") || "") + "&u=" + encodeURIComponent(url) + "&b=" + encodeURIComponent(corpo);
+  }
+  async function fetchComCopia(input, init) {
+    const url = typeof input === "string" ? input : input.url;
+    const metodo = String((init && init.method) || "GET").toUpperCase();
+    const rpc = (url.match(/\/rest\/v1\/rpc\/([a-z_]+)/) || [])[1];
+    const doBanco = url.startsWith(SB_URL + "/rest/v1/");
+    const guardar = !!window.caches && doBanco && (rpc ? LEITURAS_RPC.includes(rpc) : metodo === "GET");
+    let resp;
+    try {
+      if (soCopia && doBanco) throw new TypeError("Failed to fetch (acesso ainda não renovado)");
+      resp = await fetch(input, init);
+    }
+    catch (e) {
+      if (!falhaDeRede(e)) throw e;
+      marcarConexao(false);
+      if (guardar) {
+        try { const r = await (await caches.open(COPIA_DADOS)).match(chaveCopia(url, init, metodo)); if (r) return r; } catch (e2) { /* sem cópia */ }
+      }
+      throw e;
+    }
+    marcarConexao(true);
+    if (guardar && resp.ok) {
+      const c = resp.clone();
+      caches.open(COPIA_DADOS).then((k) => k.put(chaveCopia(url, init, metodo), c)).catch(() => {});
+    }
+    return resp;
+  }
+  // Sem internet, a biblioteca não consegue renovar o acesso e diz que não há sessão.
+  // Se o aparelho ainda guarda a sessão (a pessoa não saiu), entra com ela para mostrar a cópia dos dados.
+  function sessaoGuardada() {
+    try { const s = JSON.parse(localStorage.getItem(SESSAO_GUARDADA) || "null"); return s && s.user && s.user.id ? s : null; }
+    catch (e) { return null; }
+  }
+  /* Sem internet a biblioteca tentaria renovar o acesso vencido por até 30 segundos antes de cada leitura,
+     e a tela ficaria parada. Enquanto não há internet, a sessão guardada é entregue como se ainda valesse
+     (só para a biblioteca não tentar renovar); nada disso é gravado. Com internet, tudo volta ao normal. */
+  const armazenamento = {
+    getItem(k) {
+      const v = localStorage.getItem(k);
+      if (!semInternet || k !== SESSAO_GUARDADA || !v) return v;
+      try { const s = JSON.parse(v); if (s && s.expires_at) s.expires_at = Math.floor(Date.now() / 1000) + 3600; return JSON.stringify(s); }
+      catch (e) { return v; }
+    },
+    setItem(k, v) {
+      if (semInternet && k === SESSAO_GUARDADA) {
+        try {
+          const novo = JSON.parse(v), antes = JSON.parse(localStorage.getItem(k) || "null");
+          if (novo && antes && novo.access_token === antes.access_token) { novo.expires_at = antes.expires_at; v = JSON.stringify(novo); }
+        } catch (e) { /* grava como veio */ }
+      }
+      localStorage.setItem(k, v);
+    },
+    // Sem internet, a sessão nunca é apagada por falha de renovação. O botão "Sair" apaga direto.
+    removeItem(k) { if (semInternet && k === SESSAO_GUARDADA) return; localStorage.removeItem(k); }
+  };
+  async function internetResponde() {
+    if (navigator.onLine === false) return false;
+    const c = new AbortController(), t = setTimeout(() => c.abort(), 5000);
+    try { await fetch(SB_URL + "/auth/v1/health", { mode: "no-cors", signal: c.signal, cache: "no-store" }); return true; }
+    catch (e) { return false; }
+    finally { clearTimeout(t); }
+  }
+  async function apagarCopiaDados() { try { if (window.caches) await caches.delete(COPIA_DADOS); } catch (e) { /* segue */ } }
+
   /* ---------- Menu no celular ---------- */
   const side = $("side"), scrim = $("scrim"), openBtn = $("openMenu");
   function setMenu(open) {
@@ -1761,6 +1885,7 @@
     if (sistemaIniciado) return;
     SN.usuario = session.user;
     const { data: perfil, error } = await SN.sb.from("perfis").select("*").eq("id", session.user.id).maybeSingle();
+    if (error && SN.falhaDeRede(error)) { telaMensagem("Sem internet", "Este aparelho ainda não tem uma cópia dos dados. Conecte à internet uma vez para o sistema poder abrir depois sem internet.", false); return; }
     if (error) { telaMensagem("Não foi possível entrar", traduzirErro(error.message), true); return; }
     if (!perfil || !perfil.ativo) {
       telaMensagem("Acesso não liberado", "Seu usuário está desativado ou ainda não foi liberado. Fale com o administrador do sistema.", true);
@@ -1777,6 +1902,7 @@
     entrada.hidden = true;
     $("app").hidden = false;
     show();
+    mostrarConexao();
     if (SN.pode("livro", "ver") && window.SN_Livro) window.SN_Livro.iniciar({ sb: SN.sb, podeEditar: SN.pode("livro", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("producao", "ver") && window.SN_Producao) window.SN_Producao.iniciar({ sb: SN.sb, podeEditar: SN.pode("producao", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("resfriadores", "ver") && window.SN_Resfriadores) window.SN_Resfriadores.iniciar({ sb: SN.sb, podeEditar: SN.pode("resfriadores", "editar") });
@@ -1800,10 +1926,21 @@
     const h = new Date().getHours();
     $("t-inicio").textContent = (h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite") + ", " + nome.trim().split(/\s+/)[0];
   }
-  async function sair() {
+  async function sairDeVez() {
     try { await SN.sb.auth.signOut({ scope: "local" }); } catch (e) { /* segue para recarregar */ }
+    try { localStorage.removeItem(SESSAO_GUARDADA); } catch (e) { /* segue */ }
+    await apagarCopiaDados();
     location.hash = "";
     location.reload();
+  }
+  function sair() {
+    const n = window.SN_Producao && window.SN_Producao.naFila ? window.SN_Producao.naFila() : 0;
+    if (!n) { sairDeVez(); return; }
+    ui.confirmar({
+      titulo: "Lançamentos aguardando envio",
+      mensagem: `Há ${n} ${n === 1 ? "lançamento de produção feito sem internet que ainda não foi enviado" : "lançamentos de produção feitos sem internet que ainda não foram enviados"}. Eles continuam guardados neste aparelho e são enviados quando você entrar de novo, com internet. Sair mesmo assim?`,
+      botao: "Sair", acao: sairDeVez
+    });
   }
   $("btnSair").addEventListener("click", sair);
 
@@ -2000,10 +2137,16 @@
       telaMensagem("Não foi possível carregar", "Verifique a conexão com a internet e recarregue a página.", false);
       return;
     }
-    SN.sb = window.supabase.createClient(SB_URL, SB_KEY);
+    // Acesso vencido (passou 1 hora): antes de a biblioteca tentar renovar, confere rápido se há internet.
+    const antes = sessaoGuardada();
+    if (antes && antes.expires_at && antes.expires_at * 1000 - Date.now() < 120000 && !(await internetResponde())) semInternet = true;
+    SN.sb = window.supabase.createClient(SB_URL, SB_KEY, { global: { fetch: fetchComCopia }, auth: { storage: armazenamento } });
     SN.sb.auth.onAuthStateChange((evento) => { if (evento === "SIGNED_OUT" && sistemaIniciado) location.reload(); });
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js", { scope: "./" }).catch((e) => console.error(e));
     const { data } = await SN.sb.auth.getSession();
     if (data && data.session) { await entrarNoSistema(data.session); return; }
+    const guardada = sessaoGuardada();
+    if (guardada) { soCopia = true; await entrarNoSistema(guardada); return; }
     const { data: configurado, error } = await SN.sb.rpc("sistema_configurado");
     if (error) { telaMensagem("Não foi possível conectar", "Verifique a conexão com a internet e recarregue a página.", false); return; }
     if (configurado) telaLogin(); else telaPrimeiroAcesso();
@@ -4941,7 +5084,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
      convertidas pelo peso médio (ex.: Meia Cura 1 kg = 1/6 de uma peça de Tropical de 6 kg). */
   const mesmoLote = (a, b) => a.data_fabricacao === b.data_fabricacao && String(a.lote || '').trim().toLowerCase() === String(b.lote || '').trim().toLowerCase();
   function donoDoLeite(l) {
-    return lancamentos.find((x) => x.id !== l.id && !x.leite_compartilhado && x.leite_litros > 0 && x.pecas > 0 && mesmoLote(x, l)) || null;
+    return lancamentos.concat(filaComoLanc()).find((x) => x.id !== l.id && !x.leite_compartilhado && x.leite_litros > 0 && x.pecas > 0 && mesmoLote(x, l)) || null;
   }
   function juntosNoLeite(dono) {
     return lancamentos.filter((x) => x.id !== dono.id && x.leite_compartilhado && x.pecas > 0 && mesmoLote(x, dono));
@@ -5052,7 +5195,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
     const lote = form.querySelector('[name="lote"]').value.trim(), id = form.dataset.id || '';
     const aviso = form.querySelector('[data-lote-aviso]');
-    const repetido = p && lote && lancamentos.some((l) => l.produto_id === p.id && l.lote.trim().toLowerCase() === lote.toLowerCase() && l.id !== id);
+    const repetido = p && lote && lancamentos.concat(filaComoLanc()).some((l) => l.produto_id === p.id && l.lote.trim().toLowerCase() === lote.toLowerCase() && l.id !== id);
     aviso.hidden = !repetido;
     aviso.textContent = repetido ? 'Atenção: já existe um lançamento de ' + p.nome + ' com o lote ' + lote + ' neste período.' : '';
     const data = form.querySelector('[name="data"]').value, dia = diaDoAno(data), info = form.querySelector('[data-lote-dia]');
@@ -5137,6 +5280,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 
   /* ---------- Tela ---------- */
   function render() {
+    renderFila();
     const filtro = $('prFiltro').value;
     const lista = filtro ? lancamentos.filter((l) => l.produto_id === filtro) : lancamentos;
     // resumo
@@ -5200,11 +5344,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
 
   /* ---------- Ações ---------- */
-  async function confereLeite(dados, id) {
+  // true = pode salvar; false = não pode (já avisou); 'rede' = sem internet para conferir.
+  async function confereLeite(dados, id, calado) {
     if (!dados.leite_compartilhado) return true;
+    if (SN.semInternet()) return 'rede'; // sem internet a leitura repetiria por vários segundos antes de desistir
     let q = sb.from('producao_lancamentos').select('id').eq('data_fabricacao', dados.data_fabricacao).eq('lote', dados.lote).eq('leite_compartilhado', false).gt('leite_litros', 0).limit(1);
     if (id) q = q.neq('id', id);
     const { data, error } = await q;
+    if (error && SN.falhaDeRede(error)) return 'rede';
+    if (calado) return !error && !!(data && data.length);
     if (error) { console.error(error); toast('Não foi possível conferir o lote. Verifique a conexão.'); return false; }
     if (!data || !data.length) {
       toast(`Não há queijo com leite lançado no lote ${dados.lote} de ${fmtData(dados.data_fabricacao)}. Lance primeiro o Tropical (com o leite) ou desmarque "Feito com o leite de outro queijo".`);
@@ -5215,17 +5363,137 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   async function registrar(e) {
     e.preventDefault();
     const form = $('prForm'); const dados = lerFormulario(form); if (!dados) return;
-    if (!(await confereLeite(dados))) return;
     const botao = $('prSalvar'); botao.disabled = true;
-    const { error } = await sb.from('producao_lancamentos').insert(dados).select('id');
-    botao.disabled = false;
-    if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
+    try {
+      // O número do lançamento é criado aqui, para que um envio repetido (internet que cai no meio) não duplique.
+      const item = { id: novoId(), dados, guardado_em: new Date().toISOString(), usuario: SN.usuario.id };
+      const leite = await confereLeite(dados);
+      if (leite === false) return;
+      if (leite === 'rede') { if (!semConferirOk(form, dados)) return; guardarNaFila(item); limparFormulario(form); return; }
+      const { error } = await sb.from('producao_lancamentos').insert({ ...dados, id: item.id });
+      if (error && SN.falhaDeRede(error)) { guardarNaFila(item); limparFormulario(form); return; }
+      if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
+      limparFormulario(form);
+      toast('Produção registrada.');
+      atualizar();
+    } finally { botao.disabled = false; }
+  }
+  function limparFormulario(form) {
     ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
     form.querySelector('[name="compartilhado"]').checked = false;
     form.querySelector('[name="lote"]').value = loteNovo(form.querySelector('[name="data"]').value);
+    delete form.dataset.semConferir;
     ajustarCampos(form);
-    toast('Produção registrada.');
-    atualizar();
+  }
+
+  /* ---------- Sem internet: fila "Aguardando envio" ----------
+     Lançamento feito sem internet fica guardado neste aparelho (localStorage, chave sn_fila_producao)
+     e é enviado sozinho quando a internet volta, na ordem em que foi feito. Cada item já tem o número
+     (id) do lançamento: se o mesmo item chegar duas vezes, o banco recusa a cópia e conta como enviado. */
+  const FILA = 'sn_fila_producao';
+  let enviando = false;
+  function novoId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+  function lerFilaToda() { try { return JSON.parse(localStorage.getItem(FILA) || '[]') || []; } catch (e) { return []; } }
+  function gravarFila(f) { localStorage.setItem(FILA, JSON.stringify(f)); }
+  function minhaFila() { const eu = SN.usuario && SN.usuario.id; return lerFilaToda().filter((i) => i.usuario === eu); }
+  function filaComoLanc() { return minhaFila().map((i) => ({ ...i.dados, id: i.id, na_fila: true })); }
+  function guardarNaFila(item) {
+    try { gravarFila(lerFilaToda().concat(item)); }
+    catch (e) { console.error(e); toast('Sem internet e não foi possível guardar neste aparelho. Anote o lançamento e tente de novo depois.'); return; }
+    renderFila();
+    toast('Sem internet: lançamento guardado neste aparelho. Ele será enviado quando a internet voltar.');
+  }
+  function tirarDaFila(id) { gravarFila(lerFilaToda().filter((i) => i.id !== id)); }
+  function marcarErro(id, erro) { gravarFila(lerFilaToda().map((i) => (i.id === id ? { ...i, erro } : i))); }
+  /* Sem internet não dá para conferir no banco se o leite do lote já foi lançado: confere no aparelho
+     e, se não achar, pede um segundo clique. A conferência no banco é refeita na hora do envio. */
+  function semConferirOk(form, dados) {
+    if (donoDoLeite({ id: '', lote: dados.lote, data_fabricacao: dados.data_fabricacao })) return true;
+    const chave = dados.data_fabricacao + '|' + dados.lote;
+    if (form.dataset.semConferir === chave) return true;
+    form.dataset.semConferir = chave;
+    toast(`Sem internet não dá para conferir se o leite do lote ${dados.lote} já foi lançado. Se o Tropical (com o leite) deste lote já foi lançado, clique de novo para guardar.`);
+    return false;
+  }
+  function textoItem(i) {
+    const d = i.dados, p = produto(d.produto_id);
+    const nums = d.peso_kg != null ? fmtNum(d.peso_kg) + ' kg'
+      : (d.leite_compartilhado ? 'leite de outro queijo' : fmtNum(d.leite_litros) + ' L') + ' · ' + fmtNum(d.pecas, 0) + ' peças';
+    return { nome: p ? p.nome : 'Produto', nums };
+  }
+  function renderFila() {
+    const box = $('prFilaEnvio'); if (!box) return;
+    const fila = minhaFila();
+    box.hidden = !fila.length;
+    if (!fila.length) { box.innerHTML = ''; return; }
+    const sem = SN.semInternet();
+    box.innerHTML = `<div class="panel-head panel-head-row"><h2 id="h-pr-envio">Aguardando envio (${fila.length})</h2>
+        <button type="button" class="btn btn-small" data-acao="enviar" ${enviando ? 'disabled' : ''}>${enviando ? 'Enviando…' : 'Enviar agora'}</button></div>
+      <p class="muted-note">${sem ? 'Sem internet. ' : ''}Estes lançamentos foram feitos sem internet e estão guardados só neste aparelho. Eles são enviados sozinhos quando a internet voltar. Não saia do sistema nem apague os dados do navegador antes disso.</p>
+      <ul class="pr-envio-lista">${fila.map((i) => {
+        const t = textoItem(i), g = new Date(i.guardado_em);
+        return `<li data-id="${esc(i.id)}"><div class="pr-envio-txt"><b>${esc(t.nome)}</b> · Lote ${esc(i.dados.lote)} · ${fmtData(i.dados.data_fabricacao)}<br>
+          <span class="muted">${esc(t.nums)} · guardado às ${g.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+          ${i.erro ? `<span class="pr-envio-erro">Não foi enviado: ${esc(i.erro)}</span>` : ''}</div>
+          <button type="button" class="icon-btn" data-acao="tirar" aria-label="Excluir lançamento guardado" title="Excluir"><svg class="i"><use href="#i-trash"/></svg></button></li>`;
+      }).join('')}</ul>`;
+  }
+  async function enviarItem(i) {
+    const leite = await confereLeite(i.dados, null, true);
+    if (leite === 'rede') return 'rede';
+    if (!leite) return `ainda não há queijo com leite lançado no lote ${i.dados.lote} de ${fmtData(i.dados.data_fabricacao)}. Lance o Tropical (com o leite) deste lote.`;
+    const { error } = await sb.from('producao_lancamentos').insert({ ...i.dados, id: i.id });
+    if (!error || String(error.code) === '23505') return 'ok';
+    if (SN.falhaDeRede(error)) return 'rede';
+    console.error(error);
+    return String(error.code) === '42501' ? 'seu usuário não tem permissão para lançar produção.' : 'o banco recusou o lançamento (' + (error.message || 'erro') + ').';
+  }
+  async function enviarFila(manual) {
+    if (enviando || !minhaFila().length) return;
+    enviando = true; renderFila();
+    let enviados = 0, comErro = 0, semRede = false;
+    try {
+      const { data } = await sb.auth.getSession();
+      if (!data || !data.session) { semRede = true; return; }
+      // Repete enquanto algum item for enviado: o Meia Cura pode ter sido guardado antes do Tropical do mesmo lote.
+      let andou = true;
+      while (andou && !semRede) {
+        andou = false; comErro = 0;
+        for (const i of minhaFila()) {
+          const r = await enviarItem(i);
+          if (r === 'rede') { semRede = true; break; }
+          if (r === 'ok') { tirarDaFila(i.id); enviados++; andou = true; } else { marcarErro(i.id, r); comErro++; }
+        }
+      }
+    } catch (e) { console.error(e); semRede = true; }
+    finally {
+      enviando = false; renderFila();
+      if (enviados) { toast(`${enviados} ${enviados === 1 ? 'lançamento guardado foi enviado' : 'lançamentos guardados foram enviados'}.`); atualizar(); }
+      else if (manual && semRede) toast('Ainda sem internet. Os lançamentos continuam guardados.');
+      else if (manual && comErro) toast('Há lançamento que o sistema não aceitou. Veja o motivo na lista.');
+    }
+  }
+  function ligarFila() {
+    $('prFilaEnvio').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b) return;
+      if (b.dataset.acao === 'enviar') { enviarFila(true); return; }
+      const i = minhaFila().find((x) => x.id === b.closest('[data-id]').dataset.id); if (!i) return;
+      const t = textoItem(i);
+      SN.ui.confirmar({
+        titulo: 'Excluir lançamento guardado', botao: 'Excluir', perigo: true,
+        mensagem: `Excluir o lançamento de ${t.nome}, lote ${i.dados.lote}, de ${fmtData(i.dados.data_fabricacao)}? Ele ainda não foi enviado e será perdido.`,
+        acao: () => { tirarDaFila(i.id); SN.ui.closeModal(); renderFila(); ajustarCampos($('prForm')); toast('Lançamento guardado excluído.'); }
+      });
+    });
+    document.addEventListener('sn:conexao', (e) => { renderFila(); if (e.detail.online) enviarFila(); });
+    window.addEventListener('storage', (e) => { if (e.key === FILA) renderFila(); });
+    setInterval(() => { if (minhaFila().length && !SN.semInternet()) enviarFila(); }, 60000);
+    renderFila();
   }
   function editar(id) {
     const l = lancamentos.find((x) => x.id === id); if (!l) return;
@@ -5315,6 +5583,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('prForm').innerHTML = `<h2>Registrar produção</h2>${camposHTML()}<button class="btn primary" type="submit" id="prSalvar">Registrar produção</button>`;
     ligarFormulario($('prForm'), '');
     $('prForm').addEventListener('submit', registrar);
+    ligarFila();
     $('prPeriodo').addEventListener('click', (e) => {
       const b = e.target.closest('.seg-btn'); if (!b) return;
       periodo = b.dataset.periodo;
@@ -5339,9 +5608,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       sb.channel('sn-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
     });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+    renderFila(); enviarFila();
   }
   let iniciado = false;
-  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFila().length };
 })();
 </script>
 <script>

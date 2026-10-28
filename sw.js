@@ -1,8 +1,51 @@
-/* Laticínio Serra Nova: recebe os avisos (notificações) no celular.
-   De propósito, este arquivo NÃO guarda cópia da página (não há "fetch" aqui):
-   o sistema continua sempre abrindo a versão mais nova. */
+/* Laticínio Serra Nova: avisos (notificações) no celular e cópia da página para abrir sem internet.
+   A cópia é usada SÓ quando não há internet: com internet, a página vem sempre do site
+   (versão mais nova) e a cópia é renovada. Os dados do Supabase não passam por aqui:
+   quem guarda a cópia dos dados é a própria página. */
+const COPIA = 'sn-pagina-v1';
+// Endereços de fora do site que a página precisa para abrir (biblioteca do Supabase e fontes).
+const DE_FORA = ['https://cdn.jsdelivr.net/npm/@supabase/', 'https://fonts.googleapis.com/', 'https://fonts.gstatic.com/'];
+
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('activate', (e) => e.waitUntil((async () => {
+  const nomes = await caches.keys();
+  await Promise.all(nomes.filter((n) => n.startsWith('sn-pagina-') && n !== COPIA).map((n) => caches.delete(n)));
+  await self.clients.claim();
+})()));
+
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  const doSite = url.origin === self.location.origin;
+  if (!doSite && !DE_FORA.some((p) => req.url.startsWith(p))) return;
+  e.respondWith(daRedeOuCopia(req, req.mode === 'navigate'));
+});
+
+async function daRedeOuCopia(req, pagina) {
+  const copia = await caches.open(COPIA);
+  // A página é guardada sempre no mesmo endereço (sem #, sem ?), para abrir por qualquer link.
+  const chave = pagina ? new URL('./', self.registration.scope).href : req;
+  const daRede = fetch(req).then((resp) => {
+    if (resp.ok || resp.type === 'opaque') copia.put(chave, resp.clone()).catch(() => {});
+    return resp;
+  });
+  try {
+    // Internet fraca (comum na fábrica): se a página demorar mais de 8 segundos, abre a cópia.
+    // A busca continua e, quando chega, a cópia é renovada para a próxima vez.
+    if (pagina) {
+      const guardada = await copia.match(chave, { ignoreSearch: true });
+      if (guardada) {
+        return await Promise.race([daRede, new Promise((ok) => setTimeout(() => ok(guardada), 8000))]);
+      }
+    }
+    return await daRede;
+  } catch (err) {
+    const guardada = await copia.match(chave, { ignoreSearch: pagina });
+    if (guardada) return guardada;
+    throw err;
+  }
+}
 
 self.addEventListener('push', (e) => {
   let d = {};
