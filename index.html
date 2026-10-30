@@ -676,6 +676,7 @@
   .qj-bloco > .muted-note { margin: -6px 0 4px; }
   .qj-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; margin-bottom: 12px; }
   .qj-cab h2 { margin: 0; }
+  .qj-cab-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
   .qj-legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-size: .85rem; color: var(--muted); }
   .qj-legenda span { display: inline-flex; align-items: center; gap: 6px; }
   .qj-legenda i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); border-left: 3px solid var(--bar); background: var(--surface); }
@@ -728,7 +729,8 @@
   @media (min-width: 1100px) { .qj-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
   .qj-totais { margin-top: 8px; }
   .qj-tot { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-  .qj-tot span { font-weight: 600; }
+  .qj-tot span { font-weight: 600; text-align: right; }
+  .qj-tot span small { font-weight: 400; }
   .qj-sub { font-family: Merriweather, Georgia, serif; font-size: 1rem; margin: 18px 0 2px; }
   .qj-mov { display: flex; gap: 12px; align-items: flex-start; padding: 10px 2px; border-bottom: 1px solid var(--line); }
   .qj-mov:last-child { border-bottom: 0; }
@@ -761,6 +763,15 @@
   .qj-said { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
   .qj-said.ativo { border-color: var(--vermelho); box-shadow: inset 3px 0 0 var(--vermelho); }
   .qj-said-info b { display: block; }
+  .qj-ini-lista { display: grid; gap: 10px; }
+  .qj-ini { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 10px; }
+  .qj-ini-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .qj-ini-top b { font-size: .95rem; }
+  .qj-ini-top .icon-btn { color: var(--muted); }
+  .qj-ini .three { display: grid; gap: 10px; grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 520px) { .qj-ini .three { grid-template-columns: 1fr 1fr; } }
+  .qj-dica { font-size: .85rem; color: var(--muted); margin-top: -4px; }
+  .qj-dica.erro { color: var(--vermelho); }
   .qj-said-info small { color: var(--muted); font-size: .85rem; }
 
   /* ---------- Gerenciamento de vendas ---------- */
@@ -1303,7 +1314,7 @@
       <div id="pdPainelEstoque" role="tabpanel" aria-label="Estoque" hidden>
         <div class="qj-grid2">
           <section class="panel" aria-labelledby="h-qj-est">
-            <div class="qj-cab"><h2 id="h-qj-est">Estoque embalado</h2><button type="button" class="btn btn-primary btn-small" id="qjSaidaBtn" hidden>Registrar saída</button></div>
+            <div class="qj-cab"><h2 id="h-qj-est">Estoque embalado</h2><span class="qj-cab-botoes"><button type="button" class="btn btn-small" id="qjInicialBtn" hidden>Colocar no estoque</button><button type="button" class="btn btn-primary btn-small" id="qjSaidaBtn" hidden>Registrar saída</button></span></div>
             <p class="muted-note">Na saída, o cliente, o preço e a forma de pagamento são definidos em Gerenciamento de vendas.</p>
             <div id="qjEstoque"></div>
           </section>
@@ -5681,6 +5692,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const pad = (n) => String(n).padStart(2, '0');
   const fmtNum = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
   const pecas = (n) => fmtNum(n) + (Number(n) === 1 ? ' peça' : ' peças');
+  const kg = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 }) + ' kg';
+  const temPeso = (p) => p.peso_kg != null && Number(p.peso_kg) > 0;
   function fmtData(s) { if (!s) return ''; const [a, m, d] = String(s).slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
   function fmtDataHora(ts) {
     const d = new Date(ts);
@@ -5823,24 +5836,26 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function renderEstoque() {
     const ps = posicoes.filter((p) => p.etapa === 'estoque');
     if (!ps.length) { $('qjEstoque').innerHTML = '<p class="empty-state-msg">Nenhuma peça embalada no estoque.</p>'; return; }
+    // Total por produto; o peso soma só os lotes pesados (avisa quando falta pesar algum).
     const porProduto = {};
-    ps.forEach((p) => { const n = nomeProd(p); porProduto[n] = (porProduto[n] || 0) + p.pecas; });
-    const tot = Object.keys(porProduto).sort((a, b) => a.localeCompare(b, 'pt-BR'))
-      .map((n) => `<div class="qj-tot"><b>${esc(n)}</b><span>${pecas(porProduto[n])}</span></div>`).join('');
+    ps.forEach((p) => { const n = nomeProd(p); const t = porProduto[n] = porProduto[n] || { pecas: 0, kg: 0, semPeso: 0 }; t.pecas += p.pecas; if (temPeso(p)) t.kg += Number(p.peso_kg); else t.semPeso += p.pecas; });
+    const tot = Object.keys(porProduto).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => { const t = porProduto[n];
+      return `<div class="qj-tot"><b>${esc(n)}</b><span>${pecas(t.pecas)}${t.kg ? ' · ' + kg(t.kg) + (t.semPeso ? `<br><small class="muted">${pecas(t.semPeso)} ainda sem peso</small>` : '') : ''}</span></div>`; }).join('');
     const itens = ps.slice().sort((a, b) => String(b.entrada_em).localeCompare(String(a.entrada_em))).map((p) => {
       const l = lote(p.lote_id);
       return `<div class="qj-item" data-pos="${p.id}">
         <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}
-          ${podeEditar ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="segunda">${p.segunda ? 'Voltar para primeira' : 'Passar para segunda'}</button><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>` : ''}</div>
-        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
+          ${podeEditar && !p.na_fila ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="peso">${temPeso(p) ? 'Corrigir peso' : 'Informar peso'}</button><button type="button" class="link-btn" data-acao="segunda">${p.segunda ? 'Voltar para primeira' : 'Passar para segunda'}</button><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>` : ''}</div>
+        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Peso</small>${temPeso(p) ? kg(p.peso_kg) : '—'}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
+        ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
       </div>`;
     }).join('');
     $('qjEstoque').innerHTML = `<div class="qj-totais">${tot}</div><h3 class="qj-sub">Lotes no estoque</h3>${itens}`;
   }
   function descricao(m) {
     switch (m.tipo) {
-      case 'entrada': return (m.destino && m.destino.etapa === 'estoque' ? 'Entrou direto no estoque' : 'Entrou ' + noLugar(m.destino)) + ', ' + pecas(m.pecas) + (m.destino && m.destino.segunda ? ' de segunda' + (m.observacao ? ': ' + m.observacao : '') : '');
-      case 'mover': return lugarCurto(m.origem) + ' → ' + lugarCurto(m.destino) + ', ' + pecas(m.pecas) + (m.origem && m.origem.segunda ? ' de segunda' : '');
+      case 'entrada': return (m.destino && m.destino.inicial ? 'Colocado no estoque (peças de antes do sistema)' : m.destino && m.destino.etapa === 'estoque' ? 'Entrou direto no estoque' : 'Entrou ' + noLugar(m.destino)) + ', ' + pecas(m.pecas) + pesoMov(m) + (m.destino && m.destino.segunda ? ' de segunda' + (m.observacao ? ': ' + m.observacao : '') : '');
+      case 'mover': return lugarCurto(m.origem) + ' → ' + lugarCurto(m.destino) + ', ' + pecas(m.pecas) + pesoMov(m) + (m.origem && m.origem.segunda ? ' de segunda' : '');
       case 'segunda': return (m.destino && m.destino.segunda ? 'Passou para segunda ' : 'Voltou para primeira ') + noLugar(m.origem) + ', ' + pecas(m.pecas) + (m.observacao ? ': ' + m.observacao : '');
       case 'perda': return 'Perda de ' + pecas(m.pecas) + ' ' + noLugar(m.origem) + (m.observacao ? ': ' + m.observacao : '');
       case 'tempo': return 'Saída prevista ' + noLugar(m.origem) + ' mudou para ' + (m.destino && m.destino.previsao_saida ? fmtDataHora(m.destino.previsao_saida) : '?');
@@ -5850,6 +5865,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
   }
   function lugarCurto(j) { return j ? lugar(j.etapa, j.numero) : '?'; }
+  // Peso das peças que entraram no estoque (quando foi informado).
+  const pesoMov = (m) => (m.destino && m.destino.etapa === 'estoque' && Number(m.destino.peso_kg) > 0 ? ' (' + kg(m.destino.peso_kg) + ')' : '');
   // A mesma lista aparece no Estoque e no Resumo da aba Produção.
   function renderMovimentos() {
     const alvos = [$('qjMovimentos'), $('qjMovimentosResumo')];
@@ -5885,7 +5902,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           <div class="qj-linhas" data-linhas></div>
           <button type="button" class="link-btn qj-mais" data-mais></button>
         </div>
-        <label data-bloco-estoque>Quantas peças<input type="number" name="pecas_estoque" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
+        <div class="two" data-bloco-estoque>
+          <label>Quantas peças<input type="number" name="pecas_estoque" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
+          <label>Peso do lote (kg), se já pesou<input type="number" name="peso_estoque" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
+        </div>
         <p class="qj-conta" data-conta aria-live="polite"></p>
         <label>${esc(o.rotuloQuando)}<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
         <div class="two" data-bloco-tempo>
@@ -6004,11 +6024,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (!r0) return falha('Escolha para onde as peças vão.');
     const etapa = r0.value;
     const max = Number(form.dataset.max);
-    let itens = [];
+    let itens = [], peso = null;
     if (etapa === 'estoque') {
       const pc = lerNum(form.querySelector('[name="pecas_estoque"]').value);
       if (!silencioso && (!(pc >= 1) || pc !== Math.round(pc))) return falha('Informe quantas peças, em número inteiro.');
       itens = [{ numero: null, pecas: pc }];
+      peso = lerNum(form.querySelector('[name="peso_estoque"]').value);
+      if (!silencioso && peso != null && !(peso > 0)) return falha('O peso precisa ser maior que zero (ou deixe em branco).');
     } else {
       const vistos = new Set();
       for (const l of form.querySelectorAll('[data-linha]')) {
@@ -6029,6 +6051,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const quando = q ? new Date(q) : null;
     if (!quando || isNaN(quando.getTime())) return falha('Informe a data e a hora.');
     const r = { etapa, itens, total, quando: quando.toISOString(), previsao: null };
+    if (etapa === 'estoque' && peso > 0) r.peso = Math.round(peso * 1000) / 1000;
     const caixaSeg = form.querySelector('[name="segunda"]');
     if (caixaSeg && caixaSeg.checked) {
       const motivo = lerMotivo(form);
@@ -6045,7 +6068,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function resumoDestino(d) {
     const seg = d.segunda ? ', de segunda' : '';
-    if (d.etapa === 'estoque') return pecas(d.total) + seg + ' no estoque';
+    if (d.etapa === 'estoque') return pecas(d.total) + (d.peso ? ' (' + kg(d.peso) + ')' : '') + seg + ' no estoque';
     return d.itens.map((x) => lugar(d.etapa, x.numero) + ' (' + pecas(x.pecas) + ')').join(', ') + seg;
   }
 
@@ -6113,7 +6136,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         pos = pos.filter((p) => p.pecas > 0);
       }
       it.itens.forEach((l) => pos.push({ id: idProvisorio(it.id, l.numero), lote_id: loteId, etapa: it.etapa, numero: it.etapa === 'estoque' ? null : l.numero,
-        pecas: l.pecas, entrada_em: it.quando, previsao_saida: it.previsao, segunda, na_fila: true }));
+        pecas: l.pecas, entrada_em: it.quando, previsao_saida: it.previsao, segunda, peso_kg: it.etapa === 'estoque' && it.peso > 0 ? it.peso : null, na_fila: true }));
     }
     posicoes = pos;
     pendentes = pend.filter((x) => x.pecas - x.recebidas > 0);
@@ -6164,16 +6187,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function gravarDestino(it) {
     const base = { p_etapa: it.etapa, p_quando: it.quando, p_previsao: it.previsao };
     // Peças de segunda no "Dar destino": funções queijos_receber_segunda(_varios), com o motivo.
-    if (it.tipo === 'receber' && it.segunda) {
-      if (it.etapa === 'estoque') return sb.rpc('queijos_receber_segunda', { p_lancamento: it.lancamento_id, p_pecas: somaItens(it.itens), p_numero: null, p_motivo: it.motivo, ...base });
-      return sb.rpc('queijos_receber_segunda_varios', { p_lancamento: it.lancamento_id, p_itens: it.itens, p_motivo: it.motivo, ...base });
-    }
+    // Estoque: funções com o peso do lote (opcional). Com motivo, o "Dar destino" entra como peças de segunda.
     if (it.etapa === 'estoque') {
-      const pc = it.itens.reduce((a, x) => a + (x.pecas || 0), 0);
+      const pc = somaItens(it.itens), peso = it.peso > 0 ? it.peso : null;
       return it.tipo === 'receber'
-        ? sb.rpc('queijos_receber', { p_lancamento: it.lancamento_id, p_pecas: pc, p_numero: null, ...base })
-        : sb.rpc('queijos_mover', { p_posicao: it.posicao, p_pecas: pc, p_numero: null, ...base });
+        ? sb.rpc('queijos_receber_estoque', { p_lancamento: it.lancamento_id, p_pecas: pc, p_quando: it.quando, p_peso: peso, p_motivo: it.segunda ? it.motivo : null })
+        : sb.rpc('queijos_mover_estoque', { p_posicao: it.posicao, p_pecas: pc, p_quando: it.quando, p_peso: peso });
     }
+    if (it.tipo === 'receber' && it.segunda) return sb.rpc('queijos_receber_segunda_varios', { p_lancamento: it.lancamento_id, p_itens: it.itens, p_motivo: it.motivo, ...base });
     return it.tipo === 'receber'
       ? sb.rpc('queijos_receber_varios', { p_lancamento: it.lancamento_id, p_itens: it.itens, ...base })
       : sb.rpc('queijos_mover_varios', { p_posicao: it.posicao, p_itens: it.itens, ...base });
@@ -6504,15 +6525,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     ps.forEach((p) => { const n = nomeProd(p); (grupos[n] = grupos[n] || []).push(p); });
     const lista = Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => `<h3 class="qj-sub">${esc(n)}</h3>` + grupos[n].map((p) => {
       const l = lote(p.lote_id);
-      return `<div class="qj-said" data-pos="${p.id}">
-        <div class="qj-said-info"><b>Lote ${esc(l.lote)}</b><small>${pecas(p.pecas)} no estoque, embalado em ${fmtData(localInput(new Date(p.entrada_em)))}</small></div>
+      return `<div class="qj-said" data-pos="${p.id}" data-kg="${temPeso(p) ? Number(p.peso_kg) : ''}" data-pecas-lote="${p.pecas}">
+        <div class="qj-said-info"><b>Lote ${esc(l.lote)}</b><small>${pecas(p.pecas)}${temPeso(p) ? ' (' + kg(p.peso_kg) + ')' : ''} no estoque, embalado em ${fmtData(localInput(new Date(p.entrada_em)))}</small></div>
         <div class="two">
           <label>Peças que saem<input type="number" name="pecas" min="1" max="${p.pecas}" step="1" inputmode="numeric" placeholder="0"></label>
           <label>Peso (kg)<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
         </div></div>`;
     }).join('')).join('');
     SN.ui.openModal('Registrar saída', `
-      <p class="modal-context">Preencha as peças e o peso só dos lotes que estão saindo. O cliente, o preço e a forma de pagamento ficam para a aba Gerenciamento de vendas.</p>
+      <p class="modal-context">Preencha as peças e o peso só dos lotes que estão saindo. Nos lotes pesados no estoque, o peso já vem calculado pela média por peça: confira na balança e corrija se precisar. O cliente, o preço e a forma de pagamento ficam para a aba Gerenciamento de vendas.</p>
       <form class="form" id="qjSaida">
         <div class="qj-said-lista">${lista}</div>
         <label>Data e hora da saída<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
@@ -6533,6 +6554,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           pecas(ls.reduce((a, x) => a + (x.pecas || 0), 0)) + ', ' + fmtNum(ls.reduce((a, x) => a + (x.peso || 0), 0), 3) + ' kg.' : '';
       };
       form.addEventListener('input', total);
+      // Peso sugerido: peso do lote no estoque × peças que saem ÷ peças no estoque (até a pessoa mexer no peso).
+      form.querySelectorAll('.qj-said').forEach((el) => {
+        const campoPeso = el.querySelector('[name="peso"]');
+        campoPeso.addEventListener('input', () => { campoPeso.dataset.mexeu = '1'; });
+        el.querySelector('[name="pecas"]').addEventListener('input', (e) => {
+          const kgLote = Number(el.dataset.kg), tot = Number(el.dataset.pecasLote), n = lerNum(e.target.value);
+          if (!(kgLote > 0) || campoPeso.dataset.mexeu) return;
+          campoPeso.value = n > 0 ? String(n >= tot ? kgLote : Math.round(kgLote * n / tot * 1000) / 1000) : '';
+        });
+      });
       if (focoPos) {
         const el = form.querySelector(`.qj-said[data-pos="${focoPos}"]`);
         if (el) { el.scrollIntoView({ block: 'center' }); el.querySelector('[name="pecas"]').focus(); }
@@ -6554,6 +6585,162 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           p_itens: ls.map((x) => ({ posicao: x.pos, pecas: x.pecas, peso_kg: x.peso })),
           p_quando: quando.toISOString(), p_observacao: form.querySelector('[name="obs"]').value.trim()
         }), 'Saída registrada. Complete a venda em Gerenciamento de vendas.');
+      });
+    });
+  }
+  // Informar ou corrigir o peso de um lote que já está no estoque (vazio = tirar o peso).
+  function pesar(posId) {
+    const p = posicoes.find((x) => x.id === posId); if (!p) return;
+    const l = lote(p.lote_id);
+    SN.ui.openModal(temPeso(p) ? 'Corrigir peso' : 'Informar peso', `
+      <p class="modal-context">${esc(nomeProd(p))}, lote ${esc(l.lote)}: ${pecas(p.pecas)} no estoque.</p>
+      <form class="form" id="qjPeso">
+        <label>Peso do lote no estoque (kg)<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000" value="${temPeso(p) ? Number(p.peso_kg) : ''}"></label>
+        <p class="qj-previsao" data-media></p>
+        <p class="muted-note">É o peso de todas as ${pecas(p.pecas)} que estão no estoque agora. Deixe em branco para tirar o peso.</p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar peso</button></div>
+      </form>`, (root) => {
+      const form = root.querySelector('#qjPeso'), campo = form.querySelector('[name="peso"]');
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      const media = () => { const v = lerNum(campo.value); form.querySelector('[data-media]').textContent = v > 0 ? 'Média: ' + kg(Math.round(v / p.pecas * 1000) / 1000) + ' por peça.' : ''; };
+      campo.addEventListener('input', media); media(); campo.focus();
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = lerNum(campo.value);
+        if (v != null && !(v > 0)) { toast('O peso precisa ser maior que zero (ou deixe em branco).'); return; }
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_peso', { p_posicao: p.id, p_peso: v }), v ? 'Peso salvo: ' + kg(v) + '.' : 'Peso retirado.');
+      });
+    });
+  }
+
+  /* ---------- Colocar no estoque (peças de antes do sistema) ----------
+     Cria o lote sem lançamento de produção e põe as peças direto no estoque (queijos_estoque_inicial).
+     A data de fabricação vem dos 3 primeiros números do lote (dia do ano), e pode ser trocada. */
+  let produtosQj = null;
+  async function carregarProdutos() {
+    if (produtosQj) return produtosQj;
+    const { data, error } = await sb.rpc('queijos_produtos');
+    if (error) throw error;
+    produtosQj = data || [];
+    return produtosQj;
+  }
+  // Dia do ano (3 primeiros números do lote) → data; usa o ano em que essa data não fica depois de hoje.
+  function dataDoLote(loteTxt) {
+    const m = /^(\d{3})/.exec(String(loteTxt || '').trim()); if (!m) return null;
+    const dia = Number(m[1]); if (dia < 1 || dia > 366) return null;
+    const hoje = new Date();
+    for (let ano = hoje.getFullYear(); ano >= hoje.getFullYear() - 1; ano--) {
+      const d = new Date(ano, 0, dia);
+      if (d.getFullYear() !== ano) continue; // dia 366 num ano que não é bissexto
+      if (d <= hoje) return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+    return null;
+  }
+  async function estoqueInicial() {
+    let prods;
+    try { prods = (await carregarProdutos()).filter((x) => x.ativo); }
+    catch (e) { console.error(e); toast(erroMsg(e, 'Não foi possível carregar a lista de queijos.')); return; }
+    if (!prods.length) { toast('Nenhum queijo cadastrado em Produtos.'); return; }
+    const opcoes = '<option value="">Escolha o queijo</option>' + prods.map((x) => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+    const linhaHTML = (i) => `<div class="qj-ini" data-ini>
+        <div class="qj-ini-top"><b>Lote ${i}</b><button type="button" class="icon-btn" data-tirar aria-label="Tirar este lote" title="Tirar este lote"><svg class="i"><use href="#i-trash"/></svg></button></div>
+        <div class="two">
+          <label>Queijo<select name="produto">${opcoes}</select></label>
+          <label>Lote<input type="text" name="lote" maxlength="30" autocomplete="off" inputmode="numeric" placeholder="Ex.: 28011"></label>
+        </div>
+        <div class="three">
+          <label>Data de fabricação<input type="date" name="fabricacao"></label>
+          <label>Peças<input type="number" name="pecas" min="1" step="1" inputmode="numeric" placeholder="0"></label>
+          <label>Peso (kg), se já pesou<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
+        </div>
+        <p class="qj-dica" data-dica></p>
+      </div>`;
+    SN.ui.openModal('Colocar no estoque', `
+      <p class="modal-context">Para as peças que já estavam no estoque antes do sistema (ou que não passaram pela produção lançada aqui). Elas entram direto no estoque embalado, sem passar pela fila, a salmoura e a secagem, e não contam como produção.</p>
+      <form class="form" id="qjInicial">
+        <div class="qj-ini-lista" data-lista>${linhaHTML(1)}</div>
+        <button type="button" class="link-btn qj-mais" data-mais>+ Outro lote</button>
+        <fieldset class="qj-destino"><legend>Qualidade</legend>
+          <label class="check"><input type="checkbox" name="segunda"> São peças de segunda (com defeito de fabricação)</label>
+          <div data-bloco-motivo hidden>${motivoHTML()}</div>
+          <p class="muted-note" data-nota-segunda hidden>Todos os lotes desta tela entram como de segunda. Para lançar também peças de primeira, registre-as separado.</p>
+        </fieldset>
+        <label>Data e hora da entrada no estoque<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
+        <p class="qj-previsao" data-total aria-live="polite"></p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Colocar no estoque</button></div>
+      </form>`, (root) => {
+      const form = root.querySelector('#qjInicial'), lista = form.querySelector('[data-lista]');
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      const linhas = () => [...lista.querySelectorAll('[data-ini]')];
+      const ler = (el) => ({
+        el, produto_id: el.querySelector('[name="produto"]').value, lote: el.querySelector('[name="lote"]').value.trim(),
+        data_fabricacao: el.querySelector('[name="fabricacao"]').value, pecas: lerNum(el.querySelector('[name="pecas"]').value),
+        peso_kg: lerNum(el.querySelector('[name="peso"]').value)
+      });
+      function arrumar() {
+        linhas().forEach((el, i) => { el.querySelector('.qj-ini-top b').textContent = 'Lote ' + (i + 1); el.querySelector('[data-tirar]').hidden = linhas().length < 2; });
+        const ls = linhas().map(ler).filter((x) => x.pecas > 0);
+        const pc = ls.reduce((a, x) => a + x.pecas, 0), k = ls.reduce((a, x) => a + (x.peso_kg > 0 ? x.peso_kg : 0), 0);
+        form.querySelector('[data-total]').textContent = ls.length ? 'Total: ' + (ls.length === 1 ? '1 lote' : ls.length + ' lotes') + ', ' + pecas(pc) + (k ? ', ' + kg(Math.round(k * 1000) / 1000) : '') + '.' : '';
+      }
+      // A data vem do lote enquanto a pessoa não trocar a data à mão; a dica avisa se não conferir.
+      function dica(el) {
+        const lt = el.querySelector('[name="lote"]').value.trim(), dt = el.querySelector('[name="fabricacao"]');
+        const daLote = dataDoLote(lt);
+        if (daLote && !dt.dataset.mexeu) dt.value = daLote;
+        const d = el.querySelector('[data-dica]');
+        if (!lt) { d.textContent = ''; d.classList.remove('erro'); return; }
+        if (!daLote) { d.textContent = 'O lote não começa com o dia do ano: confira a data de fabricação.'; d.classList.add('erro'); return; }
+        const confere = dt.value === daLote;
+        d.textContent = confere ? 'Fabricação pelo lote: ' + fmtData(daLote) + ' (dia ' + lt.slice(0, 3) + ' do ano).' : 'Pelo lote, a fabricação seria ' + fmtData(daLote) + '. Confira a data.';
+        d.classList.toggle('erro', !confere);
+      }
+      lista.addEventListener('input', (e) => {
+        const el = e.target.closest('[data-ini]'); if (!el) return;
+        if (e.target.name === 'fabricacao') e.target.dataset.mexeu = '1';
+        if (e.target.name === 'lote' || e.target.name === 'fabricacao') dica(el);
+        arrumar();
+      });
+      lista.addEventListener('change', (e) => { const el = e.target.closest('[data-ini]'); if (el && e.target.name === 'fabricacao') dica(el); });
+      lista.addEventListener('click', (e) => { const b = e.target.closest('[data-tirar]'); if (!b) return; b.closest('[data-ini]').remove(); arrumar(); });
+      form.querySelector('[data-mais]').addEventListener('click', () => {
+        const ant = linhas().pop();
+        lista.insertAdjacentHTML('beforeend', linhaHTML(linhas().length + 1));
+        const nova = linhas().pop();
+        if (ant) nova.querySelector('[name="produto"]').value = ant.querySelector('[name="produto"]').value; // repete o queijo da linha de cima
+        arrumar();
+        nova.querySelector(ant && ant.querySelector('[name="produto"]').value ? '[name="lote"]' : '[name="produto"]').focus();
+      });
+      const caixaSeg = form.querySelector('[name="segunda"]');
+      caixaSeg.addEventListener('change', () => { form.querySelector('[data-bloco-motivo]').hidden = !caixaSeg.checked; form.querySelector('[data-nota-segunda]').hidden = !caixaSeg.checked; });
+      ligarMotivo(form);
+      arrumar();
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ls = linhas().map(ler).filter((x) => x.produto_id || x.lote || x.pecas || x.peso_kg);
+        if (!ls.length) { toast('Preencha pelo menos um lote.'); return; }
+        const vistos = new Set();
+        for (const x of ls) {
+          const nome = 'Lote ' + (linhas().indexOf(x.el) + 1);
+          if (!x.produto_id) { toast(nome + ': escolha o queijo.'); x.el.querySelector('[name="produto"]').focus(); return; }
+          if (!x.lote) { toast(nome + ': informe o número do lote.'); x.el.querySelector('[name="lote"]').focus(); return; }
+          if (!x.data_fabricacao) { toast(nome + ': informe a data de fabricação.'); x.el.querySelector('[name="fabricacao"]').focus(); return; }
+          if (x.data_fabricacao > localInput(new Date()).slice(0, 10)) { toast(nome + ': a data de fabricação está no futuro.'); return; }
+          if (!(x.pecas >= 1) || x.pecas !== Math.round(x.pecas)) { toast(nome + ': informe as peças, em número inteiro.'); x.el.querySelector('[name="pecas"]').focus(); return; }
+          if (x.peso_kg != null && !(x.peso_kg > 0)) { toast(nome + ': o peso precisa ser maior que zero (ou deixe em branco).'); return; }
+          const chave = x.produto_id + '|' + x.lote;
+          if (vistos.has(chave)) { toast(nome + ': o mesmo queijo e lote aparece duas vezes. Junte as peças numa linha só.'); return; }
+          vistos.add(chave);
+        }
+        let motivo = null;
+        if (caixaSeg.checked) { motivo = lerMotivo(form); if (!motivo) { toast('Escolha o motivo das peças de segunda.'); return; } }
+        const q = form.querySelector('[name="quando"]').value, quando = q ? new Date(q) : null;
+        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da entrada.'); return; }
+        const pc = ls.reduce((a, x) => a + x.pecas, 0);
+        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_estoque_inicial', {
+          p_itens: ls.map((x) => ({ produto_id: x.produto_id, lote: x.lote, data_fabricacao: x.data_fabricacao, pecas: x.pecas, peso_kg: x.peso_kg > 0 ? Math.round(x.peso_kg * 1000) / 1000 : null })),
+          p_quando: quando.toISOString(), p_motivo: motivo
+        }), 'No estoque: ' + (ls.length === 1 ? '1 lote' : ls.length + ' lotes') + ', ' + pecas(pc) + '.');
       });
     });
   }
@@ -6588,8 +6775,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (b.dataset.acao === 'perda') perda(id);
       if (b.dataset.acao === 'segunda') qualidade(id);
       if (b.dataset.acao === 'saida') abrirSaida(id);
+      if (b.dataset.acao === 'peso') pesar(id);
     });
-    if (podeEditar) { $('qjSaidaBtn').hidden = false; $('qjSaidaBtn').addEventListener('click', () => abrirSaida(null)); }
+    if (podeEditar) {
+      $('qjSaidaBtn').hidden = false; $('qjSaidaBtn').addEventListener('click', () => abrirSaida(null));
+      $('qjInicialBtn').hidden = false; $('qjInicialBtn').addEventListener('click', estoqueInicial);
+    }
     ['qjMovimentos', 'qjMovimentosResumo'].forEach((id) => $(id).addEventListener('click', (e) => {
       const b = e.target.closest('[data-acao="desfazer"]'); if (!b || !podeEditar) return;
       desfazer(b.closest('[data-mov]').dataset.mov);
