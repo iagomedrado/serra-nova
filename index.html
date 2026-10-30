@@ -5370,9 +5370,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const leite = await confereLeite(dados);
       if (leite === false) return;
       if (leite === 'rede') { if (!semConferirOk(form, dados)) return; guardarNaFila(item); limparFormulario(form); return; }
-      const { error } = await sb.from('producao_lancamentos').insert({ ...dados, id: item.id });
+      // Sem internet já sabida: guarda direto, sem esperar a tentativa falhar.
+      if (SN.semInternet()) { guardarNaFila(item); limparFormulario(form); return; }
+      // Internet fraca: se o banco não responder em 12 segundos, guarda na fila. Se a gravação chegar
+      // mesmo assim, o envio da fila reconhece o mesmo número e não duplica.
+      const { error } = await Promise.race([
+        sb.from('producao_lancamentos').insert({ ...dados, id: item.id }),
+        new Promise((ok) => setTimeout(() => ok({ error: { message: 'TypeError: Failed to fetch (demorou demais)', code: '' } }), 12000))
+      ]);
       if (error && SN.falhaDeRede(error)) { guardarNaFila(item); limparFormulario(form); return; }
-      if (error) { console.error(error); toast('Não foi possível registrar. Verifique a conexão.'); return; }
+      if (error) { console.error(error); toast('Não foi possível registrar: ' + (error.message || 'erro desconhecido') + '.'); return; }
       limparFormulario(form);
       toast('Produção registrada.');
       atualizar();
