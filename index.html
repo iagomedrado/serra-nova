@@ -216,6 +216,8 @@
   [hidden] { display: none !important; }
   .faixa-offline { background: var(--warn-soft); color: var(--ink); border: 1px solid var(--warn); border-left-width: 5px; border-radius: 8px; padding: 10px 14px; margin: 0 0 18px; font-size: .95rem; line-height: 1.4; }
   .pr-envio { border-color: var(--warn); margin-bottom: 18px; }
+  .qj-tile.na-fila { box-shadow: inset 0 0 0 2px var(--warn); }
+  .qj-badge-fila { background: var(--warn-soft); color: var(--warn); }
   .pr-envio-lista { list-style: none; margin: 10px 0 0; padding: 0; }
   .pr-envio-lista li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
   .pr-envio-txt { flex: 1; min-width: 0; line-height: 1.45; }
@@ -678,6 +680,7 @@
   .qj-legenda i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); border-left: 3px solid var(--bar); background: var(--surface); }
   .qj-legenda i.livre { border: 1px dashed var(--muted); background: transparent; }
   .qj-legenda i.pronto { background: var(--warn-soft); border-color: var(--warn); }
+  .qj-legenda i.na-fila { box-shadow: inset 0 0 0 2px var(--warn); }
   .qj-legenda i.misto { background: var(--misto-soft); border-color: var(--misto); }
   .qj-mapa { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
   @media (max-width: 560px) { .qj-mapa { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; } }
@@ -1210,6 +1213,7 @@
       <p class="test-note" id="prNota" hidden></p>
       <p class="test-note" id="qjNota" hidden></p>
       <div class="ledger pr-resumo" id="qjResumo" data-modulo="queijos"></div>
+      <section class="panel pr-envio" id="qjFilaEnvio" aria-labelledby="h-qj-envio" hidden></section>
 
       <div id="pdPainelLancamento" role="tabpanel" aria-label="Lançamento">
         <section class="panel pr-envio" id="prFilaEnvio" aria-labelledby="h-pr-envio" hidden></section>
@@ -1257,7 +1261,7 @@
       <div id="pdPainelSalmoura" role="tabpanel" aria-label="Salmoura" hidden>
         <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
           <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
           <div class="qj-mapa" id="qjSalmoura"></div>
         </section>
       </div>
@@ -1265,7 +1269,7 @@
       <div id="pdPainelSecagem" role="tabpanel" aria-label="Secagem" hidden>
         <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
           <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span></p></div>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
           <div class="qj-mapa" id="qjSecagem"></div>
         </section>
       </div>
@@ -1530,6 +1534,8 @@
   const COPIA_DADOS = "sn-dados-v1";
   const SESSAO_GUARDADA = "sb-lxpkigztunalreqlsbul-auth-token";
   const LEITURAS_RPC = ["sistema_configurado", "nomes_usuarios", "queijos_padroes", "queijos_pendentes", "vendas_a_receber"];
+  // Conferências feitas na hora de enviar o que foi guardado sem internet: precisam da resposta do banco, nunca da cópia.
+  const SEM_COPIA = [/\/queijos_movimentos\?.*quando=eq\./, /\/producao_lancamentos\?.*leite_compartilhado=eq\.false/];
   let semInternet = navigator.onLine === false;
   const falhaDeRede = (e) => !!e && e.name !== "AbortError" && (e instanceof TypeError || /failed to fetch|load failed|networkerror|network request failed/i.test(String(e.message || "") + " " + String(e.details || "")));
   SN.semInternet = () => semInternet;
@@ -1580,7 +1586,7 @@
     const metodo = String((init && init.method) || "GET").toUpperCase();
     const rpc = (url.match(/\/rest\/v1\/rpc\/([a-z_]+)/) || [])[1];
     const doBanco = url.startsWith(SB_URL + "/rest/v1/");
-    const guardar = !!window.caches && doBanco && (rpc ? LEITURAS_RPC.includes(rpc) : metodo === "GET");
+    const guardar = !!window.caches && doBanco && (rpc ? LEITURAS_RPC.includes(rpc) : metodo === "GET") && !SEM_COPIA.some((r) => r.test(url));
     let resp;
     try {
       if (soCopia && doBanco) throw new TypeError("Failed to fetch (acesso ainda não renovado)");
@@ -1934,11 +1940,11 @@
     location.reload();
   }
   function sair() {
-    const n = window.SN_Producao && window.SN_Producao.naFila ? window.SN_Producao.naFila() : 0;
+    const n = (window.SN_Producao && window.SN_Producao.naFila ? window.SN_Producao.naFila() : 0) + (window.SN_Queijos && window.SN_Queijos.naFila ? window.SN_Queijos.naFila() : 0);
     if (!n) { sairDeVez(); return; }
     ui.confirmar({
-      titulo: "Lançamentos aguardando envio",
-      mensagem: `Há ${n} ${n === 1 ? "lançamento de produção feito sem internet que ainda não foi enviado" : "lançamentos de produção feitos sem internet que ainda não foram enviados"}. Eles continuam guardados neste aparelho e são enviados quando você entrar de novo, com internet. Sair mesmo assim?`,
+      titulo: "Registros aguardando envio",
+      mensagem: `Há ${n} ${n === 1 ? "registro da produção feito sem internet que ainda não foi enviado" : "registros da produção feitos sem internet que ainda não foram enviados"}. Eles continuam guardados neste aparelho e são enviados quando você entrar de novo, com internet. Sair mesmo assim?`,
       botao: "Sair", acao: sairDeVez
     });
   }
@@ -5406,7 +5412,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
   }
   function lerFilaToda() { try { return JSON.parse(localStorage.getItem(FILA) || '[]') || []; } catch (e) { return []; } }
-  function gravarFila(f) { localStorage.setItem(FILA, JSON.stringify(f)); }
+  function gravarFila(f) { localStorage.setItem(FILA, JSON.stringify(f)); document.dispatchEvent(new Event('sn:fila')); }
   function minhaFila() { const eu = SN.usuario && SN.usuario.id; return lerFilaToda().filter((i) => i.usuario === eu); }
   function filaComoLanc() { return minhaFila().map((i) => ({ ...i.dados, id: i.id, na_fila: true })); }
   function guardarNaFila(item) {
@@ -5618,7 +5624,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     renderFila(); enviarFila();
   }
   let iniciado = false;
-  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFila().length };
+  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFila().length,
+    // Lançamentos de queijo guardados sem internet: aparecem em "Aguardando destino" e já podem receber destino.
+    lancamentosNaFila: () => minhaFila().map((i) => { const p = produto(i.dados.produto_id); return { id: i.id, dados: i.dados, nome: p ? p.nome : 'Queijo', queijo: i.dados.pecas > 0 && i.dados.peso_kg == null }; }) };
 })();
 </script>
 <script>
@@ -5634,7 +5642,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   let padroes = {};
   function padraoPrateleira(produtoId, etapa) { const p = padroes[produtoId]; const v = p && p[etapa === 'salmoura' ? 'pecas_salmoura' : 'pecas_secagem']; return v > 0 ? v : null; }
   let sb = null, podeEditar = false, carregado = false;
-  let posicoes = [], pendentes = [], movimentos = [];
+  // posicoes/pendentes = o que a tela mostra: o que veio do banco (posServ/pendServ) mais o que está guardado sem internet.
+  let posicoes = [], pendentes = [], movimentos = [], posServ = [], pendServ = [];
   let lotes = {};
   const nomes = {};
 
@@ -5694,8 +5703,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (l.error) throw l.error;
       (l.data || []).forEach((x) => { novosLotes[x.id] = x; });
     }
-    posicoes = novas; pendentes = pe.data || []; movimentos = movs; lotes = novosLotes;
+    posServ = novas; pendServ = pe.data || []; movimentos = movs; lotes = novosLotes;
     carregado = true;
+    aplicarFila();
     render();
   }
   let timer = null;
@@ -5727,6 +5737,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <div><span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas</small></div>
       <div><span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small></div>`;
     renderFila();
+    document.querySelectorAll('.qj-leg-fila').forEach((el) => { el.hidden = !posicoes.some((p) => p.na_fila); });
     $('qjSalmoura').innerHTML = mapa('salmoura');
     $('qjSecagem').innerHTML = mapa('secagem');
     renderEstoque();
@@ -5737,8 +5748,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('qjFila').innerHTML = pendentes.length ? pendentes.map((x) => {
       const faltam = Math.max(0, x.pecas - x.recebidas);
       return `<div class="qj-item" data-lanc="${x.lancamento_id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(x.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(x.lote)}</span>
-          ${podeEditar ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="dispensar">Não controlar</button><button type="button" class="btn btn-primary btn-small" data-acao="receber">Dar destino</button></span>` : ''}</div>
+        <div class="pr-item-top"><b class="pr-nome">${esc(x.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(x.lote)}</span>${x.na_fila ? '<span class="badge qj-badge-fila">Aguardando envio</span>' : ''}
+          ${podeEditar ? `<span class="qj-fila-acoes">${x.na_fila ? '' : '<button type="button" class="link-btn" data-acao="dispensar">Não controlar</button>'}<button type="button" class="btn btn-primary btn-small" data-acao="receber">Dar destino</button></span>` : ''}</div>
         <div class="pr-nums"><span><small>Fabricação</small>${fmtData(x.data_fabricacao)}</span><span><small>Aguardando</small>${pecas(faltam)}</span>${x.recebidas ? `<span><small>Já encaminhadas</small>${fmtNum(x.recebidas)} de ${fmtNum(x.pecas)}</span>` : ''}</div>
       </div>`;
     }).join('') : '<p class="empty-state-msg">Nenhum lote esperando. Tudo o que foi produzido já tem destino.</p>';
@@ -5756,7 +5767,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const pronto = menor != null && menor <= 0;
       const titulo = lotesAqui.length > 1 ? lotesAqui.length + ' lotes' : lote(lotesAqui[0]).produto_nome;
       const tempo = menor == null ? '' : pronto ? 'Pronto' : duracao(menor);
-      html += `<button type="button" class="qj-tile${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}">
+      html += `<button type="button" class="qj-tile${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}${ps.some((p) => p.na_fila) ? ' na-fila' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}${ps.some((p) => p.na_fila) ? ', aguardando envio' : ''}">
         <span class="qj-n">${n}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
     }
     return html;
@@ -5962,12 +5973,163 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return d.itens.map((x) => lugar(d.etapa, x.numero) + ' (' + pecas(x.pecas) + ')').join(', ');
   }
   async function enviar(botao, chamada, sucesso) {
+    if (SN.semInternet()) { toast('Sem internet: isto precisa de internet. Sem internet só dá para dar destino e mover peças.'); return false; }
     botao.disabled = true;
     const { error } = await chamada();
     botao.disabled = false;
+    if (error && SN.falhaDeRede(error)) { toast('Sem internet: isto precisa de internet. Sem internet só dá para dar destino e mover peças.'); return false; }
     if (error) { console.error(error); toast(erroMsg(error)); return false; }
     SN.ui.closeModal(); toast(sucesso); atualizar();
     return true;
+  }
+
+  /* ---------- Sem internet: fila de destinos ----------
+     "Dar destino" e "Mover peças" feitos sem internet ficam guardados neste aparelho (localStorage, chave
+     sn_fila_queijos) e são enviados na ordem quando a internet volta, depois dos lançamentos guardados.
+     Enquanto isso a tela já mostra as peças no lugar novo (aplicarFila). Peças que entraram sem internet
+     têm número provisório ("fila:<item>:<número>") e também podem ser movidas: depois do envio, o número
+     provisório é trocado pelo de verdade nos itens seguintes. Antes de enviar, confere nos movimentos se
+     o item já chegou ao banco (internet que cai no meio do envio), para não registrar duas vezes. */
+  const FILA_QJ = 'sn_fila_queijos';
+  let enviandoQj = false;
+  const ehProvisorio = (id) => String(id || '').startsWith('fila:');
+  const idProvisorio = (itemId, numero) => 'fila:' + itemId + ':' + (numero == null ? 'e' : numero);
+  const somaItens = (its) => its.reduce((a, x) => a + (x.pecas || 0), 0);
+  function lerFilaQj() { try { return JSON.parse(localStorage.getItem(FILA_QJ) || '[]') || []; } catch (e) { return []; } }
+  function gravarFilaQj(f) { localStorage.setItem(FILA_QJ, JSON.stringify(f)); }
+  function minhaFilaQj() { const eu = SN.usuario && SN.usuario.id; return lerFilaQj().filter((i) => i.usuario === eu); }
+  function mudarItemQj(id, mudar) { gravarFilaQj(lerFilaQj().map((i) => (i.id === id ? mudar(i) : i))); }
+  const lancNaFila = () => (window.SN_Producao && SN_Producao.lancamentosNaFila ? SN_Producao.lancamentosNaFila() : []);
+  function aplicarFila() {
+    const novos = lancNaFila().filter((l) => l.queijo).map((l) => ({ lancamento_id: l.id, produto_id: l.dados.produto_id, produto_nome: l.nome, lote: l.dados.lote, data_fabricacao: l.dados.data_fabricacao, pecas: l.dados.pecas, recebidas: 0, na_fila: true }));
+    const pend = pendServ.map((x) => ({ ...x })).concat(novos.filter((n) => !pendServ.some((x) => x.lancamento_id === n.lancamento_id)));
+    let pos = posServ.map((p) => ({ ...p }));
+    pend.forEach((x) => { lotes['lanc:' + x.lancamento_id] = { produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao }; });
+    for (const it of minhaFilaQj()) {
+      if (!lotes[it.lote_id]) lotes[it.lote_id] = { produto_nome: it.produto_nome, lote: it.lote, data_fabricacao: it.data_fabricacao };
+      let loteId = it.lote_id;
+      if (it.tipo === 'receber') {
+        const x = pend.find((p) => p.lancamento_id === it.lancamento_id);
+        if (x) x.recebidas += somaItens(it.itens);
+      } else {
+        const o = pos.find((p) => p.id === it.posicao);
+        if (o) { o.pecas -= somaItens(it.itens); loteId = o.lote_id; }
+        pos = pos.filter((p) => p.pecas > 0);
+      }
+      it.itens.forEach((l) => pos.push({ id: idProvisorio(it.id, l.numero), lote_id: loteId, etapa: it.etapa, numero: it.etapa === 'estoque' ? null : l.numero,
+        pecas: l.pecas, entrada_em: it.quando, previsao_saida: it.previsao, na_fila: true }));
+    }
+    posicoes = pos;
+    pendentes = pend.filter((x) => x.pecas - x.recebidas > 0);
+  }
+  function prazo(promessa) {
+    return Promise.race([promessa, new Promise((ok) => setTimeout(() => ok({ error: { message: 'TypeError: Failed to fetch (demorou demais)', code: '' } }), 12000))]);
+  }
+  async function enviarOuGuardar(botao, item, chamada, sucesso) {
+    // Guarda direto quando: sem internet, peças com número provisório, lote ainda não enviado ou já há itens esperando (mantém a ordem).
+    const guardar = SN.semInternet() || ehProvisorio(item.posicao) || lancNaFila().some((l) => l.id === item.lancamento_id) || minhaFilaQj().length > 0;
+    if (!guardar) {
+      botao.disabled = true;
+      const { error } = await prazo(chamada());
+      botao.disabled = false;
+      if (!error) { SN.ui.closeModal(); toast(sucesso); atualizar(); return; }
+      if (!SN.falhaDeRede(error)) { console.error(error); toast(erroMsg(error)); return; }
+    }
+    const novo = { ...item, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), usuario: SN.usuario.id, guardado_em: new Date().toISOString() };
+    try { gravarFilaQj(lerFilaQj().concat(novo)); }
+    catch (e) { console.error(e); toast('Sem internet e não foi possível guardar neste aparelho. Anote e registre depois.'); return; }
+    SN.ui.closeModal();
+    aplicarFila(); render(); renderFilaQj();
+    toast(SN.semInternet() ? 'Sem internet: guardado neste aparelho. Será enviado quando a internet voltar.' : 'Guardado. Será enviado em seguida, depois dos registros que estão esperando.');
+    if (!SN.semInternet()) enviarFilaQj();
+  }
+  async function movimentosDoItem(it, uid) {
+    const { data, error } = await sb.from('queijos_movimentos').select('destino_id, destino, pecas')
+      .eq('criado_por', uid).eq('tipo', it.tipo === 'receber' ? 'entrada' : 'mover').eq('quando', it.quando).is('desfeito_em', null);
+    if (error) return { error };
+    const usados = new Set();
+    const linhas = it.itens.map((l) => {
+      const m = (data || []).find((x) => !usados.has(x.destino_id) && x.pecas === l.pecas && x.destino && x.destino.etapa === it.etapa && (it.etapa === 'estoque' || Number(x.destino.numero) === l.numero));
+      if (m) usados.add(m.destino_id);
+      return m || null;
+    });
+    return { linhas };
+  }
+  // Troca o número provisório das peças deste item pelo número de verdade nos itens seguintes.
+  function trocarProvisorios(it, linhas) {
+    const troca = {};
+    it.itens.forEach((l, i) => { if (linhas[i]) troca[idProvisorio(it.id, l.numero)] = linhas[i].destino_id; });
+    gravarFilaQj(lerFilaQj().filter((i) => i.id !== it.id).map((i) => (troca[i.posicao] ? { ...i, posicao: troca[i.posicao] } : i)));
+  }
+  async function enviarItemQj(it, uid) {
+    const antes = await movimentosDoItem(it, uid);
+    if (antes.error) return SN.falhaDeRede(antes.error) ? 'rede' : 'não foi possível conferir no banco (' + (antes.error.message || 'erro') + ').';
+    if (antes.linhas.every(Boolean)) { trocarProvisorios(it, antes.linhas); return 'ok'; } // já tinha chegado
+    const { error } = await prazo(it.tipo === 'receber'
+      ? sb.rpc('queijos_receber_varios', { p_lancamento: it.lancamento_id, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao })
+      : sb.rpc('queijos_mover_varios', { p_posicao: it.posicao, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao }));
+    if (error && SN.falhaDeRede(error)) return 'rede';
+    if (error) { console.error(error); return erroMsg(error, 'o banco recusou (' + (error.message || 'erro') + ').'); }
+    const depois = await movimentosDoItem(it, uid);
+    trocarProvisorios(it, depois.linhas || []);
+    return 'ok';
+  }
+  async function enviarFilaQj(manual) {
+    if (enviandoQj || !minhaFilaQj().length) return;
+    enviandoQj = true; renderFilaQj();
+    let enviados = 0, comErro = 0, parou = false;
+    try {
+      const { data } = await sb.auth.getSession();
+      if (!data || !data.session) { parou = true; return; }
+      for (const id of minhaFilaQj().map((i) => i.id)) {
+        const it = minhaFilaQj().find((i) => i.id === id); if (!it) continue;
+        // O lançamento deste lote ainda não foi enviado: espera (a fila do lançamento vai primeiro).
+        if (it.lancamento_id && lancNaFila().some((l) => l.id === it.lancamento_id)) { parou = true; break; }
+        if (ehProvisorio(it.posicao)) { mudarItemQj(it.id, (i) => ({ ...i, erro: 'as peças de origem ainda não foram enviadas. Resolva antes o item acima com problema.' })); comErro++; continue; }
+        const r = await enviarItemQj(it, data.session.user.id);
+        if (r === 'rede') { parou = true; break; }
+        if (r === 'ok') enviados++; else { mudarItemQj(it.id, (i) => ({ ...i, erro: r })); comErro++; }
+      }
+    } catch (e) { console.error(e); parou = true; }
+    finally {
+      enviandoQj = false;
+      aplicarFila(); render(); renderFilaQj();
+      if (enviados) { toast(`${enviados} ${enviados === 1 ? 'destino guardado foi enviado' : 'destinos guardados foram enviados'}.`); atualizar(); }
+      else if (manual && parou) toast(SN.semInternet() ? 'Ainda sem internet. Os destinos continuam guardados.' : 'Esperando os lançamentos guardados serem enviados primeiro.');
+      else if (manual && comErro) toast('Há item que o sistema não aceitou. Veja o motivo na lista.');
+    }
+  }
+  function renderFilaQj() {
+    const box = $('qjFilaEnvio'); if (!box) return;
+    const fila = minhaFilaQj();
+    box.hidden = !fila.length;
+    if (!fila.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="panel-head panel-head-row"><h2 id="h-qj-envio">Destinos aguardando envio (${fila.length})</h2>
+        <button type="button" class="btn btn-small" data-acao="enviar" ${enviandoQj ? 'disabled' : ''}>${enviandoQj ? 'Enviando…' : 'Enviar agora'}</button></div>
+      <p class="muted-note">${SN.semInternet() ? 'Sem internet. ' : ''}Feitos sem internet e guardados só neste aparelho. São enviados sozinhos, na ordem, quando a internet voltar. A salmoura, a secagem e o estoque já mostram essas peças no lugar novo.</p>
+      <ul class="pr-envio-lista">${fila.map((i) => `<li data-id="${esc(i.id)}"><div class="pr-envio-txt"><b>${esc(i.texto)}</b><br>
+          <span class="muted">Entrada ${esc(fmtDataHora(i.quando))} · guardado às ${new Date(i.guardado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+          ${i.erro ? `<span class="pr-envio-erro">Não foi enviado: ${esc(i.erro)}</span>` : ''}</div>
+          <button type="button" class="icon-btn" data-acao="tirar" aria-label="Excluir destino guardado" title="Excluir"><svg class="i"><use href="#i-trash"/></svg></button></li>`).join('')}</ul>`;
+  }
+  function ligarFilaQj() {
+    $('qjFilaEnvio').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b) return;
+      if (b.dataset.acao === 'enviar') { enviarFilaQj(true); return; }
+      const i = minhaFilaQj().find((x) => x.id === b.closest('[data-id]').dataset.id); if (!i) return;
+      const depois = minhaFilaQj().filter((x) => x.posicao && x.posicao.startsWith('fila:' + i.id + ':'));
+      SN.ui.confirmar({
+        titulo: 'Excluir destino guardado', botao: 'Excluir', perigo: true,
+        mensagem: `${i.texto}. Ele ainda não foi enviado e será perdido.` + (depois.length ? ` Atenção: ${depois.length === 1 ? 'há 1 movimento guardado' : 'há ' + depois.length + ' movimentos guardados'} depois dele com essas mesmas peças, que também não vão poder ser enviados.` : ''),
+        acao: () => { gravarFilaQj(lerFilaQj().filter((x) => x.id !== i.id)); SN.ui.closeModal(); aplicarFila(); render(); renderFilaQj(); toast('Destino guardado excluído.'); }
+      });
+    });
+    document.addEventListener('sn:conexao', (e) => { renderFilaQj(); if (e.detail.online) enviarFilaQj(); });
+    // Quando a fila dos lançamentos muda (lançamento guardado ou enviado), atualiza a tela e tenta enviar.
+    document.addEventListener('sn:fila', () => { if (!carregado) return; aplicarFila(); render(); if (!SN.semInternet()) enviarFilaQj(); });
+    window.addEventListener('storage', (e) => { if (e.key === FILA_QJ && carregado) { aplicarFila(); render(); renderFilaQj(); } });
+    setInterval(() => { if (minhaFilaQj().length && !SN.semInternet()) enviarFilaQj(); }, 60000);
+    renderFilaQj();
   }
 
   /* ---------- Ações ---------- */
@@ -5984,7 +6146,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const d = lerDestino(form); if (!d) return;
-        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_receber_varios', { p_lancamento: x.lancamento_id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
+        const item = { tipo: 'receber', lancamento_id: x.lancamento_id, lote_id: 'lanc:' + x.lancamento_id, produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao, ...d,
+          texto: `Dar destino: ${x.produto_nome}, lote ${x.lote} → ${resumoDestino(d)}` };
+        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => sb.rpc('queijos_receber_varios', { p_lancamento: x.lancamento_id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
           'Destino registrado: ' + resumoDestino(d) + '.');
       });
     });
@@ -6008,7 +6172,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span></div>
         <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
         ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
-        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button><button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button></div>` : ''}
+        ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
+        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button>${p.na_fila ? '' : '<button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button>'}</div>` : ''}
       </div>`;
     }).join('') : '<p class="empty-state-msg">Livre. Nenhuma peça aqui agora.</p>';
     SN.ui.openModal(nome, `<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
@@ -6036,7 +6201,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         e.preventDefault();
         const d = lerDestino(form); if (!d) return;
         if (new Date(d.quando) < new Date(p.entrada_em)) { toast('A data da mudança não pode ser antes da entrada atual.'); return; }
-        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_mover_varios', { p_posicao: p.id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
+        const item = { tipo: 'mover', posicao: p.id, lote_id: p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao, ...d,
+          texto: `Mover: ${l.produto_nome}, lote ${l.lote}, ${lugarCurto(p)} → ${resumoDestino(d)}` };
+        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => sb.rpc('queijos_mover_varios', { p_posicao: p.id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
           'Peças movidas: ' + resumoDestino(d) + '.');
       });
     });
@@ -6191,8 +6358,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       desfazer(b.closest('[data-mov]').dataset.mov);
     });
     try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    ligarFilaQj();
     try { await carregar(); }
     catch (e) { console.error(e); $('qjFila').innerHTML = '<p class="fatal">Não foi possível carregar o estoque de produção. Recarregue a página.</p>'; return; }
+    enviarFilaQj();
     ['queijos_posicoes', 'queijos_movimentos', 'queijos_lotes', 'producao_lancamentos'].forEach((t) => {
       sb.channel('sn-qj-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
     });
@@ -6200,7 +6369,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     setInterval(render, 60000);
   }
   let iniciado = false;
-  window.SN_Queijos = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+  window.SN_Queijos = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFilaQj().length };
 })();
 </script>
 <script>
