@@ -265,8 +265,9 @@
   @media (max-width: 350px) { .pd-visao .seg-btn { padding: 9px 2px; font-size: .82rem; } .pd-num { min-width: 17px; height: 17px; padding: 0 4px; font-size: .72rem; line-height: 17px; } }
   #producaoRoot:is([data-visao="lancamento"], [data-visao="resumo"]) :is(#qjResumo, #qjNota),
   #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not(:is([data-visao="lancamento"], [data-visao="resumo"])) #prNota { display: none !important; }
+  .pr-porproduto { margin-bottom: 20px; }
   .pr-acomp { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
-  @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; } }
+  @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .pr-acomp:has(> #pdMovResumo[hidden]) { grid-template-columns: minmax(0, 1fr); } }
   #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
   #pdPainelSalmoura > #qjFilaBloco { margin-bottom: 20px; }
   #lvVisaoLancamentos { margin-bottom: 20px; }
@@ -1243,11 +1244,11 @@
           </div>
         </div>
         <div class="ledger pr-resumo" id="prResumo"></div>
+        <section class="panel pr-porproduto">
+          <h2>Por produto</h2>
+          <div id="prPorProduto"></div>
+        </section>
         <div class="pr-acomp">
-          <section class="panel">
-            <h2>Por produto</h2>
-            <div id="prPorProduto"></div>
-          </section>
           <section class="panel">
             <div class="panel-head panel-head-row">
               <h2>Lançamentos</h2>
@@ -1255,12 +1256,12 @@
             </div>
             <div id="prLista"><p class="empty-state-msg">Carregando…</p></div>
           </section>
+          <section class="panel" id="pdMovResumo" aria-labelledby="h-pd-mov" hidden>
+            <h2 id="h-pd-mov">Últimas movimentações</h2>
+            <p class="muted-note">Destinos, mudanças de lugar, perdas e saídas da salmoura, secagem e estoque.</p>
+            <div id="qjMovimentosResumo"><p class="empty-state-msg">Carregando…</p></div>
+          </section>
         </div>
-        <section class="panel" id="pdMovResumo" aria-labelledby="h-pd-mov" hidden>
-          <h2 id="h-pd-mov">Últimas movimentações</h2>
-          <p class="muted-note">Destinos, mudanças de lugar, perdas e saídas da salmoura, secagem e estoque.</p>
-          <div id="qjMovimentosResumo"><p class="empty-state-msg">Carregando…</p></div>
-        </section>
       </div>
 
       <div id="pdPainelSalmoura" role="tabpanel" aria-label="Salmoura" hidden>
