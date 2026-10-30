@@ -265,7 +265,7 @@
   @media (max-width: 350px) { .pd-visao .seg-btn { padding: 9px 2px; font-size: .82rem; } .pd-num { min-width: 17px; height: 17px; padding: 0 4px; font-size: .72rem; line-height: 17px; } }
   #producaoRoot:is([data-visao="lancamento"], [data-visao="resumo"]) :is(#qjResumo, #qjNota),
   #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not(:is([data-visao="lancamento"], [data-visao="resumo"])) #prNota { display: none !important; }
-  .pr-porproduto { margin-bottom: 20px; }
+  .pr-porproduto, #pdSegunda { margin-bottom: 20px; }
   .pr-acomp { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
   @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .pr-acomp:has(> #pdMovResumo[hidden]) { grid-template-columns: minmax(0, 1fr); } }
   #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
@@ -703,6 +703,21 @@
   .qj-tile.misto:hover { border-left-color: var(--misto); }
   .qj-tile.misto .qj-p { color: var(--misto); }
   .qj-tile.misto.pronto { background: var(--warn-soft); border-color: var(--warn); border-left-color: var(--misto); }
+  /* Lotes em miniatura no cartão e marca das peças de segunda */
+  .qj-l { max-width: 100%; overflow-wrap: anywhere; font-size: .7rem; line-height: 1.2; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .qj-2a { display: inline-block; padding: 0 5px; border-radius: 4px; background: var(--danger); color: var(--surface); font-size: .68rem; font-weight: 700; line-height: 1.5; vertical-align: 1px; }
+  .badge.qj-2a { font-size: .75rem; padding: 1px 8px; border-radius: 999px; }
+  .qj-tile.grade { grid-column: span 2; }
+  .qj-tile.grade .qj-n { font-size: 1.05rem; }
+  .qj-seg { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .qj-seg-prod { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .qj-seg-prod h3 { margin: 0 0 6px; font-size: 1rem; display: flex; justify-content: space-between; gap: 8px; }
+  .qj-seg-prod ul { margin: 0; padding: 0; list-style: none; font-size: .9rem; }
+  .qj-seg-prod li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+  .qj-seg-prod small { display: block; margin-top: 6px; color: var(--muted); }
+  .qj-motivos li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .qj-motivos li span { flex: 1; }
+  .qj-motivos li.fora span { color: var(--muted); text-decoration: line-through; }
   .qj-item { padding: 12px 4px; border-bottom: 1px solid var(--line); }
   .qj-item:last-child { border-bottom: 0; }
   .qj-fila-acoes { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
@@ -1248,6 +1263,11 @@
           <h2>Por produto</h2>
           <div id="prPorProduto"></div>
         </section>
+        <section class="panel" id="pdSegunda" aria-labelledby="h-pd-seg" hidden>
+          <h2 id="h-pd-seg">Queijos de segunda</h2>
+          <p class="muted-note">Peças que passaram para segunda no período, por produto, motivo e etapa em que o defeito foi visto.</p>
+          <div id="qjSegundaResumo"><p class="empty-state-msg">Carregando…</p></div>
+        </section>
         <div class="pr-acomp">
           <section class="panel">
             <div class="panel-head panel-head-row">
@@ -1267,7 +1287,7 @@
       <div id="pdPainelSalmoura" role="tabpanel" aria-label="Salmoura" hidden>
         <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
           <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
           <div class="qj-mapa" id="qjSalmoura"></div>
         </section>
       </div>
@@ -1275,7 +1295,7 @@
       <div id="pdPainelSecagem" role="tabpanel" aria-label="Secagem" hidden>
         <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
           <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
+            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
           <div class="qj-mapa" id="qjSecagem"></div>
         </section>
       </div>
@@ -5054,7 +5074,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   let sb = null, podeEditar = false;
   let produtos = [];
   let lancamentos = [];
-  let periodo = 'semana';
+  let periodo = 'semana', periodoAtual = null;
   const nomes = {};
 
   /* ---------- Utilidades ---------- */
@@ -5138,6 +5158,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   async function carregarLancamentos() {
     const r = intervalo();
+    // Avisa o período do Resumo (o painel "Queijos de segunda" usa o mesmo período).
+    periodoAtual = { de: r.de, ate: r.ate, texto: rotuloPeriodo() };
+    document.dispatchEvent(new CustomEvent('producao:periodo', { detail: periodoAtual }));
     const { data, error } = await sb.from('producao_lancamentos').select('*')
       .gte('data_fabricacao', r.de).lte('data_fabricacao', r.ate).order('data_fabricacao', { ascending: false });
     if (error) throw error;
@@ -5631,7 +5654,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     renderFila(); enviarFila();
   }
   let iniciado = false;
-  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFila().length,
+  window.SN_Producao = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); }, naFila: () => minhaFila().length, periodo: () => periodoAtual,
     // Lançamentos de queijo guardados sem internet: aparecem em "Aguardando destino" e já podem receber destino.
     lancamentosNaFila: () => minhaFila().map((i) => { const p = produto(i.dados.produto_id); return { id: i.id, dados: i.dados, nome: p ? p.nome : 'Queijo', queijo: i.dados.pecas > 0 && i.dados.peso_kg == null }; }) };
 })();
@@ -5665,7 +5688,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return dia + ' às ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
   function localInput(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
-  function lugar(etapa, numero) { return etapa === 'estoque' ? 'Estoque' : ETAPAS[etapa].nome + ' ' + numero; }
+  // A Grade é a secagem número 0: fica fora das prateleiras 1 a 30, sem limite de peças (usada para os queijos de segunda).
+  const GRADE = 0;
+  const ehGrade = (etapa, numero) => etapa === 'secagem' && numero != null && Number(numero) === GRADE;
+  function numerosDe(etapa) { const r = etapa === 'secagem' ? [GRADE] : []; for (let n = 1; n <= ETAPAS[etapa].max; n++) r.push(n); return r; }
+  function lugar(etapa, numero) { return etapa === 'estoque' ? 'Estoque' : ehGrade(etapa, numero) ? 'Grade' : ETAPAS[etapa].nome + ' ' + numero; }
+  // Nome do produto com a marca de segunda (as peças de segunda ficam separadas no estoque e na venda).
+  const nomeProd = (p) => lote(p.lote_id).produto_nome + (p.segunda ? ' 2ª' : '');
+  const selo2a = (p) => (p.segunda ? '<span class="badge qj-2a">2ª</span>' : '');
   function noLugar(j) { if (!j) return 'em lugar desconhecido'; return j.etapa === 'estoque' ? 'no estoque' : 'na ' + lugar(j.etapa, j.numero); }
   function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
   function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
@@ -5716,6 +5746,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     carregado = true;
     aplicarFila();
     render();
+    carregarMotivos().catch(() => {});
+    carregarSegunda().catch((e) => console.error(e));
   }
   let timer = null;
   function atualizar() {
@@ -5738,12 +5770,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function render() {
     if (!carregado) return;
     const soma = (et) => posicoes.filter((p) => p.etapa === et).reduce((a, p) => a + p.pecas, 0);
-    const ocupados = (et) => new Set(posicoes.filter((p) => p.etapa === et).map((p) => p.numero)).size;
+    const ocupados = (et) => new Set(posicoes.filter((p) => p.etapa === et && p.numero > 0).map((p) => p.numero)).size;
+    const naGrade = posicoes.filter((p) => ehGrade(p.etapa, p.numero)).reduce((a, p) => a + p.pecas, 0);
     const aguardando = pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0);
     $('qjResumo').innerHTML = `
       <div><span>Aguardando destino</span><strong>${fmtNum(aguardando)}</strong><small>${pendentes.length === 1 ? '1 lote da produção' : pendentes.length + ' lotes da produção'}</small></div>
       <div><span>Na salmoura</span><strong>${fmtNum(soma('salmoura'))}</strong><small>${ocupados('salmoura')} de 20 ocupadas</small></div>
-      <div><span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas</small></div>
+      <div><span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas${naGrade ? ' · Grade: ' + fmtNum(naGrade) : ''}</small></div>
       <div><span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small></div>`;
     renderFila();
     document.querySelectorAll('.qj-leg-fila').forEach((el) => { el.hidden = !posicoes.some((p) => p.na_fila); });
@@ -5765,10 +5798,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function mapa(etapa) {
     let html = '';
-    for (let n = 1; n <= ETAPAS[etapa].max; n++) {
+    for (const n of numerosDe(etapa)) {
       const ps = noLugarAtual(etapa, n);
       const nome = lugar(etapa, n);
-      if (!ps.length) { html += `<button type="button" class="qj-tile livre" data-etapa="${etapa}" data-numero="${n}" aria-label="${nome}: livre"><span class="qj-n">${n}</span><span class="qj-t">Livre</span></button>`; continue; }
+      const grade = ehGrade(etapa, n);
+      const rotulo = grade ? 'Grade' : n;
+      if (!ps.length) { html += `<button type="button" class="qj-tile livre${grade ? ' grade' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${nome}: livre"><span class="qj-n">${rotulo}</span><span class="qj-t">${grade ? 'Livre, sem limite de peças' : 'Livre'}</span></button>`; continue; }
       const total = ps.reduce((a, p) => a + p.pecas, 0);
       const lotesAqui = [...new Set(ps.map((p) => p.lote_id))];
       const comPrevisao = ps.filter((p) => p.previsao_saida).map(faltaMs);
@@ -5776,8 +5811,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const pronto = menor != null && menor <= 0;
       const titulo = lotesAqui.length > 1 ? lotesAqui.length + ' lotes' : lote(lotesAqui[0]).produto_nome;
       const tempo = menor == null ? '' : pronto ? 'Pronto' : duracao(menor);
-      html += `<button type="button" class="qj-tile${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}${ps.some((p) => p.na_fila) ? ' na-fila' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${pecas(total)}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}${ps.some((p) => p.na_fila) ? ', aguardando envio' : ''}">
-        <span class="qj-n">${n}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
+      // Lotes em miniatura (pedido do Iago): até 3 números, o resto vira "+N".
+      const nums = lotesAqui.map((id) => lote(id).lote);
+      const mini = (nums.length > 1 ? 'Lotes ' : 'Lote ') + nums.slice(0, 3).join(' · ') + (nums.length > 3 ? ' +' + (nums.length - 3) : '');
+      const seg = ps.some((p) => p.segunda);
+      html += `<button type="button" class="qj-tile${grade ? ' grade' : ''}${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}${ps.some((p) => p.na_fila) ? ' na-fila' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${esc(mini)}, ${pecas(total)}${seg ? ', com peças de segunda' : ''}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}${ps.some((p) => p.na_fila) ? ', aguardando envio' : ''}">
+        <span class="qj-n">${rotulo}${seg ? ' <b class="qj-2a">2ª</b>' : ''}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-l">${esc(mini)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
     }
     return html;
   }
@@ -5785,14 +5824,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const ps = posicoes.filter((p) => p.etapa === 'estoque');
     if (!ps.length) { $('qjEstoque').innerHTML = '<p class="empty-state-msg">Nenhuma peça embalada no estoque.</p>'; return; }
     const porProduto = {};
-    ps.forEach((p) => { const n = lote(p.lote_id).produto_nome; porProduto[n] = (porProduto[n] || 0) + p.pecas; });
+    ps.forEach((p) => { const n = nomeProd(p); porProduto[n] = (porProduto[n] || 0) + p.pecas; });
     const tot = Object.keys(porProduto).sort((a, b) => a.localeCompare(b, 'pt-BR'))
       .map((n) => `<div class="qj-tot"><b>${esc(n)}</b><span>${pecas(porProduto[n])}</span></div>`).join('');
     const itens = ps.slice().sort((a, b) => String(b.entrada_em).localeCompare(String(a.entrada_em))).map((p) => {
       const l = lote(p.lote_id);
       return `<div class="qj-item" data-pos="${p.id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>
-          ${podeEditar ? '<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>' : ''}</div>
+        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}
+          ${podeEditar ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="segunda">${p.segunda ? 'Voltar para primeira' : 'Passar para segunda'}</button><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>` : ''}</div>
         <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
       </div>`;
     }).join('');
@@ -5800,8 +5839,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function descricao(m) {
     switch (m.tipo) {
-      case 'entrada': return (m.destino && m.destino.etapa === 'estoque' ? 'Entrou direto no estoque' : 'Entrou ' + noLugar(m.destino)) + ', ' + pecas(m.pecas);
-      case 'mover': return lugarCurto(m.origem) + ' → ' + lugarCurto(m.destino) + ', ' + pecas(m.pecas);
+      case 'entrada': return (m.destino && m.destino.etapa === 'estoque' ? 'Entrou direto no estoque' : 'Entrou ' + noLugar(m.destino)) + ', ' + pecas(m.pecas) + (m.destino && m.destino.segunda ? ' de segunda' + (m.observacao ? ': ' + m.observacao : '') : '');
+      case 'mover': return lugarCurto(m.origem) + ' → ' + lugarCurto(m.destino) + ', ' + pecas(m.pecas) + (m.origem && m.origem.segunda ? ' de segunda' : '');
+      case 'segunda': return (m.destino && m.destino.segunda ? 'Passou para segunda ' : 'Voltou para primeira ') + noLugar(m.origem) + ', ' + pecas(m.pecas) + (m.observacao ? ': ' + m.observacao : '');
       case 'perda': return 'Perda de ' + pecas(m.pecas) + ' ' + noLugar(m.origem) + (m.observacao ? ': ' + m.observacao : '');
       case 'tempo': return 'Saída prevista ' + noLugar(m.origem) + ' mudou para ' + (m.destino && m.destino.previsao_saida ? fmtDataHora(m.destino.previsao_saida) : '?');
       case 'dispensar': return 'Ficou fora do controle de queijos' + (m.pecas ? ' (' + pecas(m.pecas) + ')' : '');
@@ -5829,7 +5869,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
      Ordem: 1) para onde vão; 2) número(s) da salmoura/secagem e peças em cada um;
      3) data e hora da entrada; 4) tempo de permanência (o mesmo para todos). */
   function destinoHTML(o) {
-    return `
+    return `${o.comSegunda ? `
+      <fieldset class="qj-destino"><legend>Qualidade</legend>
+        <label class="check"><input type="checkbox" name="segunda"> São peças de segunda (com defeito de fabricação)</label>
+        <div data-bloco-motivo hidden>${motivoHTML()}</div>
+        <p class="muted-note" data-nota-segunda hidden>Só parte do lote é de segunda? Dê destino a essas peças aqui e, depois, às de primeira.</p>
+      </fieldset>` : ''}
       <fieldset class="qj-destino"><legend>Para onde vão</legend><div class="qj-opcoes">
         <label><input type="radio" name="etapa" value="salmoura"> Salmoura</label>
         <label><input type="radio" name="etapa" value="secagem"> Secagem</label>
@@ -5852,18 +5897,21 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function opcoesNumero(etapa, origem, selecionado) {
     let html = '', primeiraLivre = null;
-    for (let n = 1; n <= ETAPAS[etapa].max; n++) {
+    for (const n of numerosDe(etapa)) {
       const ps = noLugarAtual(etapa, n);
       const mesmo = origem && origem.etapa === etapa && origem.numero === n;
       const ocup = ps.length ? ' (com ' + [...new Set(ps.map((p) => lote(p.lote_id).produto_nome + ' ' + lote(p.lote_id).lote))].join(', ') + ')' : ' (livre)';
-      if (!ps.length && !mesmo && primeiraLivre == null) primeiraLivre = n;
-      html += `<option value="${n}" ${mesmo ? 'disabled' : ''} ${selecionado === n ? 'selected' : ''}>${ETAPAS[etapa].nome} ${n}${mesmo ? ' (onde as peças estão)' : esc(ocup)}</option>`;
+      if (!ps.length && !mesmo && primeiraLivre == null && n !== GRADE) primeiraLivre = n;
+      html += `<option value="${n}" ${mesmo ? 'disabled' : ''} ${selecionado === n ? 'selected' : ''}>${esc(lugar(etapa, n))}${mesmo ? ' (onde as peças estão)' : esc(ocup)}</option>`;
     }
     return { html, primeiraLivre };
   }
   /* max: peças disponíveis; origem: posição de onde saem (ao mover) ou null; unidadeFixa: 'h'/'d' padrão do tempo */
   function ligarDestino(form, origem, unidadeFixa, max, produtoId) {
     const lim = (et) => padraoPrateleira(produtoId, et) || Infinity;
+    // Peças de segunda (já marcadas, ou marcadas agora no "Dar destino") vão inteiras para a Grade na secagem.
+    const caixaSeg = form.querySelector('[name="segunda"]');
+    const deSegunda = () => (origem ? !!origem.segunda : !!(caixaSeg && caixaSeg.checked));
     const linhasEl = form.querySelector('[data-linhas]');
     const etapaAtual = () => { const r = form.querySelector('[name="etapa"]:checked'); return r ? r.value : null; };
     const nomeEt = (et) => ETAPAS[et].nome.toLowerCase();
@@ -5915,7 +5963,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (!ehEstoque) {
         // Já divide as peças pelas prateleiras, até o limite de uso normal de cada uma (66 na salmoura, 55 na secagem).
         let resto = max;
-        do { const q = Math.min(lim(et), resto); addLinha(et, proximaLivre(et), q); resto -= q; }
+        const paraGrade = et === 'secagem' && deSegunda() && !(origem && ehGrade(origem.etapa, origem.numero));
+        if (paraGrade) addLinha(et, GRADE, max);
+        else do { const q = Math.min(lim(et), resto); addLinha(et, proximaLivre(et), q); resto -= q; }
         while (resto > 0 && linhas().length < ETAPAS[et].max);
         form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
       }
@@ -5927,6 +5977,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) : '';
     }
     form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
+    if (caixaSeg) caixaSeg.addEventListener('change', () => {
+      form.querySelector('[data-bloco-motivo]').hidden = !caixaSeg.checked;
+      form.querySelector('[data-nota-segunda]').hidden = !caixaSeg.checked;
+      if (etapaAtual() === 'secagem') trocarEtapa();
+    });
+    ligarMotivo(form);
     form.querySelector('[data-mais]').addEventListener('click', () => {
       const et = etapaAtual(); if (!et || et === 'estoque') return;
       addLinha(et, proximaLivre(et), Math.min(lim(et), Math.max(0, max - soma())));
@@ -5938,7 +5994,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       b.closest('[data-linha]').remove(); atualizar();
     });
     form.addEventListener('input', atualizar);
-    form.addEventListener('change', (e) => { if (e.target.name !== 'etapa') atualizar(); });
+    form.addEventListener('change', (e) => { if (e.target.name !== 'etapa' && e.target.name !== 'segunda') atualizar(); });
     form.dataset.max = max;
   }
   /* Devolve { etapa, itens: [{numero, pecas}], total, quando, previsao } ou null (com aviso). */
@@ -5956,9 +6012,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     } else {
       const vistos = new Set();
       for (const l of form.querySelectorAll('[data-linha]')) {
-        const numero = Number(l.querySelector('select').value) || null;
+        const v = l.querySelector('select').value;
+        const numero = v === '' ? null : Number(v);
         const pc = lerNum(l.querySelector('input').value);
-        if (!numero) return falha('Escolha o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
+        if (numero == null) return falha('Escolha o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
         if (!silencioso && (!(pc >= 1) || pc !== Math.round(pc))) return falha('Informe as peças da ' + lugar(etapa, numero) + ', em número inteiro.');
         if (!silencioso && vistos.has(numero)) return falha('A ' + lugar(etapa, numero) + ' aparece duas vezes. Junte as peças numa linha só.');
         vistos.add(numero);
@@ -5972,6 +6029,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const quando = q ? new Date(q) : null;
     if (!quando || isNaN(quando.getTime())) return falha('Informe a data e a hora.');
     const r = { etapa, itens, total, quando: quando.toISOString(), previsao: null };
+    const caixaSeg = form.querySelector('[name="segunda"]');
+    if (caixaSeg && caixaSeg.checked) {
+      const motivo = lerMotivo(form);
+      if (!motivo) return falha('Escolha o motivo das peças de segunda.');
+      r.segunda = true; r.motivo = motivo;
+    }
     if (etapa !== 'estoque') {
       const t = lerNum(form.querySelector('[name="tempo"]').value);
       if (!(t > 0)) return falha('Informe quanto tempo as peças vão ficar.');
@@ -5981,8 +6044,29 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     return r;
   }
   function resumoDestino(d) {
-    if (d.etapa === 'estoque') return pecas(d.total) + ' no estoque';
-    return d.itens.map((x) => lugar(d.etapa, x.numero) + ' (' + pecas(x.pecas) + ')').join(', ');
+    const seg = d.segunda ? ', de segunda' : '';
+    if (d.etapa === 'estoque') return pecas(d.total) + seg + ' no estoque';
+    return d.itens.map((x) => lugar(d.etapa, x.numero) + ' (' + pecas(x.pecas) + ')').join(', ') + seg;
+  }
+
+  /* ---------- Motivos de segunda (lista em queijos_motivos_segunda) ---------- */
+  let motivos = [];
+  async function carregarMotivos() {
+    const { data, error } = await sb.from('queijos_motivos_segunda').select('*').order('ordem').order('nome');
+    if (!error) motivos = data || [];
+    return motivos;
+  }
+  function motivoHTML() {
+    return `<label>Motivo<select name="motivo"><option value="">Escolha o motivo</option>${motivos.filter((m) => m.ativo).map((m) => `<option>${esc(m.nome)}</option>`).join('')}<option value="__outro">Outro motivo…</option></select></label>
+      <label data-bloco-outro hidden>Qual o motivo<input type="text" name="motivo_outro" maxlength="200" autocomplete="off" placeholder="Ex.: queijo mole"></label>`;
+  }
+  function ligarMotivo(form) {
+    const sel = form.querySelector('[name="motivo"]'); if (!sel) return;
+    sel.addEventListener('change', () => { form.querySelector('[data-bloco-outro]').hidden = sel.value !== '__outro'; if (sel.value === '__outro') form.querySelector('[name="motivo_outro"]').focus(); });
+  }
+  function lerMotivo(form) {
+    const sel = form.querySelector('[name="motivo"]'); if (!sel) return '';
+    return sel.value === '__outro' ? form.querySelector('[name="motivo_outro"]').value.trim() : sel.value;
   }
   async function enviar(botao, chamada, sucesso) {
     if (SN.semInternet()) { toast('Sem internet: isto precisa de internet. Sem internet só dá para dar destino e mover peças.'); return false; }
@@ -6019,17 +6103,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     pend.forEach((x) => { lotes['lanc:' + x.lancamento_id] = { produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao }; });
     for (const it of minhaFilaQj()) {
       if (!lotes[it.lote_id]) lotes[it.lote_id] = { produto_nome: it.produto_nome, lote: it.lote, data_fabricacao: it.data_fabricacao };
-      let loteId = it.lote_id;
+      let loteId = it.lote_id, segunda = !!it.segunda;
       if (it.tipo === 'receber') {
         const x = pend.find((p) => p.lancamento_id === it.lancamento_id);
         if (x) x.recebidas += somaItens(it.itens);
       } else {
         const o = pos.find((p) => p.id === it.posicao);
-        if (o) { o.pecas -= somaItens(it.itens); loteId = o.lote_id; }
+        if (o) { o.pecas -= somaItens(it.itens); loteId = o.lote_id; segunda = !!o.segunda; }
         pos = pos.filter((p) => p.pecas > 0);
       }
       it.itens.forEach((l) => pos.push({ id: idProvisorio(it.id, l.numero), lote_id: loteId, etapa: it.etapa, numero: it.etapa === 'estoque' ? null : l.numero,
-        pecas: l.pecas, entrada_em: it.quando, previsao_saida: it.previsao, na_fila: true }));
+        pecas: l.pecas, entrada_em: it.quando, previsao_saida: it.previsao, segunda, na_fila: true }));
     }
     posicoes = pos;
     pendentes = pend.filter((x) => x.pecas - x.recebidas > 0);
@@ -6079,6 +6163,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
      porque a conferência de números repetidos das funções "_varios" recusa o número vazio. */
   function gravarDestino(it) {
     const base = { p_etapa: it.etapa, p_quando: it.quando, p_previsao: it.previsao };
+    // Peças de segunda no "Dar destino": funções queijos_receber_segunda(_varios), com o motivo.
+    if (it.tipo === 'receber' && it.segunda) {
+      if (it.etapa === 'estoque') return sb.rpc('queijos_receber_segunda', { p_lancamento: it.lancamento_id, p_pecas: somaItens(it.itens), p_numero: null, p_motivo: it.motivo, ...base });
+      return sb.rpc('queijos_receber_segunda_varios', { p_lancamento: it.lancamento_id, p_itens: it.itens, p_motivo: it.motivo, ...base });
+    }
     if (it.etapa === 'estoque') {
       const pc = it.itens.reduce((a, x) => a + (x.pecas || 0), 0);
       return it.tipo === 'receber'
@@ -6164,7 +6253,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const faltam = Math.max(0, x.pecas - x.recebidas);
     SN.ui.openModal('Dar destino ao lote', `
       <p class="modal-context">${esc(x.produto_nome)}, lote ${esc(x.lote)}, fabricado em ${fmtData(x.data_fabricacao)}. ${pecas(faltam)} aguardando destino.</p>
-      <form class="form" id="qjForm">${destinoHTML({ max: faltam, rotuloQuando: 'Data e hora da entrada' })}
+      <form class="form" id="qjForm">${destinoHTML({ max: faltam, rotuloQuando: 'Data e hora da entrada', comSegunda: true })}
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar destino</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
       ligarDestino(form, null, 'd', faltam, x.produto_id);
@@ -6173,7 +6262,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         e.preventDefault();
         const d = lerDestino(form); if (!d) return;
         const item = { tipo: 'receber', lancamento_id: x.lancamento_id, lote_id: 'lanc:' + x.lancamento_id, produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao, ...d,
-          texto: `Dar destino: ${x.produto_nome}, lote ${x.lote} → ${resumoDestino(d)}` };
+          texto: `Dar destino: ${x.produto_nome}${d.segunda ? ' 2ª' : ''}, lote ${x.lote} → ${resumoDestino(d)}` };
         enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
           'Destino registrado: ' + resumoDestino(d) + '.');
       });
@@ -6195,11 +6284,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const corpo = ps.length ? ps.map((p) => {
       const l = lote(p.lote_id), sit = situacao(p);
       return `<div class="qj-item" data-pos="${p.id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span></div>
+        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}</div>
         <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
         ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
         ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
-        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button>${p.na_fila ? '' : '<button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button>'}</div>` : ''}
+        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button>${p.na_fila ? '' : '<button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="segunda">' + (p.segunda ? 'Voltar para primeira' : 'Passar para segunda') + '</button>'}</div>` : ''}
       </div>`;
     }).join('') : '<p class="empty-state-msg">Livre. Nenhuma peça aqui agora.</p>';
     SN.ui.openModal(nome, `<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
@@ -6210,6 +6299,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (b.dataset.acao === 'mover') mover(id);
         if (b.dataset.acao === 'tempo') ajustarTempo(id);
         if (b.dataset.acao === 'perda') perda(id);
+        if (b.dataset.acao === 'segunda') qualidade(id);
       });
     });
   }
@@ -6217,7 +6307,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const p = posicoes.find((x) => x.id === posId); if (!p) return;
     const l = lote(p.lote_id);
     SN.ui.openModal('Mover peças', `
-      <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}, desde ${fmtDataHora(p.entrada_em)}.</p>
+      <p class="modal-context">${esc(nomeProd(p))}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}, desde ${fmtDataHora(p.entrada_em)}.${p.segunda && p.etapa !== 'estoque' && !ehGrade(p.etapa, p.numero) ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
       <form class="form" id="qjForm">${destinoHTML({ max: p.pecas, rotuloQuando: 'Data e hora da entrada' })}
         <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
@@ -6228,7 +6318,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const d = lerDestino(form); if (!d) return;
         if (new Date(d.quando) < new Date(p.entrada_em)) { toast('A data da mudança não pode ser antes da entrada atual.'); return; }
         const item = { tipo: 'mover', posicao: p.id, lote_id: p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao, ...d,
-          texto: `Mover: ${l.produto_nome}, lote ${l.lote}, ${lugarCurto(p)} → ${resumoDestino(d)}` };
+          texto: `Mover: ${nomeProd(p)}, lote ${l.lote}, ${lugarCurto(p)} → ${resumoDestino(d)}` };
         enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
           'Peças movidas: ' + resumoDestino(d) + '.');
       });
@@ -6287,11 +6377,131 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     });
   }
 
+  // "Passar para segunda" / "Voltar para primeira": as peças continuam no mesmo lugar, só muda a marca.
+  async function qualidade(posId) {
+    const p = posicoes.find((x) => x.id === posId); if (!p) return;
+    if (p.na_fila) { toast('Essas peças ainda estão aguardando envio. Espere o envio para passar para segunda.'); return; }
+    if (SN.semInternet()) { toast('Sem internet: isto precisa de internet. Sem internet só dá para dar destino e mover peças.'); return; }
+    const l = lote(p.lote_id), paraSegunda = !p.segunda;
+    if (paraSegunda) await carregarMotivos();
+    const voltar = () => (p.etapa === 'estoque' ? SN.ui.closeModal() : abrirLugar(p.etapa, p.numero));
+    // Na salmoura ou numa prateleira da secagem, já oferece levar as peças para a Grade junto.
+    const podeGrade = paraSegunda && p.etapa !== 'estoque' && !ehGrade(p.etapa, p.numero);
+    SN.ui.openModal(paraSegunda ? 'Passar para segunda' : 'Voltar para primeira', `
+      <p class="modal-context">${esc(nomeProd(p))}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}. ${paraSegunda ? 'As peças continuam neste lugar, com a marca 2ª, e na venda saem como ' + esc(l.produto_nome) + ' 2ª.' : 'As peças continuam neste lugar e voltam a ser de primeira.'}</p>
+      <form class="form" id="qjForm">
+        <label>${paraSegunda ? 'Peças de segunda' : 'Peças que voltam para primeira'}<input type="number" name="pecas" min="1" max="${p.pecas}" step="1" inputmode="numeric" value="${p.pecas}" required></label>
+        ${paraSegunda ? motivoHTML() + (podeEditar ? '<button type="button" class="link-btn" data-motivos>Editar a lista de motivos</button>' : '') : '<label>Observação<input type="text" name="obs" maxlength="200" autocomplete="off" placeholder="Ex.: defeito era só na casca"></label>'}
+        ${podeGrade ? `<label class="check"><input type="checkbox" name="grade" checked> Levar agora para a Grade (secagem)</label>
+          <div class="two" data-bloco-grade><label>Data e hora da entrada na Grade<input type="datetime-local" name="quando" value="${localInput(new Date())}"></label>
+            ${p.etapa === 'salmoura' ? '<label>Tempo na Grade (dias)<input type="number" name="tempo" min="0" step="any" inputmode="decimal" placeholder="Ex.: 3"></label>' : ''}</div>` : ''}
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">${paraSegunda ? 'Passar para segunda' : 'Voltar para primeira'}</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      ligarMotivo(form);
+      const cxg = form.querySelector('[name="grade"]');
+      if (cxg) cxg.addEventListener('change', () => { form.querySelector('[data-bloco-grade]').hidden = !cxg.checked; });
+      root.querySelector('[data-cancelar]').addEventListener('click', voltar);
+      const bm = root.querySelector('[data-motivos]'); if (bm) bm.addEventListener('click', () => editarMotivos(() => qualidade(posId)));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const n = lerNum(form.querySelector('[name="pecas"]').value);
+        if (!(n >= 1) || n !== Math.round(n)) { toast('Informe quantas peças, em número inteiro.'); return; }
+        if (n > p.pecas) { toast('Só há ' + pecas(p.pecas) + ' aqui.'); return; }
+        const motivo = paraSegunda ? lerMotivo(form) : form.querySelector('[name="obs"]').value.trim();
+        if (paraSegunda && !motivo) { toast('Escolha o motivo.'); return; }
+        const cx = form.querySelector('[name="grade"]');
+        if (!cx || !cx.checked) {
+          enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_segunda', { p_posicao: p.id, p_pecas: n, p_segunda: paraSegunda, p_motivo: motivo }),
+            paraSegunda ? pecas(n) + ' passaram para segunda.' : pecas(n) + ' voltaram para primeira.');
+          return;
+        }
+        // Para a Grade: da secagem, mantém a saída prevista; da salmoura, conta o tempo informado.
+        const q = form.querySelector('[name="quando"]').value, quando = q ? new Date(q) : null;
+        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da entrada na Grade.'); return; }
+        if (quando < new Date(p.entrada_em)) { toast('A entrada na Grade não pode ser antes da entrada atual.'); return; }
+        let previsao = p.previsao_saida ? new Date(p.previsao_saida) : null;
+        if (p.etapa === 'salmoura') { const t = lerNum(form.querySelector('[name="tempo"]').value); if (!(t > 0)) { toast('Informe quantos dias as peças vão ficar na Grade.'); return; } previsao = new Date(quando.getTime() + t * 86400000); }
+        if (!previsao || previsao <= quando) { toast('A saída prevista já passou. Desmarque "Levar agora para a Grade" e use "Mover peças".'); return; }
+        enviar(form.querySelector('[type="submit"]'), async () => {
+          const r1 = await sb.rpc('queijos_segunda', { p_posicao: p.id, p_pecas: n, p_segunda: true, p_motivo: motivo });
+          if (r1.error) return r1;
+          const r2 = await sb.rpc('queijos_mover', { p_posicao: r1.data, p_pecas: n, p_etapa: 'secagem', p_numero: GRADE, p_quando: quando.toISOString(), p_previsao: previsao.toISOString() });
+          if (r2.error) { console.error(r2.error); atualizar(); return { error: { code: 'P0001', message: pecas(n) + ' passaram para segunda, mas não foram para a Grade: ' + erroMsg(r2.error) + ' Use "Mover peças".' } }; }
+          return r2;
+        }, pecas(n) + ' passaram para segunda e foram para a Grade.');
+      });
+    });
+  }
+  // Lista de motivos: acrescentar e tirar de uso (sem apagar, para não perder o histórico).
+  async function editarMotivos(depois) {
+    await carregarMotivos();
+    const lista = () => motivos.length ? motivos.map((m) => `<li class="${m.ativo ? '' : 'fora'}" data-id="${m.id}"><span>${esc(m.nome)}</span><button type="button" class="link-btn" data-acao="ativo">${m.ativo ? 'Tirar de uso' : 'Voltar a usar'}</button></li>`).join('') : '<li><span class="muted">Nenhum motivo cadastrado.</span></li>';
+    SN.ui.openModal('Motivos de segunda', `
+      <ul class="qj-motivos" data-lista>${lista()}</ul>
+      <form class="form" id="qjMotivoNovo"><label>Novo motivo<input type="text" name="nome" maxlength="80" autocomplete="off" required placeholder="Ex.: queijo mole"></label>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Voltar</button><button type="submit" class="btn btn-primary">Acrescentar</button></div></form>`, (root) => {
+      const redesenhar = async () => { await carregarMotivos(); root.querySelector('[data-lista]').innerHTML = lista(); };
+      root.querySelector('[data-cancelar]').addEventListener('click', () => (depois ? depois() : SN.ui.closeModal()));
+      root.querySelector('[data-lista]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-acao="ativo"]'); if (!b) return;
+        const m = motivos.find((x) => x.id === b.closest('[data-id]').dataset.id); if (!m) return;
+        b.disabled = true;
+        const { error } = await sb.from('queijos_motivos_segunda').update({ ativo: !m.ativo }).eq('id', m.id);
+        if (error) { b.disabled = false; toast(erroMsg(error)); return; }
+        redesenhar();
+      });
+      root.querySelector('#qjMotivoNovo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const campo = e.target.querySelector('[name="nome"]'), nome = campo.value.trim(); if (!nome) return;
+        if (motivos.some((m) => m.nome.toLowerCase() === nome.toLowerCase())) { toast('Esse motivo já está na lista.'); return; }
+        const { error } = await sb.from('queijos_motivos_segunda').insert({ nome, ordem: motivos.reduce((a, m) => Math.max(a, m.ordem || 0), 0) + 1 });
+        if (error) { toast(erroMsg(error)); return; }
+        campo.value = ''; toast('Motivo acrescentado.'); redesenhar();
+      });
+    });
+  }
+
+  /* ---------- Resumo: queijos de segunda no período do Resumo da Produção ---------- */
+  let periodoSeg = null;
+  async function carregarSegunda() {
+    const box = $('qjSegundaResumo'); if (!box) return;
+    const r = periodoSeg || (window.SN_Producao && SN_Producao.periodo ? SN_Producao.periodo() : null); if (!r) return;
+    const de = new Date(r.de + 'T00:00:00'), ate = new Date(r.ate + 'T00:00:00'); ate.setDate(ate.getDate() + 1);
+    const base = () => sb.from('queijos_movimentos').select('lote_id, tipo, pecas, origem, destino, observacao').is('desfeito_em', null)
+      .gte('quando', de.toISOString()).lt('quando', ate.toISOString());
+    const [a, b] = await Promise.all([base().eq('tipo', 'segunda'), base().eq('tipo', 'entrada').eq('destino->>segunda', 'true')]);
+    if (a.error || b.error) { console.error(a.error || b.error); return; }
+    const movs = (a.data || []).concat(b.data || []);
+    const faltam = [...new Set(movs.map((m) => m.lote_id))].filter((id) => !lotes[id]);
+    const extra = {};
+    if (faltam.length) { const l = await sb.from('queijos_lotes').select('id, produto_nome, lote').in('id', faltam); (l.data || []).forEach((x) => { extra[x.id] = x; }); }
+    const nomeDe = (id) => (lotes[id] || extra[id] || { produto_nome: 'Queijo' }).produto_nome;
+    const ONDE = { entrada: 'Antes da salmoura', salmoura: 'Na salmoura', secagem: 'Na secagem', estoque: 'No estoque' };
+    const porProd = {};
+    movs.forEach((m) => {
+      const n = nomeDe(m.lote_id);
+      const g = porProd[n] = porProd[n] || { pecas: 0, voltaram: 0, motivos: {}, onde: {} };
+      if (m.tipo === 'segunda' && !(m.destino && m.destino.segunda)) { g.voltaram += m.pecas; return; }
+      g.pecas += m.pecas;
+      const mot = m.observacao || 'Sem motivo';
+      g.motivos[mot] = (g.motivos[mot] || 0) + m.pecas;
+      const onde = ONDE[m.tipo === 'entrada' ? 'entrada' : (m.origem && m.origem.etapa)] || 'Outro';
+      g.onde[onde] = (g.onde[onde] || 0) + m.pecas;
+    });
+    const nomes = Object.keys(porProd).filter((n) => porProd[n].pecas || porProd[n].voltaram).sort((x, y) => x.localeCompare(y, 'pt-BR'));
+    if (!nomes.length) { box.innerHTML = `<p class="empty-state-msg">Nenhuma peça passou para segunda ${esc(r.texto || 'no período')}.</p>`; return; }
+    const linhas = (o) => Object.keys(o).sort((x, y) => o[y] - o[x]).map((k) => `<li><span>${esc(k)}</span><b>${pecas(o[k])}</b></li>`).join('');
+    box.innerHTML = `<div class="qj-seg">${nomes.map((n) => { const g = porProd[n]; return `<div class="qj-seg-prod">
+      <h3><span>${esc(n)}</span><span>${pecas(g.pecas)}</span></h3>
+      ${g.pecas ? `<ul>${linhas(g.motivos)}</ul><small>${Object.keys(g.onde).map((k) => esc(k) + ': ' + fmtNum(g.onde[k])).join(' · ')}</small>` : ''}
+      ${g.voltaram ? `<small>${pecas(g.voltaram)} ${g.voltaram === 1 ? 'voltou' : 'voltaram'} para primeira.</small>` : ''}</div>`; }).join('')}</div>`;
+  }
+
   function abrirSaida(focoPos) {
     const ps = posicoes.filter((p) => p.etapa === 'estoque').sort((a, b) => String(a.entrada_em).localeCompare(String(b.entrada_em)));
     if (!ps.length) { toast('Não há peças embaladas no estoque.'); return; }
     const grupos = {};
-    ps.forEach((p) => { const n = lote(p.lote_id).produto_nome; (grupos[n] = grupos[n] || []).push(p); });
+    ps.forEach((p) => { const n = nomeProd(p); (grupos[n] = grupos[n] || []).push(p); });
     const lista = Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => `<h3 class="qj-sub">${esc(n)}</h3>` + grupos[n].map((p) => {
       const l = lote(p.lote_id);
       return `<div class="qj-said" data-pos="${p.id}">
@@ -6376,6 +6586,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
       const id = b.closest('[data-pos]').dataset.pos;
       if (b.dataset.acao === 'perda') perda(id);
+      if (b.dataset.acao === 'segunda') qualidade(id);
       if (b.dataset.acao === 'saida') abrirSaida(id);
     });
     if (podeEditar) { $('qjSaidaBtn').hidden = false; $('qjSaidaBtn').addEventListener('click', () => abrirSaida(null)); }
@@ -6384,6 +6595,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       desfazer(b.closest('[data-mov]').dataset.mov);
     }));
     $('pdMovResumo').hidden = false;
+    $('pdSegunda').hidden = false;
+    document.addEventListener('producao:periodo', (e) => { periodoSeg = e.detail; if (carregado) carregarSegunda().catch((err) => console.error(err)); });
     try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
     ligarFilaQj();
     try { await carregar(); }
