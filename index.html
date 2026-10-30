@@ -5384,7 +5384,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         sb.from('producao_lancamentos').insert({ ...dados, id: item.id }),
         new Promise((ok) => setTimeout(() => ok({ error: { message: 'TypeError: Failed to fetch (demorou demais)', code: '' } }), 12000))
       ]);
-      if (error && SN.falhaDeRede(error)) { guardarNaFila(item); limparFormulario(form); return; }
+      // Sem código, o erro não veio do banco (internet, celular): guarda e envia depois. O envio não duplica.
+      if (error && !error.code) { console.error(error); guardarNaFila(item); limparFormulario(form); return; }
       if (error) { console.error(error); toast('Não foi possível registrar: ' + (error.message || 'erro desconhecido') + '.'); return; }
       limparFormulario(form);
       toast('Produção registrada.');
@@ -5664,7 +5665,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
   function erroMsg(error, padrao) {
     if (error && error.code === 'P0001' && error.message) return error.message;
-    return padrao || 'Não foi possível concluir. Verifique a conexão e tente de novo.';
+    // Mostra o motivo técnico junto, para dar para descobrir a causa pela foto da tela.
+    const detalhe = error && (error.message || error.code) ? ' (' + String(error.message || error.code).split('\n')[0].slice(0, 120) + ')' : '';
+    return (padrao || 'Não foi possível concluir. Verifique a conexão e tente de novo.') + detalhe;
   }
   // tempo que falta (ou que passou), em texto curto
   function duracao(ms) {
@@ -6033,7 +6036,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const { error } = await prazo(chamada());
       botao.disabled = false;
       if (!error) { SN.ui.closeModal(); toast(sucesso); atualizar(); return; }
-      if (!SN.falhaDeRede(error)) { console.error(error); toast(erroMsg(error)); return; }
+      // Erro com código veio do banco (ex.: peças a mais): mostra. Sem código, não chegou ao banco: guarda e tenta de novo.
+      if (error.code) { console.error(error); toast(erroMsg(error)); return; }
+      console.error(error);
     }
     const novo = { ...item, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), usuario: SN.usuario.id, guardado_em: new Date().toISOString() };
     try { gravarFilaQj(lerFilaQj().concat(novo)); }
@@ -6069,7 +6074,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       ? sb.rpc('queijos_receber_varios', { p_lancamento: it.lancamento_id, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao })
       : sb.rpc('queijos_mover_varios', { p_posicao: it.posicao, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao }));
     if (error && SN.falhaDeRede(error)) return 'rede';
-    if (error) { console.error(error); return erroMsg(error, 'o banco recusou (' + (error.message || 'erro') + ').'); }
+    if (error) { console.error(error); return erroMsg(error, 'o banco recusou'); }
     const depois = await movimentosDoItem(it, uid);
     trocarProvisorios(it, depois.linhas || []);
     return 'ok';
