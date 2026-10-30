@@ -6066,13 +6066,25 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     it.itens.forEach((l, i) => { if (linhas[i]) troca[idProvisorio(it.id, l.numero)] = linhas[i].destino_id; });
     gravarFilaQj(lerFilaQj().filter((i) => i.id !== it.id).map((i) => (troca[i.posicao] ? { ...i, posicao: troca[i.posicao] } : i)));
   }
+  /* Grava um destino/mudança no banco. O estoque não tem número: vai pela função simples,
+     porque a conferência de números repetidos das funções "_varios" recusa o número vazio. */
+  function gravarDestino(it) {
+    const base = { p_etapa: it.etapa, p_quando: it.quando, p_previsao: it.previsao };
+    if (it.etapa === 'estoque') {
+      const pc = it.itens.reduce((a, x) => a + (x.pecas || 0), 0);
+      return it.tipo === 'receber'
+        ? sb.rpc('queijos_receber', { p_lancamento: it.lancamento_id, p_pecas: pc, p_numero: null, ...base })
+        : sb.rpc('queijos_mover', { p_posicao: it.posicao, p_pecas: pc, p_numero: null, ...base });
+    }
+    return it.tipo === 'receber'
+      ? sb.rpc('queijos_receber_varios', { p_lancamento: it.lancamento_id, p_itens: it.itens, ...base })
+      : sb.rpc('queijos_mover_varios', { p_posicao: it.posicao, p_itens: it.itens, ...base });
+  }
   async function enviarItemQj(it, uid) {
     const antes = await movimentosDoItem(it, uid);
     if (antes.error) return SN.falhaDeRede(antes.error) ? 'rede' : 'não foi possível conferir no banco (' + (antes.error.message || 'erro') + ').';
     if (antes.linhas.every(Boolean)) { trocarProvisorios(it, antes.linhas); return 'ok'; } // já tinha chegado
-    const { error } = await prazo(it.tipo === 'receber'
-      ? sb.rpc('queijos_receber_varios', { p_lancamento: it.lancamento_id, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao })
-      : sb.rpc('queijos_mover_varios', { p_posicao: it.posicao, p_etapa: it.etapa, p_itens: it.itens, p_quando: it.quando, p_previsao: it.previsao }));
+    const { error } = await prazo(gravarDestino(it));
     if (error && SN.falhaDeRede(error)) return 'rede';
     if (error) { console.error(error); return erroMsg(error, 'o banco recusou'); }
     const depois = await movimentosDoItem(it, uid);
@@ -6153,7 +6165,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         const d = lerDestino(form); if (!d) return;
         const item = { tipo: 'receber', lancamento_id: x.lancamento_id, lote_id: 'lanc:' + x.lancamento_id, produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao, ...d,
           texto: `Dar destino: ${x.produto_nome}, lote ${x.lote} → ${resumoDestino(d)}` };
-        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => sb.rpc('queijos_receber_varios', { p_lancamento: x.lancamento_id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
+        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
           'Destino registrado: ' + resumoDestino(d) + '.');
       });
     });
@@ -6208,7 +6220,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (new Date(d.quando) < new Date(p.entrada_em)) { toast('A data da mudança não pode ser antes da entrada atual.'); return; }
         const item = { tipo: 'mover', posicao: p.id, lote_id: p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao, ...d,
           texto: `Mover: ${l.produto_nome}, lote ${l.lote}, ${lugarCurto(p)} → ${resumoDestino(d)}` };
-        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => sb.rpc('queijos_mover_varios', { p_posicao: p.id, p_etapa: d.etapa, p_itens: d.itens, p_quando: d.quando, p_previsao: d.previsao }),
+        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
           'Peças movidas: ' + resumoDestino(d) + '.');
       });
     });
