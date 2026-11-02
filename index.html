@@ -729,7 +729,8 @@
   .qj-lote-lug small, .qj-lote-datas small { display: block; font-size: .78rem; color: var(--muted); }
   .qj-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; }
   .qj-chip { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); font-size: .9rem; line-height: 1.3; }
-  .qj-chip b { font-size: 1rem; }
+  .qj-chip b { font-size: 1.05rem; }
+  .qj-chip { min-width: 34px; justify-content: center; }
   .qj-chip span { color: var(--muted); font-size: .82rem; }
   .qj-chip.pronto { border-color: var(--warn); background: var(--warn-soft); }
   .qj-chip.misto { border-color: var(--misto); background: var(--misto-soft); }
@@ -5927,12 +5928,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const txtLivres = `<p class="qj-livres">${livres.length ? `<b>${etapa === 'salmoura' ? 'Salmouras livres' : 'Prateleiras livres'} (${livres.length}):</b> ${faixasNumeros(livres)}` : `<b>Nenhuma ${etapa === 'salmoura' ? 'salmoura' : 'prateleira'} livre.</b>`}${etapa === 'secagem' ? ' · A Grade não tem limite de peças.' : ''}</p>`;
     if (!grupos.length) return `<p class="empty-state-msg">Nenhum lote na ${etapa} agora.</p>` + txtLivres;
     return grupos.map((g) => {
-      const chips = g.ps.map((p) => {
-        const outros = new Set(noLugarAtual(etapa, p.numero).map(chaveLote)).size > 1;
-        return `<span class="qj-chip${pronta(p) ? ' pronto' : ''}${outros ? ' misto' : ''}${p.na_fila ? ' na-fila' : ''}"><b>${ehGrade(etapa, p.numero) ? 'Grade' : p.numero}</b>${p.segunda ? '<b class="qj-2a">2ª</b>' : ''}<span>${pecas(p.pecas)}</span></span>`;
+      // Só os números dos lugares (pedido do Iago, 02/11/2026); as peças aparecem no total do lote e no detalhe.
+      const chips = [...new Set(g.ps.map((p) => p.numero))].map((n) => {
+        const aqui = g.ps.filter((p) => p.numero === n);
+        const outros = new Set(noLugarAtual(etapa, n).map(chaveLote)).size > 1;
+        return `<span class="qj-chip${aqui.some(pronta) ? ' pronto' : ''}${outros ? ' misto' : ''}${aqui.some((p) => p.na_fila) ? ' na-fila' : ''}"><b>${ehGrade(etapa, n) ? 'Grade' : n}</b>${aqui.some((p) => p.segunda) ? '<b class="qj-2a">2ª</b>' : ''}</span>`;
       }).join('');
       const nLug = new Set(g.ps.map((p) => p.numero)).size;
-      const rotuloLug = etapa === 'salmoura' ? (nLug === 1 ? 'Salmoura' : nLug + ' salmouras') : (nLug === 1 ? 'Prateleira' : nLug + ' lugares na secagem');
+      const rotuloLug = etapa === 'salmoura' ? (nLug === 1 ? 'Salmoura' : 'Salmouras (' + nLug + ')') : (nLug === 1 ? 'Prateleira' : 'Prateleiras (' + nLug + ')');
       let sit = '';
       if (g.pronto) sit = g.prontos === g.ps.length ? 'Tempo cumprido há ' + duracao(Date.now() - g.saiMax) : 'Tempo cumprido em ' + g.prontos + ' de ' + g.ps.length + ' lugares';
       else if (g.saiMin != null) sit = 'Faltam ' + duracao(g.saiMin - Date.now());
