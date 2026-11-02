@@ -739,6 +739,8 @@
   .qj-lote.pronto .qj-lote-sit { color: var(--warn); }
   .qj-livres { margin: 14px 0 0; font-size: .9rem; color: var(--muted); }
   .qj-livres b { color: var(--ink); font-weight: 600; }
+  .qj-lote-todo { margin: 0 0 6px; }
+  .qj-lote-todo .btn { flex: 1 1 auto; }
   .qj-lote-lugar { margin: 0 0 2px; font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: 1.05rem; }
   .qj-tile.grade .qj-n { font-size: 1.05rem; }
   .qj-seg { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
@@ -5748,7 +5750,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   // Nome do produto com a marca de segunda (as peças de segunda ficam separadas no estoque e na venda).
   const nomeProd = (p) => lote(p.lote_id).produto_nome + (p.segunda ? ' 2ª' : '');
   const selo2a = (p) => (p.segunda ? '<span class="badge qj-2a">2ª</span>' : '');
-  function noLugar(j) { if (!j) return 'em lugar desconhecido'; return j.etapa === 'estoque' ? 'no estoque' : 'na ' + lugar(j.etapa, j.numero); }
+  function noLugar(j) { if (!j) return 'em lugar desconhecido'; if (j.texto) return j.texto; return j.etapa === 'estoque' ? 'no estoque' : 'na ' + lugar(j.etapa, j.numero); }
   function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
   function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
   function erroMsg(error, padrao) {
@@ -5969,8 +5971,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       </div>`;
     }).join('');
     const titulo = g.l.produto_nome + ', lote ' + g.l.lote;
-    SN.ui.openModal(titulo, `<p class="modal-context">${pecas(g.total)} na ${etapa}${g.l.data_fabricacao ? ', fabricado em ' + fmtData(g.l.data_fabricacao) : ''}.${g.ps.length > 1 ? ' Para mover, escolha o lugar abaixo.' : ''}</p><div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+    // "Mover o lote todo" (pedido do Iago, 02/11/2026): um botão para cada qualidade (as peças de segunda vão separadas).
+    const grupos = [false, true].map((seg) => g.ps.filter((p) => !!p.segunda === seg)).filter((x) => x.length);
+    const misto = grupos.length > 1;
+    const botoesLote = podeEditar && g.ps.length > 1 ? `<div class="qj-botoes qj-lote-todo">${grupos.map((ps) => {
+      const seg = !!ps[0].segunda, n = ps.reduce((a, p) => a + p.pecas, 0);
+      return `<button type="button" class="btn ${seg ? '' : 'btn-primary'}" data-todo="${seg ? 2 : 1}">${misto ? (seg ? 'Mover as peças de segunda' : 'Mover as peças de primeira') : 'Mover o lote todo'} (${pecas(n)})</button>`;
+    }).join('')}</div>` : '';
+    SN.ui.openModal(titulo, `<p class="modal-context">${pecas(g.total)} na ${etapa}${g.l.data_fabricacao ? ', fabricado em ' + fmtData(g.l.data_fabricacao) : ''}.${g.ps.length > 1 ? (podeEditar ? ' Para levar todas as peças de uma vez, use o botão abaixo. Para mover só um lugar, use o botão do lugar.' : '') : ''}</p>${botoesLote}<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      root.querySelectorAll('[data-todo]').forEach((b) => b.addEventListener('click', () => moverLote(etapa, chave, b.dataset.todo === '2')));
       root.querySelector('[data-lugar]').addEventListener('click', (e) => {
         const b = e.target.closest('[data-acao]'); if (!b) return;
         const id = b.closest('[data-pos]').dataset.pos;
@@ -5980,6 +5990,95 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (b.dataset.acao === 'segunda') qualidade(id);
       });
     });
+  }
+  /* Mover o lote todo: o mesmo formulário do "Mover peças", com todas as peças do lote (de uma qualidade) nesta etapa.
+     Não muda o banco: as peças de cada lugar de origem são repartidas, na ordem, pelos lugares escolhidos, e cada lugar
+     de origem vira uma gravação de "Mover peças" (queijos_mover_varios / queijos_mover_estoque). Sem internet, vai para a fila. */
+  function moverLote(etapa, chave, segunda) {
+    const g = lotesNaEtapa(etapa).find((x) => x.chave === chave); if (!g) { SN.ui.closeModal(); return; }
+    const ps = g.ps.filter((p) => !!p.segunda === segunda);
+    if (!ps.length) return;
+    const total = ps.reduce((a, p) => a + p.pecas, 0);
+    const l = g.l, nome = l.produto_nome + (segunda ? ' 2ª' : '');
+    const origemTxt = ps.map((p) => lugar(etapa, p.numero) + ' (' + fmtNum(p.pecas) + ')').join(', ');
+    const origem = { etapa, numero: -1, segunda, texto: 'onde estão' };
+    const entradaMax = Math.max(...ps.map((p) => new Date(p.entrada_em).getTime()));
+    SN.ui.openModal(segunda ? 'Mover as peças de segunda' : 'Mover o lote todo', `
+      <p class="modal-context">${esc(nome)}, lote ${esc(l.lote)}: ${pecas(total)} em ${esc(origemTxt)}.${segunda ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
+      <form class="form" id="qjForm">${destinoHTML({ max: total, rotuloQuando: 'Data e hora da entrada' })}
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover todas as peças</button></div></form>`, (root) => {
+      const form = root.querySelector('#qjForm');
+      ligarDestino(form, origem, null, total, l.produto_id);
+      // Os números de onde as peças já estão não podem ser escolhidos (na mesma etapa).
+      const travar = () => form.querySelectorAll('[data-linha] select').forEach((sel) => {
+        const r = form.querySelector('[name="etapa"]:checked'); if (!r || r.value !== etapa) return;
+        ps.forEach((p) => { const o = sel.querySelector(`option[value="${p.numero}"]`); if (o && !ehGrade(etapa, p.numero)) { o.disabled = true; o.textContent = lugar(etapa, p.numero) + ' (onde as peças estão)'; } });
+      });
+      form.addEventListener('change', travar); form.addEventListener('click', () => setTimeout(travar, 0));
+      root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLote(etapa, chave));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = lerDestino(form); if (!d) return;
+        if (d.total !== total) { toast(`Para mover o lote todo, distribua as ${pecas(total)}. Para mover só parte, use "Mover peças" em cada lugar.`); return; }
+        if (d.etapa === etapa && d.itens.some((x) => ps.some((p) => p.numero === x.numero))) { toast('Escolha lugares diferentes de onde as peças já estão.'); return; }
+        if (new Date(d.quando).getTime() < entradaMax) { toast('A data da mudança não pode ser antes da entrada atual (' + fmtDataHora(entradaMax) + ').'); return; }
+        const itens = repartir(ps, d).map((x) => ({ tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
+          etapa: d.etapa, itens: x.itens, total: x.itens.reduce((a, i) => a + i.pecas, 0), quando: d.quando, previsao: d.previsao, ...(x.peso ? { peso: x.peso } : {}),
+          texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${resumoDestino({ etapa: d.etapa, itens: x.itens, total: x.itens.reduce((a, i) => a + i.pecas, 0), peso: x.peso })}` }));
+        enviarVarios(form.querySelector('[type="submit"]'), itens, 'Lote movido: ' + resumoDestino(d) + '.');
+      });
+    });
+  }
+  // Reparte as peças de cada lugar de origem, na ordem, pelos lugares de destino. O peso (estoque) é dividido pelas peças.
+  function repartir(ps, d) {
+    const destinos = d.itens.map((x) => ({ numero: x.numero, resta: x.pecas }));
+    let k = 0, pesoUsado = 0;
+    return ps.map((p, idx) => {
+      let falta = p.pecas; const itens = [];
+      while (falta > 0 && k < destinos.length) {
+        const q = Math.min(falta, destinos[k].resta);
+        if (q > 0) { const ja = itens.find((i) => i.numero === destinos[k].numero); if (ja) ja.pecas += q; else itens.push({ numero: destinos[k].numero, pecas: q }); }
+        falta -= q; destinos[k].resta -= q;
+        if (destinos[k].resta === 0) k++;
+      }
+      let peso = null;
+      if (d.peso > 0) {
+        peso = idx === ps.length - 1 ? Math.round((d.peso - pesoUsado) * 1000) / 1000 : Math.round(d.peso * p.pecas / d.total * 1000) / 1000;
+        pesoUsado += peso;
+      }
+      return { p, itens, peso };
+    });
+  }
+  // Grava vários "Mover peças" em seguida. Se a internet cair no meio, o que falta vai para a fila (na ordem).
+  async function enviarVarios(botao, itens, sucesso) {
+    const guardarTudo = SN.semInternet() || itens.some((it) => ehProvisorio(it.posicao)) || minhaFilaQj().length > 0;
+    let i = 0;
+    if (!guardarTudo) {
+      botao.disabled = true;
+      for (; i < itens.length; i++) {
+        const { error } = await prazo(gravarDestino(itens[i]));
+        if (!error) continue;
+        console.error(error);
+        if (error.code) {
+          botao.disabled = false;
+          SN.ui.closeModal(); atualizar();
+          toast((i ? `Foram movidas as peças de ${i} de ${itens.length} lugares. ` : '') + `Parou na ${lugarCurto(posicoes.find((p) => p.id === itens[i].posicao))}: ` + erroMsg(error));
+          return;
+        }
+        break; // sem código: não chegou ao banco; o resto vai para a fila
+      }
+      botao.disabled = false;
+      if (i === itens.length) { SN.ui.closeModal(); toast(sucesso); atualizar(); return; }
+    }
+    const agora = new Date().toISOString();
+    const novos = itens.slice(i).map((it) => ({ ...it, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), usuario: SN.usuario.id, guardado_em: agora }));
+    try { gravarFilaQj(lerFilaQj().concat(novos)); }
+    catch (e) { console.error(e); toast('Sem internet e não foi possível guardar neste aparelho. Anote e registre depois.'); if (i) atualizar(); return; }
+    SN.ui.closeModal();
+    aplicarFila(); render(); renderFilaQj();
+    toast((i ? `Foram movidas as peças de ${i} de ${itens.length} lugares; o resto ` : '') + (SN.semInternet() || i ? (i ? 'ficou guardado neste aparelho e será enviado quando a internet voltar.' : 'Sem internet: guardado neste aparelho. Será enviado quando a internet voltar.') : 'Guardado. Será enviado em seguida, depois dos registros que estão esperando.'));
+    if (i) atualizar();
+    if (!SN.semInternet()) enviarFilaQj();
   }
   function renderEstoque() {
     const ps = posicoes.filter((p) => p.etapa === 'estoque');
