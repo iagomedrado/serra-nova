@@ -787,6 +787,18 @@
   .qj-linha .qj-tirar { align-self: end; height: 44px; width: 40px; color: var(--muted); }
   .qj-linha .qj-tirar[hidden] { display: grid !important; visibility: hidden; }
   .qj-mais { margin-top: 10px; }
+  /* Escolha dos números (salmoura/secagem): marca os lugares e informa só o total */
+  .qj-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+  .qj-num { position: relative; display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; font-weight: 700; font-variant-numeric: tabular-nums; margin: 0; }
+  .qj-num.grade { grid-column: span 2; }
+  .qj-num input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .qj-num.ocupado::after { content: ''; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+  .qj-num:has(input:checked) { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
+  .qj-num:has(input:checked).ocupado::after { background: #fff; }
+  .qj-num:has(input:disabled) { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+  .qj-num:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .qj-nums-nota { margin: 6px 0 0; font-size: .82rem; }
+  .qj-origem { margin-bottom: 4px; }
   .qj-mais[hidden] { display: none; }
   .qj-conta { margin: 0; font-size: .92rem; color: var(--muted); }
   .qj-conta:empty { display: none; }
@@ -5966,22 +5978,23 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const junto = outros.length ? [...new Set(outros.map((o) => { const l = lote(o.lote_id); return l.produto_nome + ' lote ' + l.lote; }))].join(', ') : '';
       return `<div class="qj-item" data-pos="${p.id}">
         <div class="pr-item-top"><p class="qj-lote-lugar">${esc(lugar(etapa, p.numero))}</p>${selo2a(p)}</div>
-        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
+        <div class="pr-nums"><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
         ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
         ${junto ? `<p class="muted-note" style="margin:6px 0 0">Divide o lugar com: ${esc(junto)}.</p>` : ''}
         ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
-        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button>${p.na_fila ? '' : '<button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="segunda">' + (p.segunda ? 'Voltar para primeira' : 'Passar para segunda') + '</button>'}</div>` : ''}
+        ${podeEditar && !p.na_fila ? '<div class="qj-botoes"><button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="segunda">' + (p.segunda ? 'Voltar para primeira' : 'Passar para segunda') + '</button></div>' : ''}
       </div>`;
     }).join('');
     const titulo = g.l.produto_nome + ', lote ' + g.l.lote;
-    // "Mover o lote todo" (pedido do Iago, 02/11/2026): um botão para cada qualidade (as peças de segunda vão separadas).
+    // "Mover peças" do lote (pedido do Iago, 02/11/2026): um botão para cada qualidade (as peças de segunda vão separadas).
     const grupos = [false, true].map((seg) => g.ps.filter((p) => !!p.segunda === seg)).filter((x) => x.length);
     const misto = grupos.length > 1;
-    const botoesLote = podeEditar && g.ps.length > 1 ? `<div class="qj-botoes qj-lote-todo">${grupos.map((ps) => {
-      const seg = !!ps[0].segunda, n = ps.reduce((a, p) => a + p.pecas, 0);
-      return `<button type="button" class="btn ${seg ? '' : 'btn-primary'}" data-todo="${seg ? 2 : 1}">${misto ? (seg ? 'Mover as peças de segunda' : 'Mover as peças de primeira') : 'Mover o lote todo'} (${pecas(n)})</button>`;
+    const botoesLote = podeEditar ? `<div class="qj-botoes qj-lote-todo">${grupos.map((ps) => {
+      const seg = !!ps[0].segunda;
+      return `<button type="button" class="btn ${seg ? '' : 'btn-primary'}" data-todo="${seg ? 2 : 1}">${misto ? (seg ? 'Mover peças de segunda' : 'Mover peças de primeira') : 'Mover peças'}</button>`;
     }).join('')}</div>` : '';
-    SN.ui.openModal(titulo, `<p class="modal-context">${pecas(g.total)} na ${etapa}${g.l.data_fabricacao ? ', fabricado em ' + fmtData(g.l.data_fabricacao) : ''}.${g.ps.length > 1 ? (podeEditar ? ' Para levar todas as peças de uma vez, use o botão abaixo. Para mover só um lugar, use o botão do lugar.' : '') : ''}</p>${botoesLote}<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
+    const numsTxt = [...new Set(g.ps.map((p) => p.numero))].map((n) => (ehGrade(etapa, n) ? 'Grade' : n)).join(', ');
+    SN.ui.openModal(titulo, `<p class="modal-context">${pecas(g.total)} na ${etapa} (${etapa === 'salmoura' ? 'salmouras' : 'secagem'} ${esc(numsTxt)})${g.l.data_fabricacao ? ', fabricado em ' + fmtData(g.l.data_fabricacao) : ''}.</p>${botoesLote}<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
       root.querySelectorAll('[data-todo]').forEach((b) => b.addEventListener('click', () => moverLote(etapa, chave, b.dataset.todo === '2')));
       root.querySelector('[data-lugar]').addEventListener('click', (e) => {
@@ -5994,50 +6007,119 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       });
     });
   }
-  /* Mover o lote todo: o mesmo formulário do "Mover peças", com todas as peças do lote (de uma qualidade) nesta etapa.
-     Não muda o banco: as peças de cada lugar de origem são repartidas, na ordem, pelos lugares escolhidos, e cada lugar
-     de origem vira uma gravação de "Mover peças" (queijos_mover_varios / queijos_mover_estoque). Sem internet, vai para a fila. */
+  /* "Mover peças" do lote (pedido do Iago, 02/11/2026). O lote é tratado como um grupo de números com um total:
+     a pessoa marca para onde vão e o total que vai. Se não for o lote todo, marca os números que ficam com peças e
+     confirma (ou corrige) quantas peças ficam. Não muda o banco: a tela esvazia os números que não ficam (o que não
+     foi para o destino passa para os números que ficam), deixa os que ficam com partes iguais e, se ficarem menos
+     peças do que o sistema tinha, registra a diferença como perda ("Acerto da contagem ao mover", precisa de internet).
+     Cada lugar de origem vira uma gravação de "Mover peças" (queijos_mover_varios / queijos_mover_estoque). */
   function moverLote(etapa, chave, segunda) {
     const g = lotesNaEtapa(etapa).find((x) => x.chave === chave); if (!g) { SN.ui.closeModal(); return; }
     const ps = g.ps.filter((p) => !!p.segunda === segunda);
     if (!ps.length) return;
-    const total = ps.reduce((a, p) => a + p.pecas, 0);
+    const totalGrupo = ps.reduce((a, p) => a + p.pecas, 0);
     const l = g.l, nome = l.produto_nome + (segunda ? ' 2ª' : '');
-    const origemTxt = ps.map((p) => lugar(etapa, p.numero) + ' (' + fmtNum(p.pecas) + ')').join(', ');
-    const origem = { etapa, numero: -1, segunda, texto: 'onde estão' };
-    const entradaMax = Math.max(...ps.map((p) => new Date(p.entrada_em).getTime()));
-    SN.ui.openModal(segunda ? 'Mover as peças de segunda' : 'Mover o lote todo', `
-      <p class="modal-context">${esc(nome)}, lote ${esc(l.lote)}: ${pecas(total)} em ${esc(origemTxt)}.${segunda ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
-      <form class="form" id="qjForm">${destinoHTML({ max: total, rotuloQuando: 'Data e hora da entrada' })}
-        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover todas as peças</button></div></form>`, (root) => {
+    const numsLote = [...new Set(ps.map((p) => p.numero))];
+    const rot = (n) => (ehGrade(etapa, n) ? 'Grade' : n);
+    const origem = { etapa, numero: -1, numeros: [...new Set(g.ps.map((p) => p.numero))], segunda, texto: 'no lote' };
+    SN.ui.openModal(segunda ? 'Mover peças de segunda' : 'Mover peças', `
+      <p class="modal-context">${esc(nome)}, lote ${esc(l.lote)}: ${pecas(totalGrupo)} ${numsLote.length > 1 ? 'nos números ' + numsLote.map(rot).join(', ') : esc(noLugar(ps[0]))}.${segunda ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
+      <form class="form" id="qjForm">${destinoHTML({ max: totalGrupo, rotuloQuando: 'Data e hora da entrada' })}
+        <fieldset class="qj-destino qj-ficam" data-ficam hidden><legend>O que fica no lote (${etapa === 'salmoura' ? 'salmoura' : 'secagem'})</legend>
+          <p class="muted-note" style="margin:0 0 6px">Números que continuam com peças deste lote:</p>
+          <div class="qj-nums" data-ficam-nums>${numsLote.map((n, i) => `<label class="qj-num${ehGrade(etapa, n) ? ' grade' : ''}"><input type="checkbox" value="${n}" ${i === numsLote.length - 1 ? 'checked' : ''} aria-label="${esc(lugar(etapa, n))}"><span>${rot(n)}</span></label>`).join('')}</div>
+          <label style="margin-top:10px">Peças que ficam<input type="number" name="pecas_ficam" min="0" step="1" inputmode="numeric"></label>
+          <p class="qj-conta" data-ficam-conta aria-live="polite"></p>
+        </fieldset>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
       const form = root.querySelector('#qjForm');
-      ligarDestino(form, origem, null, total, l.produto_id);
-      // Os números de onde as peças já estão não podem ser escolhidos (na mesma etapa).
-      const travar = () => form.querySelectorAll('[data-linha] select').forEach((sel) => {
-        const r = form.querySelector('[name="etapa"]:checked'); if (!r || r.value !== etapa) return;
-        ps.forEach((p) => { const o = sel.querySelector(`option[value="${p.numero}"]`); if (o && !ehGrade(etapa, p.numero)) { o.disabled = true; o.textContent = lugar(etapa, p.numero) + ' (onde as peças estão)'; } });
-      });
-      form.addEventListener('change', travar); form.addEventListener('click', () => setTimeout(travar, 0));
+      ligarDestino(form, origem, null, totalGrupo, l.produto_id);
+      const bloco = form.querySelector('[data-ficam]'), campoFicam = form.querySelector('[name="pecas_ficam"]');
+      let ficamMexido = false;
+      const vaiTotal = () => { const r = form.querySelector('[name="etapa"]:checked'); if (!r) return null;
+        return lerNum(form.querySelector(r.value === 'estoque' ? '[name="pecas_estoque"]' : '[name="pecas_total"]').value) || 0; };
+      const ficamNums = () => [...form.querySelectorAll('[data-ficam-nums] input:checked')].map((c) => Number(c.value));
+      const atualizarFicam = () => {
+        const vai = vaiTotal();
+        const parcial = vai != null && vai > 0 && vai < totalGrupo;
+        bloco.hidden = !parcial;
+        if (!parcial) return;
+        if (!ficamMexido) campoFicam.value = totalGrupo - vai;
+        const fica = lerNum(campoFicam.value), esperado = totalGrupo - vai, c = form.querySelector('[data-ficam-conta]');
+        c.classList.remove('erro');
+        if (fica == null) c.textContent = '';
+        else if (fica > esperado) { c.classList.add('erro'); c.textContent = `O sistema tinha ${pecas(totalGrupo)}: indo ${fmtNum(vai)}, ficam no máximo ${pecas(esperado)}. Confira o total.`; }
+        else if (fica < esperado) c.textContent = `O sistema tinha ${pecas(esperado)} aqui depois da mudança. A diferença (${pecas(esperado - fica)}) será registrada como perda (acerto da contagem).`;
+        else c.textContent = ficamNums().length ? `Ficam ${pecas(fica)} em ${ficamNums().length === 1 ? lugar(etapa, ficamNums()[0]) : 'nos números ' + ficamNums().map(rot).join(', ')}.` : '';
+      };
+      campoFicam.addEventListener('input', () => { ficamMexido = true; });
+      form.addEventListener('input', atualizarFicam); form.addEventListener('change', atualizarFicam);
       root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLote(etapa, chave));
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const d = lerDestino(form); if (!d) return;
-        if (d.total !== total) { toast(`Para mover o lote todo, distribua as ${pecas(total)}. Para mover só parte, use "Mover peças" em cada lugar.`); return; }
-        if (d.etapa === etapa && d.itens.some((x) => ps.some((p) => p.numero === x.numero))) { toast('Escolha lugares diferentes de onde as peças já estão.'); return; }
+        const entradaMax = Math.max(...ps.map((p) => new Date(p.entrada_em).getTime()));
         if (new Date(d.quando).getTime() < entradaMax) { toast('A data da mudança não pode ser antes da entrada atual (' + fmtDataHora(entradaMax) + ').'); return; }
-        const itens = repartir(ps, d).map((x) => ({ tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
-          etapa: d.etapa, itens: x.itens, total: x.itens.reduce((a, i) => a + i.pecas, 0), quando: d.quando, previsao: d.previsao, ...(x.peso ? { peso: x.peso } : {}),
-          texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${resumoDestino({ etapa: d.etapa, itens: x.itens, total: x.itens.reduce((a, i) => a + i.pecas, 0), peso: x.peso })}` }));
-        enviarVarios(form.querySelector('[type="submit"]'), itens, 'Lote movido: ' + resumoDestino(d) + '.');
+        let fica = 0, ficamEm = [];
+        if (d.total < totalGrupo) {
+          ficamEm = ficamNums();
+          fica = lerNum(campoFicam.value);
+          if (fica == null || fica < 0 || fica !== Math.round(fica)) { toast('Informe quantas peças ficam, em número inteiro.'); return; }
+          if (fica > totalGrupo - d.total) { toast('Ficam no máximo ' + pecas(totalGrupo - d.total) + '. Confira o total.'); return; }
+          if (fica > 0 && !ficamEm.length) { toast('Marque os números que continuam com peças.'); return; }
+          if (fica > 0 && fica < ficamEm.length) { toast('São ' + ficamEm.length + ' números para ' + pecas(fica) + '. Desmarque algum.'); return; }
+          if (fica === 0) ficamEm = [];
+        }
+        const perdaQtd = totalGrupo - d.total - fica;
+        if (perdaQtd > 0 && (SN.semInternet() || minhaFilaQj().length || ps.some((p) => ehProvisorio(p.id)))) { toast('O acerto da contagem (perda) precisa de internet e de nada esperando envio. Deixe "Peças que ficam" com ' + fmtNum(totalGrupo - d.total) + ' e registre a perda depois.'); return; }
+        // Quanto cada número que fica deve ter no fim (partes iguais) e quanto cada posição tem para dar.
+        const alvo = {}; repartirTotal(ficamEm, fica).forEach((x) => { alvo[x.numero] = x.pecas; });
+        const sobra = ps.map((p) => ({ p, livre: p.pecas }));
+        // Nos números que ficam, a primeira posição de cada número guarda o alvo; o resto é livre para sair.
+        ficamEm.forEach((n) => { let quer = alvo[n] || 0; sobra.filter((x) => x.p.numero === n).forEach((x) => { const q = Math.min(x.livre, quer); x.livre -= q; quer -= q; alvo[n] = quer; }); });
+        // Fontes: primeiro os números que não ficam, depois o excesso dos que ficam.
+        const fontes = sobra.filter((x) => !ficamEm.includes(x.p.numero)).concat(sobra.filter((x) => ficamEm.includes(x.p.numero)));
+        const pega = (qtd) => { const r = []; for (const x of fontes) { if (qtd <= 0) break; const q = Math.min(x.livre, qtd); if (q > 0) { r.push({ p: x.p, pecas: q }); x.livre -= q; qtd -= q; } } return r; };
+        const tira = pega(d.total);
+        if (tira.reduce((a, t) => a + t.pecas, 0) < d.total) { toast('Só há ' + pecas(totalGrupo) + ' deste lote aqui.'); return; }
+        const itens = repartir(tira, d).map((x) => {
+          const tot = x.itens.reduce((a, i) => a + i.pecas, 0);
+          return { tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
+            etapa: d.etapa, itens: x.itens, total: tot, quando: d.quando, previsao: d.previsao, ...(x.peso ? { peso: x.peso } : {}),
+            texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${resumoDestino({ etapa: d.etapa, itens: x.itens, total: tot, peso: x.peso })}` };
+        });
+        // Números que ficam e ainda precisam de peças: recebem o que sobrou nos números que não ficam (mesma etapa, mesma saída prevista).
+        ficamEm.forEach((n) => {
+          let quer = alvo[n] || 0;
+          for (const x of fontes) {
+            if (quer <= 0) break; if (x.p.numero === n || x.livre <= 0) continue;
+            const q = Math.min(x.livre, quer); x.livre -= q; quer -= q;
+            itens.push({ tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
+              etapa, itens: [{ numero: n, pecas: q }], total: q, quando: d.quando, previsao: x.p.previsao_saida,
+              texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${lugar(etapa, n)} (${pecas(q)}, fica no lote)` });
+          }
+        });
+        // O que ainda sobrar fora dos números que ficam é a diferença da contagem: perda.
+        const perdas = sobra.filter((x) => x.livre > 0).map((x) => ({ p: x.p, pecas: x.livre }));
+        const okPerdas = async () => {
+          for (const x of perdas) {
+            const { error } = await sb.rpc('queijos_perda', { p_posicao: x.p.id, p_pecas: x.pecas, p_motivo: 'Acerto da contagem ao mover' });
+            if (error) { console.error(error); toast('As peças foram movidas, mas o acerto da contagem não foi gravado: ' + erroMsg(error) + ' Registre a perda na ' + lugarCurto(x.p) + '.'); return false; }
+          }
+          return true;
+        };
+        enviarVarios(form.querySelector('[type="submit"]'), itens,
+          'Peças movidas: ' + resumoDestino(d) + (fica ? '. Ficam ' + pecas(fica) + ' no lote' : '') + (perdaQtd > 0 ? '. Acerto: ' + pecas(perdaQtd) + ' como perda' : '') + '.',
+          perdas.length ? okPerdas : null);
       });
     });
   }
-  // Reparte as peças de cada lugar de origem, na ordem, pelos lugares de destino. O peso (estoque) é dividido pelas peças.
-  function repartir(ps, d) {
+  // Reparte o que sai de cada lugar de origem ([{p, pecas}]), na ordem, pelos lugares de destino. O peso (estoque) é dividido pelas peças.
+  function repartir(tira, d) {
     const destinos = d.itens.map((x) => ({ numero: x.numero, resta: x.pecas }));
     let k = 0, pesoUsado = 0;
-    return ps.map((p, idx) => {
-      let falta = p.pecas; const itens = [];
+    return tira.map((t, idx) => {
+      let falta = t.pecas; const itens = [];
       while (falta > 0 && k < destinos.length) {
         const q = Math.min(falta, destinos[k].resta);
         if (q > 0) { const ja = itens.find((i) => i.numero === destinos[k].numero); if (ja) ja.pecas += q; else itens.push({ numero: destinos[k].numero, pecas: q }); }
@@ -6046,14 +6128,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       }
       let peso = null;
       if (d.peso > 0) {
-        peso = idx === ps.length - 1 ? Math.round((d.peso - pesoUsado) * 1000) / 1000 : Math.round(d.peso * p.pecas / d.total * 1000) / 1000;
+        peso = idx === tira.length - 1 ? Math.round((d.peso - pesoUsado) * 1000) / 1000 : Math.round(d.peso * t.pecas / d.total * 1000) / 1000;
         pesoUsado += peso;
       }
-      return { p, itens, peso };
+      return { p: t.p, itens, peso };
     });
   }
   // Grava vários "Mover peças" em seguida. Se a internet cair no meio, o que falta vai para a fila (na ordem).
-  async function enviarVarios(botao, itens, sucesso) {
+  async function enviarVarios(botao, itens, sucesso, depois) {
     const guardarTudo = SN.semInternet() || itens.some((it) => ehProvisorio(it.posicao)) || minhaFilaQj().length > 0;
     let i = 0;
     if (!guardarTudo) {
@@ -6071,7 +6153,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         break; // sem código: não chegou ao banco; o resto vai para a fila
       }
       botao.disabled = false;
-      if (i === itens.length) { SN.ui.closeModal(); toast(sucesso); atualizar(); return; }
+      if (i === itens.length) {
+        // Depois de tudo gravado (ex.: o acerto da contagem como perda).
+        if (depois) { botao.disabled = true; const ok = await depois(); botao.disabled = false; SN.ui.closeModal(); if (ok) toast(sucesso); atualizar(); return; }
+        SN.ui.closeModal(); toast(sucesso); atualizar(); return;
+      }
     }
     const agora = new Date().toISOString();
     const novos = itens.slice(i).map((it) => ({ ...it, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), usuario: SN.usuario.id, guardado_em: agora }));
@@ -6149,8 +6235,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       </div></fieldset>
       <div class="qj-passos" data-passos hidden>
         <div data-bloco-linhas>
-          <div class="qj-linhas" data-linhas></div>
-          <button type="button" class="link-btn qj-mais" data-mais></button>
+          <fieldset class="qj-destino"><legend data-leg-num></legend><div class="qj-nums" data-nums></div>
+            <p class="muted-note qj-nums-nota">Toque para marcar ou desmarcar. Com bolinha = já tem peças.</p></fieldset>
+          <label>Total de peças nesses lugares<input type="number" name="pecas_total" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
         </div>
         <div class="two" data-bloco-estoque>
           <label>Quantas peças<input type="number" name="pecas_estoque" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
@@ -6165,61 +6252,47 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <p class="qj-previsao" data-previsao></p>
       </div>`;
   }
-  function opcoesNumero(etapa, origem, selecionado) {
-    let html = '', primeiraLivre = null;
-    for (const n of numerosDe(etapa)) {
-      const ps = noLugarAtual(etapa, n);
-      const mesmo = origem && origem.etapa === etapa && origem.numero === n;
-      const ocup = ps.length ? ' (com ' + [...new Set(ps.map((p) => lote(p.lote_id).produto_nome + ' ' + lote(p.lote_id).lote))].join(', ') + ')' : ' (livre)';
-      if (!ps.length && !mesmo && primeiraLivre == null && n !== GRADE) primeiraLivre = n;
-      html += `<option value="${n}" ${mesmo ? 'disabled' : ''} ${selecionado === n ? 'selected' : ''}>${esc(lugar(etapa, n))}${mesmo ? ' (onde as peças estão)' : esc(ocup)}</option>`;
-    }
-    return { html, primeiraLivre };
-  }
-  /* max: peças disponíveis; origem: posição de onde saem (ao mover) ou null; unidadeFixa: 'h'/'d' padrão do tempo */
+  /* max: peças disponíveis; origem: posição de onde saem (ao mover) ou null; unidadeFixa: 'h'/'d' padrão do tempo.
+     Salmoura e secagem (pedido do Iago, 02/11/2026): marca os números e informa só o total de peças nesses lugares.
+     A tela divide o total por igual entre os lugares marcados (repartirTotal) e grava como antes, um número por linha. */
   function ligarDestino(form, origem, unidadeFixa, max, produtoId) {
     const lim = (et) => padraoPrateleira(produtoId, et) || Infinity;
     // Peças de segunda (já marcadas, ou marcadas agora no "Dar destino") vão inteiras para a Grade na secagem.
     const caixaSeg = form.querySelector('[name="segunda"]');
     const deSegunda = () => (origem ? !!origem.segunda : !!(caixaSeg && caixaSeg.checked));
-    const linhasEl = form.querySelector('[data-linhas]');
+    const numsEl = form.querySelector('[data-nums]');
     const etapaAtual = () => { const r = form.querySelector('[name="etapa"]:checked'); return r ? r.value : null; };
-    const nomeEt = (et) => ETAPAS[et].nome.toLowerCase();
-    function linhas() { return [...linhasEl.querySelectorAll('[data-linha]')]; }
-    function usados() { return linhas().map((l) => Number(l.querySelector('select').value)); }
-    function soma() { return linhas().reduce((a, l) => a + (lerNum(l.querySelector('input').value) || 0), 0); }
-    function proximaLivre(et) {
-      const ja = new Set(usados());
-      for (let n = 1; n <= ETAPAS[et].max; n++) {
-        if (ja.has(n) || (origem && origem.etapa === et && origem.numero === n)) continue;
-        if (!noLugarAtual(et, n).length) return n;
-      }
-      for (let n = 1; n <= ETAPAS[et].max; n++) if (!ja.has(n) && !(origem && origem.etapa === et && origem.numero === n)) return n;
-      return null;
+    const bloqueado = (et, n) => !!origem && origem.etapa === et && (origem.numero === n || (origem.numeros || []).includes(n));
+    const marcados = () => [...numsEl.querySelectorAll('input:checked')].map((c) => Number(c.value));
+    function sugerir(et, total) {
+      if (et === 'secagem' && deSegunda() && !(origem && ehGrade(origem.etapa, origem.numero))) return [GRADE];
+      const quantos = Math.max(1, Math.min(ETAPAS[et].max, Math.ceil(total / lim(et))));
+      const r = [];
+      for (let n = 1; n <= ETAPAS[et].max && r.length < quantos; n++) if (!bloqueado(et, n) && !noLugarAtual(et, n).length) r.push(n);
+      for (let n = 1; n <= ETAPAS[et].max && r.length < quantos; n++) if (!bloqueado(et, n) && !r.includes(n)) r.push(n);
+      return r;
     }
-    function addLinha(et, numero, qtd) {
-      const i = linhas().length + 1;
-      const div = document.createElement('div');
-      div.className = 'qj-linha'; div.setAttribute('data-linha', '');
-      div.innerHTML = `<label>Número da ${esc(nomeEt(et))}<select name="numero_${i}">${opcoesNumero(et, origem, numero).html}</select></label>
-        <label>Peças<input type="number" name="pecas_${i}" min="1" step="1" inputmode="numeric" value="${qtd > 0 ? qtd : ''}"></label>
-        <button type="button" class="icon-btn qj-tirar" data-tirar aria-label="Tirar esta ${esc(nomeEt(et))}"><svg class="i"><use href="#i-trash"/></svg></button>`;
-      linhasEl.appendChild(div);
+    function montarNums(et, escolhidos) {
+      numsEl.innerHTML = numerosDe(et).map((n) => {
+        const ps = noLugarAtual(et, n), trava = bloqueado(et, n);
+        const quem = ps.length ? 'Com ' + [...new Set(ps.map((p) => lote(p.lote_id).produto_nome + ' ' + lote(p.lote_id).lote))].join(', ') : 'Livre';
+        return `<label class="qj-num${ehGrade(et, n) ? ' grade' : ''}${ps.length ? ' ocupado' : ''}" title="${esc(trava ? 'Onde as peças estão' : quem)}"><input type="checkbox" value="${n}" ${escolhidos.includes(n) ? 'checked' : ''} ${trava ? 'disabled' : ''} aria-label="${esc(lugar(et, n) + ': ' + (trava ? 'onde as peças estão' : quem))}"><span>${ehGrade(et, n) ? 'Grade' : n}</span></label>`;
+      }).join('');
+      form.querySelector('[data-leg-num]').textContent = et === 'salmoura' ? 'Números das salmouras' : 'Números das prateleiras da secagem';
     }
     function atualizar() {
       const et = etapaAtual();
-      const ls = linhas();
-      ls.forEach((l) => { l.querySelector('[data-tirar]').hidden = ls.length < 2; });
-      const total = et === 'estoque' ? (lerNum(form.querySelector('[name="pecas_estoque"]').value) || 0) : soma();
       const conta = form.querySelector('[data-conta]');
+      const total = et === 'estoque' ? (lerNum(form.querySelector('[name="pecas_estoque"]').value) || 0) : (lerNum(form.querySelector('[name="pecas_total"]').value) || 0);
       const resto = max - total;
       conta.classList.toggle('erro', resto < 0);
-      if (!et) conta.textContent = '';
-      else if (resto < 0) conta.textContent = `Passou ${pecas(-resto)}: só há ${pecas(max)} para dar destino.`;
-      else if (resto === 0) conta.textContent = `Total: ${pecas(total)}, todas as peças.`;
-      else conta.textContent = `Total: ${pecas(total)}. ${origem ? 'Ficam ' + pecas(resto) + ' ' + noLugar(origem) : 'Sobram ' + pecas(resto) + ' aguardando destino'}.`;
-      const mais = form.querySelector('[data-mais]');
-      if (et && et !== 'estoque') { mais.textContent = '+ Colocar parte em outra ' + nomeEt(et); mais.hidden = resto <= 0 || ls.length >= ETAPAS[et].max; }
+      if (!et) { conta.textContent = ''; previsao(); return; }
+      const nums = et === 'estoque' ? [] : marcados();
+      const onde = et === 'estoque' ? '' : nums.length ? ' em ' + (nums.length === 1 ? lugar(et, nums[0]) : nums.length + ' lugares (' + nums.map((n) => (ehGrade(et, n) ? 'Grade' : n)).join(', ') + ')') : '';
+      if (resto < 0) conta.textContent = `Passou ${pecas(-resto)}: só há ${pecas(max)}.`;
+      else if (et !== 'estoque' && !nums.length) conta.textContent = 'Marque pelo menos um número.';
+      else if (resto === 0) conta.textContent = `Total: ${pecas(total)}${onde}, todas as peças.`;
+      else conta.textContent = `Total: ${pecas(total)}${onde}. ${origem ? 'Ficam ' + pecas(resto) + ' ' + noLugar(origem) : 'Sobram ' + pecas(resto) + ' aguardando destino'}.`;
       previsao();
     }
     function trocarEtapa() {
@@ -6229,14 +6302,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       form.querySelector('[data-bloco-linhas]').hidden = ehEstoque;
       form.querySelector('[data-bloco-estoque]').hidden = !ehEstoque;
       form.querySelector('[data-bloco-tempo]').hidden = ehEstoque;
-      linhasEl.innerHTML = '';
       if (!ehEstoque) {
-        // Já divide as peças pelas prateleiras, até o limite de uso normal de cada uma (66 na salmoura, 55 na secagem).
-        let resto = max;
-        const paraGrade = et === 'secagem' && deSegunda() && !(origem && ehGrade(origem.etapa, origem.numero));
-        if (paraGrade) addLinha(et, GRADE, max);
-        else do { const q = Math.min(lim(et), resto); addLinha(et, proximaLivre(et), q); resto -= q; }
-        while (resto > 0 && linhas().length < ETAPAS[et].max);
+        const total = lerNum(form.querySelector('[name="pecas_total"]').value) || max;
+        montarNums(et, sugerir(et, total));
         form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
       }
       atualizar();
@@ -6253,16 +6321,14 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       if (etapaAtual() === 'secagem') trocarEtapa();
     });
     ligarMotivo(form);
-    form.querySelector('[data-mais]').addEventListener('click', () => {
-      const et = etapaAtual(); if (!et || et === 'estoque') return;
-      addLinha(et, proximaLivre(et), Math.min(lim(et), Math.max(0, max - soma())));
-      atualizar();
-      const ult = linhas().pop(); if (ult) ult.querySelector('select').focus();
+    // Enquanto a pessoa não mexer nos números, a sugestão acompanha o total digitado.
+    let numsMexidos = false;
+    numsEl.addEventListener('change', () => { numsMexidos = true; });
+    form.querySelector('[name="pecas_total"]').addEventListener('input', (e) => {
+      const et = etapaAtual(), t = lerNum(e.target.value);
+      if (!numsMexidos && et && et !== 'estoque' && t > 0) montarNums(et, sugerir(et, t));
     });
-    linhasEl.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-tirar]'); if (!b) return;
-      b.closest('[data-linha]').remove(); atualizar();
-    });
+    form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', () => { numsMexidos = false; }));
     form.addEventListener('input', atualizar);
     form.addEventListener('change', (e) => { if (e.target.name !== 'etapa' && e.target.name !== 'segunda') atualizar(); });
     form.dataset.max = max;
@@ -6282,18 +6348,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       peso = lerNum(form.querySelector('[name="peso_estoque"]').value);
       if (!silencioso && peso != null && !(peso > 0)) return falha('O peso precisa ser maior que zero (ou deixe em branco).');
     } else {
-      const vistos = new Set();
-      for (const l of form.querySelectorAll('[data-linha]')) {
-        const v = l.querySelector('select').value;
-        const numero = v === '' ? null : Number(v);
-        const pc = lerNum(l.querySelector('input').value);
-        if (numero == null) return falha('Escolha o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
-        if (!silencioso && (!(pc >= 1) || pc !== Math.round(pc))) return falha('Informe as peças da ' + lugar(etapa, numero) + ', em número inteiro.');
-        if (!silencioso && vistos.has(numero)) return falha('A ' + lugar(etapa, numero) + ' aparece duas vezes. Junte as peças numa linha só.');
-        vistos.add(numero);
-        itens.push({ numero, pecas: pc });
-      }
-      if (!itens.length) return falha('Escolha o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
+      const nums = [...form.querySelectorAll('[data-nums] input:checked')].map((c) => Number(c.value));
+      if (!nums.length) return falha('Marque o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
+      const pc = lerNum(form.querySelector('[name="pecas_total"]').value);
+      if (!(pc >= 1) || pc !== Math.round(pc)) return silencioso ? null : falha('Informe o total de peças, em número inteiro.');
+      if (pc < nums.length) return falha('São ' + nums.length + ' lugares marcados para ' + pecas(pc) + '. Desmarque algum.');
+      itens = repartirTotal(nums, pc);
     }
     const total = itens.reduce((a, x) => a + (x.pecas || 0), 0);
     if (!silencioso && total > max) return falha('Só há ' + pecas(max) + ' para dar destino. O total ficou ' + pecas(total) + '.');
@@ -6316,10 +6376,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
     return r;
   }
+  // Divide o total por igual entre os lugares marcados (o que sobra da divisão vai para os primeiros).
+  function repartirTotal(nums, total) {
+    const base = Math.floor(total / nums.length), resto = total - base * nums.length;
+    return nums.map((numero, i) => ({ numero, pecas: base + (i < resto ? 1 : 0) }));
+  }
   function resumoDestino(d) {
     const seg = d.segunda ? ', de segunda' : '';
     if (d.etapa === 'estoque') return pecas(d.total) + (d.peso ? ' (' + kg(d.peso) + ')' : '') + seg + ' no estoque';
-    return d.itens.map((x) => lugar(d.etapa, x.numero) + ' (' + pecas(x.pecas) + ')').join(', ') + seg;
+    const nums = d.itens.map((x) => x.numero);
+    const onde = nums.length === 1 ? lugar(d.etapa, nums[0]) : (d.etapa === 'salmoura' ? 'Salmouras ' : 'Secagem ') + nums.map((n) => (ehGrade(d.etapa, n) ? 'Grade' : n)).join(', ');
+    return onde + ' (' + pecas(d.itens.reduce((a, x) => a + x.pecas, 0)) + ')' + seg;
   }
 
   /* ---------- Motivos de segunda (lista em queijos_motivos_segunda) ---------- */
