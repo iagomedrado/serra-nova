@@ -1061,6 +1061,7 @@
 
   /* ---------- Diárias de prestadores ---------- */
   .dr-semana-panel { margin-bottom: 24px; }
+  .qj-grid2.dr-uma { grid-template-columns: minmax(0, 1fr); }
   .dr-semana-topo { flex-wrap: wrap; align-items: center; }
   .dr-nav { display: flex; flex-wrap: wrap; gap: 6px; }
   .dr-semana-titulo { font-weight: 700; margin: 10px 0 2px; }
@@ -1210,7 +1211,7 @@
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Nos produtores e no pátio</span></span><span class="fig" id="homeResfFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="diarias"><a href="#diarias"><span class="ico"><svg class="i"><use href="#i-diarias"/></svg></span><span><b>Diárias de prestadores</b><span class="muted">Dias ainda não pagos</span></span><span class="fig" id="homeDiariasFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="diarias"><a href="#diarias"><span class="ico"><svg class="i"><use href="#i-diarias"/></svg></span><span><b>Diárias de prestadores</b><span class="muted" id="homeDiariasRot">Dias ainda não pagos</span></span><span class="fig" id="homeDiariasFig">…<small>&nbsp;</small></span></a></li>
           </ul>
         </div>
       </div>
@@ -1606,7 +1607,7 @@
       </section>
 
       <div class="lv-row dr-periodo-row">
-        <h2>Quanto pagar</h2>
+        <h2 id="drPerTitulo">Quanto pagar</h2>
         <div class="summary-controls">
           <div class="segmented" id="drPeriodo" role="group" aria-label="Período">
             <button type="button" class="seg-btn" data-periodo="semana">Esta semana</button>
@@ -1623,7 +1624,7 @@
 
       <div class="qj-grid2">
         <section class="panel" aria-labelledby="h-dr-por"><h2 id="h-dr-por">Por prestador</h2><div id="drPorPrestador"></div></section>
-        <section class="panel" aria-labelledby="h-dr-pag"><h2 id="h-dr-pag">Pagamentos feitos</h2><p class="muted-note" id="drPagNota"></p><div id="drPagamentos"></div></section>
+        <section class="panel" id="drPagBloco" aria-labelledby="h-dr-pag" hidden><h2 id="h-dr-pag">Pagamentos feitos</h2><p class="muted-note" id="drPagNota"></p><div id="drPagamentos"></div></section>
       </div>
     </section>
 
@@ -1944,7 +1945,14 @@
   });
   document.addEventListener("diarias:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
-    $("homeDiariasFig").innerHTML = brl.format(r.aPagar) + "<small>" + (r.prestadoresAPagar ? pl(r.prestadoresAPagar, "prestador", "prestadores") + " · " + n1(r.diasAPagar, 1) + (r.diasAPagar === 1 ? " diária" : " diárias") : "nada a pagar") + "</small>";
+    // Valores só para administradores; os demais veem os dias marcados na semana.
+    if (r.verValores) {
+      $("homeDiariasRot").textContent = "Dias ainda não pagos";
+      $("homeDiariasFig").innerHTML = brl.format(r.aPagar) + "<small>" + (r.prestadoresAPagar ? pl(r.prestadoresAPagar, "prestador", "prestadores") + " · " + n1(r.diasAPagar, 1) + (r.diasAPagar === 1 ? " diária" : " diárias") : "nada a pagar") + "</small>";
+    } else {
+      $("homeDiariasRot").textContent = "Diárias marcadas nesta semana";
+      $("homeDiariasFig").innerHTML = n1(r.diasSemana, 1) + "<small>" + pl(r.prestadoresSemana, "prestador", "prestadores") + "</small>";
+    }
   });
   document.addEventListener("vendas:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
@@ -2103,7 +2111,7 @@
     if (SN.pode("vendas", "ver") && window.SN_Vendas) window.SN_Vendas.iniciar({ sb: SN.sb, podeEditar: SN.pode("vendas", "editar") });
     if (SN.pode("queijos", "ver") && window.SN_Queijos) window.SN_Queijos.iniciar({ sb: SN.sb, podeEditar: SN.pode("queijos", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
-    if (SN.pode("diarias", "ver") && window.SN_Diarias) window.SN_Diarias.iniciar({ sb: SN.sb, podeEditar: SN.pode("diarias", "editar") });
+    if (SN.pode("diarias", "ver") && window.SN_Diarias) window.SN_Diarias.iniciar({ sb: SN.sb, podeEditar: SN.pode("diarias", "editar"), verValores: !!perfil.admin });
     if (perfil.admin) Usuarios.carregar();
   }
   function aplicarPermissoes() {
@@ -9161,8 +9169,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  let sb = null, podeEditar = false, carregado = false, periodo = 'mes';
-  let prestadores = [], dias = [], pagamentos = [], carregadoDesde = null;
+  // verValores: só administradores veem preços, valores e pagamentos (o banco também só entrega para eles).
+  let sb = null, podeEditar = false, verValores = false, carregado = false, periodo = 'mes';
+  let prestadores = [], dias = [], pagamentos = [], precos = [], carregadoDesde = null;
+  const DESDE_SEMPRE = '2000-01-01';
   const nomes = {}, salvando = new Set();
   const SEMANA = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
@@ -9180,7 +9190,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   const fmtQtd = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
   const diarias = (n) => fmtQtd(n) + (Number(n) === 1 ? ' diária' : ' diárias');
   const centavos = (n) => Math.round(Number(n || 0) * 100) / 100;
-  const valorDia = (d) => centavos(Number(d.fracao) * Number(d.valor_diaria || 0));
+  const precosDe = (pid) => precos.filter((x) => x.prestador_id === pid).sort((a, b) => b.desde.localeCompare(a.desde));
+  // Preço que vale num dia: o mais recente com "desde" até essa data.
+  function precoEm(pid, data) { const x = precosDe(pid).find((q) => q.desde <= data); return x ? Number(x.valor_diaria) : null; }
+  const precoAtual = (pid) => precoEm(pid, '9999-12-31');
+  const semPreco = (d) => precoEm(d.prestador_id, d.data) == null;
+  const valorDia = (d) => centavos(Number(d.fracao) * Number(precoEm(d.prestador_id, d.data) || 0));
   const soma = (l, f) => centavos(l.reduce((a, x) => a + f(x), 0));
   function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; }
   const lerValor = (v) => { const s = String(v || '').trim(); return s.includes(',') ? lerNum(s) : (s === '' ? null : (isNaN(parseFloat(s)) ? null : parseFloat(s))); };
@@ -9205,7 +9220,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (!meios) return '';
     return ' (' + [inteiros ? inteiros + (inteiros === 1 ? ' inteira' : ' inteiras') : '', meios + (meios === 1 ? ' meia' : ' meias')].filter(Boolean).join(' e ') + ')';
   }
-  const precoTexto = (p) => brl.format(Number(p.valor_diaria || 0)) + ' a diária';
+  const precoTexto = (p) => { if (!verValores) return ''; const v = precoAtual(p.id); return v == null ? 'sem preço cadastrado' : brl.format(v) + ' a diária'; };
+  const qtdDias = (l) => soma(l, (d) => Number(d.fracao));
 
   /* ---------- Semana e período ---------- */
   let semanaIni = segunda(hojeISO());
@@ -9229,15 +9245,18 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   async function carregar() {
     const r = intervalo();
     const desde = menor(r.de, semanaIni, addDias(hojeISO(), -400));
-    const [p, d, g] = await Promise.all([
+    const vazio = Promise.resolve({ data: [], error: null });
+    const [p, d, g, pr] = await Promise.all([
       sb.from('diarias_prestadores').select('*'),
       sb.from('diarias_dias').select('*').or('pagamento_id.is.null,data.gte.' + desde),
-      sb.from('diarias_pagamentos').select('*').gte('data', desde).order('data', { ascending: false })
+      verValores ? sb.from('diarias_pagamentos').select('*').gte('data', desde).order('data', { ascending: false }) : vazio,
+      verValores ? sb.from('diarias_precos').select('*') : vazio
     ]);
-    for (const x of [p, d, g]) if (x.error) throw x.error;
+    for (const x of [p, d, g, pr]) if (x.error) throw x.error;
     prestadores = (p.data || []).sort(ordemNome);
     dias = d.data || [];
     pagamentos = g.data || [];
+    precos = pr.data || [];
     carregadoDesde = desde;
     carregado = true;
     render();
@@ -9256,9 +9275,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (!carregado) return;
     renderSemana();
     renderPeriodo();
-    const naoPagos = dias.filter((d) => !d.pagamento_id);
+    const naoPagos = dias.filter((d) => !d.pagamento_id), ini = segunda(hojeISO()), daSemana = diasEntre(ini, addDias(ini, 6));
     document.dispatchEvent(new CustomEvent('diarias:resumo', { detail: {
-      carregado: true, aPagar: soma(naoPagos, valorDia), prestadoresAPagar: new Set(naoPagos.map((d) => d.prestador_id)).size, diasAPagar: soma(naoPagos, (d) => Number(d.fracao))
+      carregado: true, verValores, aPagar: soma(naoPagos, valorDia), prestadoresAPagar: new Set(naoPagos.map((d) => d.prestador_id)).size, diasAPagar: qtdDias(naoPagos),
+      diasSemana: qtdDias(daSemana), prestadoresSemana: new Set(daSemana.map((d) => d.prestador_id)).size
     } }));
   }
 
@@ -9275,8 +9295,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('drGrade').innerHTML = lista.map((p) => {
       const daSemana = diasEntre(semanaIni, fim, p.id);
       return `<div class="dr-linha${p.ativo ? '' : ' inativo'}" data-p="${p.id}">
-        <div class="dr-linha-topo"><span><span class="dr-nome">${esc(p.nome)}</span> <span class="dr-serv">${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}${p.ativo ? '' : ' · fora de uso'}</span></span>
-          <span class="dr-soma">${daSemana.length ? 'Na semana: <b>' + diarias(soma(daSemana, (d) => Number(d.fracao))) + '</b> · <b>' + brl.format(soma(daSemana, valorDia)) + '</b>' : 'Nenhum dia na semana'}</span></div>
+        <div class="dr-linha-topo"><span><span class="dr-nome">${esc(p.nome)}</span> <span class="dr-serv">${esc(p.servico || '')}${verValores ? (p.servico ? ' · ' : '') + (precoAtual(p.id) == null ? '<span class="dr-apagar">sem preço cadastrado</span>' : esc(precoTexto(p))) : ''}${p.ativo ? '' : ' · fora de uso'}</span></span>
+          <span class="dr-soma">${daSemana.length ? 'Na semana: <b>' + diarias(qtdDias(daSemana)) + '</b>' + (verValores ? ' · <b>' + brl.format(soma(daSemana, valorDia)) + '</b>' : '') : 'Nenhum dia na semana'}</span></div>
         <div class="dr-dias">${datas.map((dt, i) => {
           const d = diaDe(p.id, dt), k = p.id + '|' + dt;
           const cls = ['dr-dia', dt === h ? 'hoje' : '', d ? (d.pagamento_id ? 'pago' : Number(d.fracao) === 1 ? 'inteiro' : 'meio') : '', salvando.has(k) ? 'salvando' : ''].filter(Boolean).join(' ');
@@ -9290,6 +9310,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 
   function renderPeriodo() {
     const r = intervalo(), noPer = diasEntre(r.de, r.ate);
+    $('drPerTitulo').textContent = verValores ? 'Quanto pagar' : 'Dias no período';
+    $('drPagBloco').hidden = !verValores;
+    $('drPagBloco').parentElement.classList.toggle('dr-uma', !verValores);
+    if (!verValores) { renderPeriodoSemValores(r, noPer); return; }
     const total = soma(noPer, valorDia), pago = soma(noPer.filter((d) => d.pagamento_id), valorDia), falta = centavos(total - pago);
     const comDias = [...new Set(noPer.map((d) => d.prestador_id))];
     const comFalta = new Set(noPer.filter((d) => !d.pagamento_id).map((d) => d.prestador_id)).size;
@@ -9303,8 +9327,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const l = noPer.filter((d) => d.prestador_id === p.id), t = soma(l, valorDia), fp = soma(l.filter((d) => !d.pagamento_id), valorDia);
       return `<div class="dr-item" data-p="${p.id}">
         <div class="dr-item-info"><b>${esc(p.nome)}</b><span>${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}</span><br><span>${diarias(soma(l, (d) => Number(d.fracao)))}${contagem(l)}</span></div>
-        <div class="dr-item-valor"><strong>${brl.format(t)}</strong>${fp > 0 ? '<span class="dr-apagar">A pagar: ' + brl.format(fp) + '</span>' : '<span class="dr-pago-tag">Tudo pago</span>'}</div>
-        <div class="dr-acoes"><button type="button" class="link-btn" data-acao="dias">Ver dias</button>${podeEditar && fp > 0 ? '<button type="button" class="btn btn-small btn-primary" data-acao="pagar">Marcar como pago</button>' : ''}</div>
+        <div class="dr-item-valor"><strong>${brl.format(t)}</strong>${l.some(semPreco) ? '<span class="dr-apagar">Falta cadastrar o preço</span>' : fp > 0 ? '<span class="dr-apagar">A pagar: ' + brl.format(fp) + '</span>' : '<span class="dr-pago-tag">Tudo pago</span>'}</div>
+        <div class="dr-acoes"><button type="button" class="link-btn" data-acao="dias">Ver dias</button>${l.some((d) => !d.pagamento_id) ? '<button type="button" class="btn btn-small btn-primary" data-acao="pagar">Marcar como pago</button>' : ''}</div>
       </div>`;
     }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + rotuloPeriodo() + '.</p>';
 
@@ -9321,6 +9345,25 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }).join('') : '<p class="empty-state-msg">Nenhum pagamento registrado ' + rotuloPeriodo() + '.</p>';
   }
 
+  // Quem não é administrador vê só a quantidade de dias, sem preço nem pagamento.
+  function renderPeriodoSemValores(r, noPer) {
+    const comDias = [...new Set(noPer.map((d) => d.prestador_id))];
+    const inteiros = noPer.filter((d) => Number(d.fracao) === 1).length;
+    $('drResumo').innerHTML = `
+      <div><span>Diárias trabalhadas</span><strong>${fmtQtd(qtdDias(noPer))}</strong><small>${esc(rotuloPeriodo())}</small></div>
+      <div><span>Prestadores</span><strong>${comDias.length}</strong><small>com dias marcados</small></div>
+      <div><span>Dias inteiros e meios</span><strong>${inteiros} e ${noPer.length - inteiros}</strong><small>inteiros e meios dias</small></div>`;
+    const lista = comDias.map(prestador).filter(Boolean).sort(ordemNome);
+    $('drPorPrestador').innerHTML = lista.length ? lista.map((p) => {
+      const l = noPer.filter((d) => d.prestador_id === p.id);
+      return `<div class="dr-item" data-p="${p.id}">
+        <div class="dr-item-info"><b>${esc(p.nome)}</b>${p.servico ? '<span>' + esc(p.servico) + '</span>' : ''}</div>
+        <div class="dr-item-valor"><strong>${diarias(qtdDias(l))}</strong><span>${esc(contagem(l).replace(/^ \(|\)$/g, ''))}</span></div>
+        <div class="dr-acoes"><button type="button" class="link-btn" data-acao="dias">Ver dias</button></div>
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + rotuloPeriodo() + '.</p>';
+  }
+
   /* ---------- Marcar dias ---------- */
   async function gravar(acao) {
     const { error } = await acao;
@@ -9331,7 +9374,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (!podeEditar) { toast('Você tem acesso a esta aba só para consulta.'); return; }
     const k = pid + '|' + data; if (salvando.has(k)) return;
     const d = diaDe(pid, data), p = prestador(pid); if (!p) return;
-    if (d && d.pagamento_id) { toast('Este dia já foi pago. Para mudar, desfaça o pagamento em "Pagamentos feitos".'); return; }
+    if (d && d.pagamento_id) { toast(verValores ? 'Este dia já foi pago. Para mudar, desfaça o pagamento em "Pagamentos feitos".' : 'Este dia já foi pago. Para mudar, fale com um administrador.'); return; }
     if (!d && !p.ativo) { toast('Este prestador está fora de uso. Volte a usar em "Prestadores" para marcar dias.'); return; }
     salvando.add(k);
     let ok;
@@ -9358,18 +9401,18 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const fp = soma(l.filter((d) => !d.pagamento_id), valorDia);
     const foraPer = aPagarDe(pid).filter((d) => d.data < r.de || d.data > r.ate);
     SN.ui.openModal(p.nome, `
-      <p class="modal-context">${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}. Dias ${esc(rotuloPeriodo())}: ${diarias(soma(l, (d) => Number(d.fracao)))}${contagem(l)}, ${brl.format(soma(l, valorDia))}.</p>
+      <p class="modal-context">${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · ') || 'Prestador')}. Dias ${esc(rotuloPeriodo())}: ${diarias(qtdDias(l))}${contagem(l)}${verValores ? ', ' + brl.format(soma(l, valorDia)) : ''}.</p>
       <div data-lista>${l.length ? l.map((d) => {
         const g = d.pagamento_id ? pagamento(d.pagamento_id) : null;
         return `<div class="dr-item" data-id="${d.id}">
-          <div class="dr-item-info"><b>${diaSemana(d.data)}, ${fmtData(d.data)}</b><span>${Number(d.fracao) === 1 ? 'Dia inteiro' : 'Meio dia'} · ${d.pagamento_id ? '<span class="dr-pago-tag">Pago' + (g ? ' em ' + fmtData(g.data) : '') + '</span>' : '<span class="dr-apagar">A pagar</span>'}</span>
+          <div class="dr-item-info"><b>${diaSemana(d.data)}, ${fmtData(d.data)}</b><span>${Number(d.fracao) === 1 ? 'Dia inteiro' : 'Meio dia'}${d.pagamento_id ? ' · <span class="dr-pago-tag">Pago' + (g ? ' em ' + fmtData(g.data) : '') + '</span>' : verValores ? ' · <span class="dr-apagar">A pagar</span>' : ''}</span>
             ${d.observacao ? '<br><span>' + esc(d.observacao) + '</span>' : ''}</div>
-          <div class="dr-item-valor"><strong>${brl.format(valorDia(d))}</strong>${Number(d.valor_diaria) !== Number(p.valor_diaria) ? '<span>diária de ' + brl.format(Number(d.valor_diaria)) + '</span>' : ''}</div>
+          ${verValores ? `<div class="dr-item-valor"><strong>${semPreco(d) ? '<span class="dr-apagar">sem preço</span>' : brl.format(valorDia(d))}</strong>${!semPreco(d) && precoEm(p.id, d.data) !== precoAtual(p.id) ? '<span>diária de ' + brl.format(precoEm(p.id, d.data)) + '</span>' : ''}</div>` : ''}
           ${podeEditar && !d.pagamento_id ? `<div class="dr-acoes"><button type="button" class="link-btn" data-acao="trocar">${Number(d.fracao) === 1 ? 'Mudar para meio dia' : 'Mudar para dia inteiro'}</button>
             <button type="button" class="link-btn" data-acao="obs">${d.observacao ? 'Alterar anotação' : 'Anotar'}</button><button type="button" class="link-btn" data-acao="tirar">Desmarcar</button></div>` : ''}
         </div>`;
       }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + esc(rotuloPeriodo()) + '.</p>'}</div>
-      ${foraPer.length ? `<p class="muted-note">Fora deste período ainda há ${diarias(soma(foraPer, (d) => Number(d.fracao)))} a pagar (${brl.format(soma(foraPer, valorDia))}).</p>` : ''}
+      ${foraPer.length && verValores ? `<p class="muted-note">Fora deste período ainda há ${diarias(soma(foraPer, (d) => Number(d.fracao)))} a pagar (${brl.format(soma(foraPer, valorDia))}).</p>` : ''}
       ${podeEditar && p.ativo ? `<form class="form dr-marcar" data-marcar>
         <h3>Marcar outro dia</h3>
         <div class="two"><label>Data<input type="date" name="data" value="${hojeISO()}" required></label>
@@ -9377,7 +9420,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <label>Anotação (opcional)<input type="text" name="obs" maxlength="200" placeholder="Ex.: limpeza do pátio" autocomplete="off"></label>
         <div><button type="submit" class="btn btn-small">Marcar dia</button></div>
       </form>` : ''}
-      <div class="modal-actions"><button type="button" class="btn" data-fechar>Fechar</button>${podeEditar && fp > 0 ? '<button type="button" class="btn btn-primary" data-pagar>Marcar como pago</button>' : ''}</div>`, (root) => {
+      <div class="modal-actions"><button type="button" class="btn" data-fechar>Fechar</button>${verValores && fp > 0 ? '<button type="button" class="btn btn-primary" data-pagar>Marcar como pago</button>' : ''}</div>`, (root) => {
       root.querySelector('[data-fechar]').addEventListener('click', SN.ui.closeModal);
       const bp = root.querySelector('[data-pagar]'); if (bp) bp.addEventListener('click', () => pagar(pid, () => verDias(pid)));
       root.querySelector('[data-lista]').addEventListener('click', async (e) => {
@@ -9447,6 +9490,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       f.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!selec().length) { toast('Não há dias a pagar entre essas datas.'); return; }
+        const falta = selec().filter(semPreco).map((d) => d.data).sort()[0];
+        if (falta) { toast('Falta o preço da diária para o dia ' + fmtData(falta) + '. Cadastre o preço no prestador.'); return; }
         if (!f.data.value) { toast('Informe a data do pagamento.'); return; }
         const de = menor(f.de.value, f.ate.value), ate = f.de.value > f.ate.value ? f.de.value : f.ate.value;
         const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
@@ -9481,7 +9526,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <p class="modal-context">O prestador que sai de uso deixa de aparecer na marcação dos dias, mas os dias e pagamentos dele continuam guardados.</p>
       <div class="vd-cad" data-lista>
         ${lista.length ? lista.map((p) => { const fp = soma(aPagarDe(p.id), valorDia); return `<div class="vd-cad-item${p.ativo ? '' : ' inativo'}" data-id="${p.id}">
-          <span><b>${esc(p.nome)}</b><br><small>${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}${p.ativo ? '' : ' · fora de uso'}${fp > 0 ? ' · a pagar ' + brl.format(fp) : ''}</small>${p.observacao ? '<br><small>' + esc(p.observacao) + '</small>' : ''}</span>
+          <span><b>${esc(p.nome)}</b><br><small>${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}${p.ativo ? '' : ' · fora de uso'}${verValores && fp > 0 ? ' · a pagar ' + brl.format(fp) : ''}</small>${p.observacao ? '<br><small>' + esc(p.observacao) + '</small>' : ''}</span>
           ${podeEditar ? `<span class="vd-acoes"><button type="button" class="link-btn" data-acao="editar">Editar</button><button type="button" class="link-btn" data-acao="ativo">${p.ativo ? 'Tirar de uso' : 'Voltar a usar'}</button></span>` : ''}</div>`; }).join('') : '<p class="empty-state-msg">Nenhum prestador cadastrado ainda.</p>'}
       </div>
       <div class="modal-actions"><button type="button" class="btn" data-fechar>Fechar</button>${podeEditar ? '<button type="button" class="btn btn-primary" data-novo>Novo prestador</button>' : ''}</div>`, (root) => {
@@ -9499,33 +9544,44 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     });
   }
   function editar(p, voltar) {
-    const naoPagos = p ? aPagarDe(p.id) : [];
+    const atual = p ? precoAtual(p.id) : null, hist = p ? precosDe(p.id) : [];
+    const histTexto = hist.length > 1 || (hist[0] && hist[0].desde !== DESDE_SEMPRE)
+      ? 'Preços: ' + hist.map((x) => brl.format(Number(x.valor_diaria)) + (x.desde === DESDE_SEMPRE ? ' (desde o início)' : ' a partir de ' + fmtData(x.desde))).join('; ') + '.' : '';
     SN.ui.openModal(p ? 'Editar prestador' : 'Novo prestador', `<form class="form" data-f>
       <label>Nome do prestador<input type="text" name="nome" maxlength="120" value="${esc(p ? p.nome : '')}" required autocomplete="off"></label>
       <label>Tipo de serviço<input type="text" name="servico" maxlength="120" value="${esc(p ? p.servico : '')}" list="drServicos" placeholder="Ex.: pedreiro, eletricista, limpeza" autocomplete="off"></label>
       <datalist id="drServicos">${servicos().map((s) => '<option value="' + esc(s) + '">').join('')}</datalist>
-      <label>Preço da diária (R$)<input type="text" name="valor" inputmode="decimal" value="${p ? fmtValorCampo(p.valor_diaria) : ''}" placeholder="Ex.: 150,00" required autocomplete="off"></label>
-      <p class="form-hint">Meio dia vale metade da diária.</p>
-      ${naoPagos.length ? `<label class="check" data-aplicar hidden><input type="checkbox" name="aplicar"> Usar o preço novo também nos ${diarias(soma(naoPagos, (d) => Number(d.fracao)))} ainda não pagos</label>
-        <p class="form-hint" data-aplicar-dica hidden>Sem marcar, esses dias continuam com o preço de quando foram marcados. Dias já pagos nunca mudam.</p>` : ''}
+      ${verValores ? `<label>Preço da diária (R$)<input type="text" name="valor" inputmode="decimal" value="${fmtValorCampo(atual)}" placeholder="Ex.: 150,00" autocomplete="off"></label>
+      <p class="form-hint">Meio dia vale metade da diária. Só administradores veem o preço.${histTexto ? ' ' + esc(histTexto) : ''}</p>
+      ${atual != null ? `<label data-desde hidden>O preço novo vale para os dias a partir de<input type="date" name="desde" value="${hojeISO()}"></label>
+        <p class="form-hint" data-desde-dica hidden>Os dias antes dessa data continuam com o preço antigo. Pagamentos já feitos não mudam.</p>` : ''}` : ''}
       <label>Observação (opcional)<input type="text" name="obs" maxlength="200" value="${esc(p ? p.observacao || '' : '')}" placeholder="Ex.: telefone, chave Pix" autocomplete="off"></label>
       <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form>`, (root) => {
       const f = root.querySelector('[data-f]');
       root.querySelector('[data-voltar]').addEventListener('click', voltar || SN.ui.closeModal);
-      const ap = root.querySelector('[data-aplicar]');
-      if (ap) f.valor.addEventListener('input', () => { const v = lerValor(f.valor.value); const mudou = v != null && centavos(v) !== centavos(p.valor_diaria); ap.hidden = !mudou; root.querySelector('[data-aplicar-dica]').hidden = !mudou; });
+      const bd = root.querySelector('[data-desde]');
+      const mudou = () => { const v = lerValor(f.valor.value); return v != null && centavos(v) !== centavos(atual); };
+      if (bd) f.valor.addEventListener('input', () => { bd.hidden = !mudou(); root.querySelector('[data-desde-dica]').hidden = bd.hidden; });
       f.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nome = f.nome.value.trim(), valor = lerValor(f.valor.value);
+        const nome = f.nome.value.trim();
         if (!nome) { toast('Digite o nome do prestador.'); f.nome.focus(); return; }
-        if (valor == null || valor < 0) { toast('Informe o preço da diária.'); f.valor.focus(); return; }
-        const dados = { nome, servico: f.servico.value.trim(), valor_diaria: centavos(valor), observacao: f.obs.value.trim() || null };
+        let valor = null;
+        if (verValores && f.valor.value.trim() !== '') {
+          valor = lerValor(f.valor.value);
+          if (valor == null || valor < 0) { toast('O preço da diária não está certo. Use, por exemplo, 150,00.'); f.valor.focus(); return; }
+        }
+        if (verValores && valor == null && atual == null && !confirm('Salvar sem o preço da diária? Ele pode ser cadastrado depois.')) return;
+        if (bd && mudou() && !f.desde.value) { toast('Informe a partir de quando vale o preço novo.'); f.desde.focus(); return; }
+        const dados = { nome, servico: f.servico.value.trim(), observacao: f.obs.value.trim() || null };
         const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
-        const ok = await gravar(p ? sb.from('diarias_prestadores').update(dados).eq('id', p.id) : sb.from('diarias_prestadores').insert(dados));
+        const id = p ? p.id : novoId();
+        const ok = await gravar(p ? sb.from('diarias_prestadores').update(dados).eq('id', id) : sb.from('diarias_prestadores').insert({ id, ...dados }));
         if (!ok) { btn.disabled = false; return; }
-        if (p && ap && !ap.hidden && f.aplicar.checked) {
-          const ok2 = await gravar(sb.from('diarias_dias').update({ valor_diaria: dados.valor_diaria }).eq('prestador_id', p.id).is('pagamento_id', null));
-          if (!ok2) toast('O cadastro foi salvo, mas os dias não pagos não mudaram de preço.');
+        if (verValores && valor != null && centavos(valor) !== centavos(atual)) {
+          const desde = atual == null ? DESDE_SEMPRE : f.desde.value;
+          const ok2 = await gravar(sb.from('diarias_precos').upsert({ prestador_id: id, desde, valor_diaria: centavos(valor) }, { onConflict: 'prestador_id,desde' }));
+          if (!ok2) toast('O cadastro foi salvo, mas o preço não. Tente de novo em "Editar".');
         }
         toast(p ? 'Prestador alterado.' : 'Prestador cadastrado.');
         await carregar().catch(console.error);
@@ -9533,10 +9589,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       });
     });
   }
-
   /* ---------- Início ---------- */
   async function iniciar(ctx) {
-    sb = ctx.sb; podeEditar = !!ctx.podeEditar;
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar; verValores = !!ctx.verValores;
+    if (!verValores) document.querySelector('#diariasRoot .page-head p').textContent = 'Prestadores de serviço e os dias que cada um trabalhou.';
     if (!podeEditar) { const n = $('drNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; $('drDica').textContent = '1 = dia inteiro, ½ = meio dia. Dia com ✓ já foi pago.'; }
     else $('drNovo').hidden = false;
     $('drNovo').addEventListener('click', () => editar(null, null));
@@ -9570,7 +9626,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
     try { await carregar(); }
     catch (e) { console.error(e); $('drGrade').innerHTML = '<p class="fatal">Não foi possível carregar as diárias. Recarregue a página.</p>'; return; }
-    ['diarias_prestadores', 'diarias_dias', 'diarias_pagamentos'].forEach((t) => {
+    ['diarias_prestadores', 'diarias_dias'].concat(verValores ? ['diarias_pagamentos', 'diarias_precos'] : []).forEach((t) => {
       sb.channel('sn-dr-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
     });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
