@@ -1058,6 +1058,52 @@
     .rgp-cruz tr.forte th, .rgp-cruz tr.forte td { border-bottom: 1.6px solid #555; }
     .rgp-cruz td.vazio { background: #fff !important; border-color: #eee; }
   }
+
+  /* ---------- Diárias de prestadores ---------- */
+  .dr-semana-panel { margin-bottom: 24px; }
+  .qj-grid2.dr-uma { grid-template-columns: minmax(0, 1fr); }
+  .dr-semana-topo { flex-wrap: wrap; align-items: center; }
+  .dr-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dr-semana-titulo { font-weight: 700; margin: 10px 0 2px; }
+  .dr-grade { display: grid; gap: 12px; margin-top: 12px; }
+  .dr-linha { border: 1px solid var(--line); border-left: 4px solid var(--bar); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+  .dr-linha.inativo { border-left-color: var(--line); }
+  .dr-linha-topo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
+  .dr-nome { font-weight: 700; font-size: 1rem; }
+  .dr-serv { color: var(--muted); font-size: .88rem; }
+  .dr-soma { font-size: .88rem; color: var(--muted); white-space: nowrap; }
+  .dr-soma b { color: var(--ink); }
+  .dr-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .dr-dia { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 58px; padding: 4px 0; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: .78rem; line-height: 1.15; }
+  .dr-dia small { color: var(--muted); font-size: .72rem; }
+  .dr-dia .dr-marca { font-size: 1.15rem; font-weight: 800; min-height: 1.3rem; }
+  .dr-dia.hoje { box-shadow: inset 0 0 0 2px var(--ouro); }
+  .dr-dia.inteiro { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+  .dr-dia.meio { background: var(--warn-soft); border-color: var(--ouro); color: var(--ouro-texto); }
+  .dr-dia.inteiro small { color: rgba(255,255,255,.8); }
+  .dr-dia.pago { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+  .dr-dia.pago small { color: var(--ok); }
+  .dr-dia.salvando { opacity: .55; }
+  .dr-dia:disabled { cursor: default; }
+  .dr-dia:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .dr-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .dr-item:last-child { border-bottom: 0; }
+  .dr-item-info { min-width: 0; flex: 1 1 220px; }
+  .dr-item-info b { display: block; }
+  .dr-item-info span { color: var(--muted); font-size: .88rem; }
+  .dr-item-valor { text-align: right; font-size: .9rem; margin-left: auto; }
+  .dr-item-valor strong { display: block; font-size: 1.02rem; }
+  .dr-apagar { color: var(--danger); font-weight: 700; }
+  .dr-acoes { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; width: 100%; }
+  .dr-pago-tag { color: var(--ok); font-weight: 700; }
+  .dr-total-pagar { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: .95rem; }
+  .dr-total-pagar strong { font-size: 1.15rem; }
+  @media (max-width: 420px) {
+    .dr-dias { gap: 4px; }
+    .dr-dia { min-height: 54px; font-size: .72rem; }
+    .dr-nav .btn { padding: 6px 9px; }
+  }
 </style>
 </head>
 <body>
@@ -1069,6 +1115,7 @@
   <symbol id="i-estoque" viewBox="0 0 24 24"><rect x="3" y="12" width="8" height="8" rx="1"/><rect x="13" y="12" width="8" height="8" rx="1"/><rect x="8" y="3.5" width="8" height="8" rx="1"/></symbol>
   <symbol id="i-vendas" viewBox="0 0 24 24"><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.3 6.3a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.6"/></symbol>
   <symbol id="i-frio" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 10v7"/><circle cx="12" cy="17.8" r="1.4"/></symbol>
+  <symbol id="i-diarias" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M9 15l2 2 4-4"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-sair" viewBox="0 0 24 24"><path d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
@@ -1109,6 +1156,7 @@
         <li data-modulo="vendas"><a href="#vendas"><svg class="i"><use href="#i-vendas"/></svg>Gerenciamento de vendas</a></li>
         <li data-modulo="estoque"><a href="#estoque"><svg class="i"><use href="#i-estoque"/></svg>Controle de estoque</a></li>
         <li data-modulo="resfriadores"><a href="#resfriadores"><svg class="i"><use href="#i-frio"/></svg>Resfriadores</a></li>
+        <li data-modulo="diarias"><a href="#diarias"><svg class="i"><use href="#i-diarias"/></svg>Diárias de prestadores</a></li>
         <li class="sep" role="presentation" data-somente-admin></li>
         <li data-somente-admin><a href="#usuarios"><svg class="i"><use href="#i-users"/></svg>Usuários</a></li>
       </ul>
@@ -1163,6 +1211,7 @@
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Gerenciamento de vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Controle de estoque</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Nos produtores e no pátio</span></span><span class="fig" id="homeResfFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="diarias"><a href="#diarias"><span class="ico"><svg class="i"><use href="#i-diarias"/></svg></span><span><b>Diárias de prestadores</b><span class="muted" id="homeDiariasRot">Dias ainda não pagos</span></span><span class="fig" id="homeDiariasFig">…<small>&nbsp;</small></span></a></li>
           </ul>
         </div>
       </div>
@@ -1535,6 +1584,50 @@
       </div>
     </section>
 
+    <!-- ================= DIÁRIAS DE PRESTADORES ================= -->
+    <section data-tab="diarias" aria-labelledby="t-diarias" id="diariasRoot">
+      <div class="page-head">
+        <div><h1 id="t-diarias">Diárias de prestadores</h1><p>Cadastro dos prestadores de serviço, dias trabalhados e quanto pagar a cada um.</p></div>
+        <div class="actions"><button type="button" class="btn" id="drPrestadores">Prestadores</button><button type="button" class="btn btn-primary" id="drNovo" hidden>Novo prestador</button></div>
+      </div>
+      <p class="test-note" id="drNota" hidden></p>
+
+      <section class="panel dr-semana-panel" aria-labelledby="h-dr-semana">
+        <div class="panel-head-row dr-semana-topo">
+          <h2 id="h-dr-semana">Dias trabalhados</h2>
+          <div class="dr-nav" role="group" aria-label="Escolher a semana">
+            <button type="button" class="btn btn-small" id="drSemAnt" aria-label="Semana anterior">‹ Anterior</button>
+            <button type="button" class="btn btn-small" id="drSemHoje">Esta semana</button>
+            <button type="button" class="btn btn-small" id="drSemProx" aria-label="Próxima semana">Próxima ›</button>
+          </div>
+        </div>
+        <p class="dr-semana-titulo" id="drSemTitulo"></p>
+        <p class="muted-note" id="drDica">Toque no dia para marcar: <b>1</b> = dia inteiro, <b>½</b> = meio dia. Tocando de novo, troca; na terceira vez, desmarca. Dia com ✓ já foi pago.</p>
+        <div class="dr-grade" id="drGrade"><p class="empty-state-msg">Carregando…</p></div>
+      </section>
+
+      <div class="lv-row dr-periodo-row">
+        <h2 id="drPerTitulo">Quanto pagar</h2>
+        <div class="summary-controls">
+          <div class="segmented" id="drPeriodo" role="group" aria-label="Período">
+            <button type="button" class="seg-btn" data-periodo="semana">Esta semana</button>
+            <button type="button" class="seg-btn is-active" data-periodo="mes">Este mês</button>
+            <button type="button" class="seg-btn" data-periodo="mesant">Mês passado</button>
+            <button type="button" class="seg-btn" data-periodo="custom">Período personalizado</button>
+          </div>
+          <div class="custom-range" id="drCustom" hidden>
+            <label class="vd-de">De<input type="date" id="drDe"></label><label class="vd-de">até<input type="date" id="drAte"></label>
+          </div>
+        </div>
+      </div>
+      <div class="ledger pr-resumo" id="drResumo"></div>
+
+      <div class="qj-grid2">
+        <section class="panel" aria-labelledby="h-dr-por"><h2 id="h-dr-por">Por prestador</h2><div id="drPorPrestador"></div></section>
+        <section class="panel" id="drPagBloco" aria-labelledby="h-dr-pag" hidden><h2 id="h-dr-pag">Pagamentos feitos</h2><p class="muted-note" id="drPagNota"></p><div id="drPagamentos"></div></section>
+      </div>
+    </section>
+
     <!-- ================= USUÁRIOS ================= -->
     <section data-tab="usuarios" aria-labelledby="t-usuarios">
       <div class="page-head">
@@ -1574,10 +1667,11 @@
     { id: "queijos", nome: "Produção: salmoura, secagem e estoque" },
     { id: "vendas", nome: "Gerenciamento de vendas" },
     { id: "estoque", nome: "Controle de estoque" },
-    { id: "resfriadores", nome: "Resfriadores" }
+    { id: "resfriadores", nome: "Resfriadores" },
+    { id: "diarias", nome: "Diárias de prestadores" }
   ];
   const TABS = { inicio: "Início", livro: "Livro de contas", producao: "Produção",
-    vendas: "Gerenciamento de vendas", estoque: "Controle de estoque", resfriadores: "Resfriadores", usuarios: "Usuários" };
+    vendas: "Gerenciamento de vendas", estoque: "Controle de estoque", resfriadores: "Resfriadores", diarias: "Diárias de prestadores", usuarios: "Usuários" };
 
   const SN = window.SN = {
     sb: null, usuario: null, perfil: null, permissoes: {},
@@ -1762,7 +1856,7 @@
       if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     $("topTitle").textContent = TABS[id];
-    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos" || id === "vendas" || id === "resfriadores");
+    $("demoNote").hidden = (id === "livro" || id === "usuarios" || id === "estoque" || id === "producao" || id === "queijos" || id === "vendas" || id === "resfriadores" || id === "diarias");
     document.title = TABS[id] + " | Laticínio Serra Nova";
     setMenu(false);
     window.scrollTo(0, 0);
@@ -1848,6 +1942,17 @@
         (l.length ? "Em produtores: " + esc(lista) + "." : "Todos estão no pátio.") + '</span></span><a href="#resfriadores">Ver</a>';
       att.hidden = false;
     } else { att.hidden = true; }
+  });
+  document.addEventListener("diarias:resumo", (e) => {
+    const r = e.detail; if (!r || !r.carregado) return;
+    // Valores só para administradores; os demais veem os dias marcados na semana.
+    if (r.verValores) {
+      $("homeDiariasRot").textContent = "Dias ainda não pagos";
+      $("homeDiariasFig").innerHTML = brl.format(r.aPagar) + "<small>" + (r.prestadoresAPagar ? pl(r.prestadoresAPagar, "prestador", "prestadores") + " · " + n1(r.diasAPagar, 1) + (r.diasAPagar === 1 ? " diária" : " diárias") : "nada a pagar") + "</small>";
+    } else {
+      $("homeDiariasRot").textContent = "Diárias marcadas nesta semana";
+      $("homeDiariasFig").innerHTML = n1(r.diasSemana, 1) + "<small>" + pl(r.prestadoresSemana, "prestador", "prestadores") + "</small>";
+    }
   });
   document.addEventListener("vendas:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
@@ -2006,6 +2111,7 @@
     if (SN.pode("vendas", "ver") && window.SN_Vendas) window.SN_Vendas.iniciar({ sb: SN.sb, podeEditar: SN.pode("vendas", "editar") });
     if (SN.pode("queijos", "ver") && window.SN_Queijos) window.SN_Queijos.iniciar({ sb: SN.sb, podeEditar: SN.pode("queijos", "editar"), nomeUsuario: perfil.nome });
     if (SN.pode("estoque", "ver") && window.SN_Estoque) window.SN_Estoque.iniciar({ sb: SN.sb, podeEditar: SN.pode("estoque", "editar"), nomeUsuario: perfil.nome });
+    if (SN.pode("diarias", "ver") && window.SN_Diarias) window.SN_Diarias.iniciar({ sb: SN.sb, podeEditar: SN.pode("diarias", "editar"), verValores: !!perfil.admin });
     if (perfil.admin) Usuarios.carregar();
   }
   function aplicarPermissoes() {
@@ -9051,6 +9157,482 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   let iniciado = false;
   window.SN_Resfriadores = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
+})();
+</script>
+<script>
+/* =====================================================
+   DIÁRIAS DE PRESTADORES: cadastro (nome, serviço, preço da diária), dias trabalhados
+   (dia inteiro ou meio dia) e pagamentos. Tabelas diarias_prestadores, diarias_dias e
+   diarias_pagamentos; pagar e desfazer só pelas funções diarias_pagar e diarias_desfazer_pagamento.
+   ===================================================== */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  // verValores: só administradores veem preços, valores e pagamentos (o banco também só entrega para eles).
+  let sb = null, podeEditar = false, verValores = false, carregado = false, periodo = 'mes';
+  let prestadores = [], dias = [], pagamentos = [], precos = [], carregadoDesde = null;
+  const DESDE_SEMPRE = '2000-01-01';
+  const nomes = {}, salvando = new Set();
+  const SEMANA = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+  /* ---------- Utilidades ---------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const hojeISO = () => iso(new Date());
+  const paraData = (s) => { const [a, m, d] = s.split('-').map(Number); return new Date(a, m - 1, d); };
+  const addDias = (s, n) => { const d = paraData(s); d.setDate(d.getDate() + n); return iso(d); };
+  const segunda = (s) => { const d = paraData(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+  const menor = (...l) => l.filter(Boolean).sort()[0];
+  function fmtData(s) { if (!s) return ''; const [a, m, d] = String(s).slice(0, 10).split('-'); return d + '/' + m + '/' + a; }
+  const fmtCurta = (s) => fmtData(s).slice(0, 5);
+  function diaSemana(s) { return SEMANA[(paraData(s).getDay() + 6) % 7]; }
+  const fmtQtd = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  const diarias = (n) => fmtQtd(n) + (Number(n) === 1 ? ' diária' : ' diárias');
+  const centavos = (n) => Math.round(Number(n || 0) * 100) / 100;
+  const precosDe = (pid) => precos.filter((x) => x.prestador_id === pid).sort((a, b) => b.desde.localeCompare(a.desde));
+  // Preço que vale num dia: o mais recente com "desde" até essa data.
+  function precoEm(pid, data) { const x = precosDe(pid).find((q) => q.desde <= data); return x ? Number(x.valor_diaria) : null; }
+  const precoAtual = (pid) => precoEm(pid, '9999-12-31');
+  const semPreco = (d) => precoEm(d.prestador_id, d.data) == null;
+  const valorDia = (d) => centavos(Number(d.fracao) * Number(precoEm(d.prestador_id, d.data) || 0));
+  const soma = (l, f) => centavos(l.reduce((a, x) => a + f(x), 0));
+  function lerNum(v) { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; }
+  const lerValor = (v) => { const s = String(v || '').trim(); return s.includes(',') ? lerNum(s) : (s === '' ? null : (isNaN(parseFloat(s)) ? null : parseFloat(s))); };
+  const fmtValorCampo = (n) => (n == null ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  function toast(m) { if (window.SN && SN.ui) SN.ui.toast(m); }
+  function erroMsg(error) {
+    if (error && error.code === 'P0001' && error.message) return error.message;
+    if (error && error.code === '23505') return 'Já existe um prestador com esse nome, ou esse dia já está marcado.';
+    if (window.SN && SN.falhaDeRede && SN.falhaDeRede(error)) return 'Sem internet. Esta gravação precisa de internet; tente de novo quando a conexão voltar.';
+    return 'Não foi possível concluir. Verifique a conexão e tente de novo.';
+  }
+  const novoId = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }));
+  const prestador = (id) => prestadores.find((p) => p.id === id);
+  const ordemNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR');
+  const diaDe = (pid, data) => dias.find((d) => d.prestador_id === pid && d.data === data);
+  const diasEntre = (de, ate, pid) => dias.filter((d) => d.data >= de && d.data <= ate && (!pid || d.prestador_id === pid));
+  const aPagarDe = (pid) => dias.filter((d) => d.prestador_id === pid && !d.pagamento_id);
+  const pagamento = (id) => pagamentos.find((g) => g.id === id);
+  const servicos = () => [...new Set(prestadores.map((p) => (p.servico || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  function contagem(l) {
+    const inteiros = l.filter((d) => Number(d.fracao) === 1).length, meios = l.length - inteiros;
+    if (!meios) return '';
+    return ' (' + [inteiros ? inteiros + (inteiros === 1 ? ' inteira' : ' inteiras') : '', meios + (meios === 1 ? ' meia' : ' meias')].filter(Boolean).join(' e ') + ')';
+  }
+  const precoTexto = (p) => { if (!verValores) return ''; const v = precoAtual(p.id); return v == null ? 'sem preço cadastrado' : brl.format(v) + ' a diária'; };
+  const qtdDias = (l) => soma(l, (d) => Number(d.fracao));
+
+  /* ---------- Semana e período ---------- */
+  let semanaIni = segunda(hojeISO());
+  function intervalo() {
+    const h = hojeISO();
+    if (periodo === 'semana') { const de = segunda(h); return { de, ate: addDias(de, 6) }; }
+    if (periodo === 'mes') { const d = paraData(h); return { de: h.slice(0, 8) + '01', ate: iso(new Date(d.getFullYear(), d.getMonth() + 1, 0)) }; }
+    if (periodo === 'mesant') { const d = paraData(h); return { de: iso(new Date(d.getFullYear(), d.getMonth() - 1, 1)), ate: iso(new Date(d.getFullYear(), d.getMonth(), 0)) }; }
+    const de = $('drDe').value || h, ate = $('drAte').value || h;
+    return de <= ate ? { de, ate } : { de: ate, ate: de };
+  }
+  function rotuloPeriodo() {
+    const r = intervalo();
+    if (periodo === 'semana') return 'nesta semana';
+    if (periodo === 'mes') return 'neste mês';
+    if (periodo === 'mesant') return 'no mês passado';
+    return r.de === r.ate ? 'em ' + fmtData(r.de) : 'de ' + fmtData(r.de) + ' a ' + fmtData(r.ate);
+  }
+
+  /* ---------- Dados ---------- */
+  async function carregar() {
+    const r = intervalo();
+    const desde = menor(r.de, semanaIni, addDias(hojeISO(), -400));
+    const vazio = Promise.resolve({ data: [], error: null });
+    const [p, d, g, pr] = await Promise.all([
+      sb.from('diarias_prestadores').select('*'),
+      sb.from('diarias_dias').select('*').or('pagamento_id.is.null,data.gte.' + desde),
+      verValores ? sb.from('diarias_pagamentos').select('*').gte('data', desde).order('data', { ascending: false }) : vazio,
+      verValores ? sb.from('diarias_precos').select('*') : vazio
+    ]);
+    for (const x of [p, d, g, pr]) if (x.error) throw x.error;
+    prestadores = (p.data || []).sort(ordemNome);
+    dias = d.data || [];
+    pagamentos = g.data || [];
+    precos = pr.data || [];
+    carregadoDesde = desde;
+    carregado = true;
+    render();
+  }
+  let timer = null;
+  function atualizar() {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (salvando.size) { atualizar(); return; } // espera terminar o que está gravando
+      carregar().catch((e) => { console.error(e); toast('Sem conexão com o servidor. Verifique a internet.'); });
+    }, 300);
+  }
+
+  /* ---------- Tela ---------- */
+  function render() {
+    if (!carregado) return;
+    renderSemana();
+    renderPeriodo();
+    const naoPagos = dias.filter((d) => !d.pagamento_id), ini = segunda(hojeISO()), daSemana = diasEntre(ini, addDias(ini, 6));
+    document.dispatchEvent(new CustomEvent('diarias:resumo', { detail: {
+      carregado: true, verValores, aPagar: soma(naoPagos, valorDia), prestadoresAPagar: new Set(naoPagos.map((d) => d.prestador_id)).size, diasAPagar: qtdDias(naoPagos),
+      diasSemana: qtdDias(daSemana), prestadoresSemana: new Set(daSemana.map((d) => d.prestador_id)).size
+    } }));
+  }
+
+  function renderSemana() {
+    const fim = addDias(semanaIni, 6), h = hojeISO();
+    const datas = Array.from({ length: 7 }, (_, i) => addDias(semanaIni, i));
+    $('drSemTitulo').textContent = (semanaIni === segunda(h) ? 'Esta semana: ' : 'Semana de ') + fmtCurta(semanaIni) + ' a ' + fmtData(fim);
+    const lista = prestadores.filter((p) => p.ativo || diasEntre(semanaIni, fim, p.id).length);
+    if (!lista.length) {
+      $('drGrade').innerHTML = '<p class="empty-state-msg">' + (prestadores.length ? 'Nenhum prestador em uso.' : 'Nenhum prestador cadastrado ainda.') +
+        (podeEditar ? ' Use o botão "Novo prestador" para cadastrar.' : '') + '</p>';
+      return;
+    }
+    $('drGrade').innerHTML = lista.map((p) => {
+      const daSemana = diasEntre(semanaIni, fim, p.id);
+      return `<div class="dr-linha${p.ativo ? '' : ' inativo'}" data-p="${p.id}">
+        <div class="dr-linha-topo"><span><span class="dr-nome">${esc(p.nome)}</span> <span class="dr-serv">${esc(p.servico || '')}${verValores ? (p.servico ? ' · ' : '') + (precoAtual(p.id) == null ? '<span class="dr-apagar">sem preço cadastrado</span>' : esc(precoTexto(p))) : ''}${p.ativo ? '' : ' · fora de uso'}</span></span>
+          <span class="dr-soma">${daSemana.length ? 'Na semana: <b>' + diarias(qtdDias(daSemana)) + '</b>' + (verValores ? ' · <b>' + brl.format(soma(daSemana, valorDia)) + '</b>' : '') : 'Nenhum dia na semana'}</span></div>
+        <div class="dr-dias">${datas.map((dt, i) => {
+          const d = diaDe(p.id, dt), k = p.id + '|' + dt;
+          const cls = ['dr-dia', dt === h ? 'hoje' : '', d ? (d.pagamento_id ? 'pago' : Number(d.fracao) === 1 ? 'inteiro' : 'meio') : '', salvando.has(k) ? 'salvando' : ''].filter(Boolean).join(' ');
+          const marca = d ? (Number(d.fracao) === 1 ? '1' : '½') + (d.pagamento_id ? '✓' : '') : '';
+          const desc = SEMANA[i] + ' ' + fmtData(dt) + ': ' + (d ? (Number(d.fracao) === 1 ? 'dia inteiro' : 'meio dia') + (d.pagamento_id ? ', já pago' : '') : 'não trabalhou');
+          return `<button type="button" class="${cls}" data-d="${dt}" aria-label="${esc(desc)}" title="${esc(desc)}"${podeEditar ? '' : ' disabled'}><small>${SEMANA[i]}</small><span>${dt.slice(8)}</span><span class="dr-marca">${marca}</span></button>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPeriodo() {
+    const r = intervalo(), noPer = diasEntre(r.de, r.ate);
+    $('drPerTitulo').textContent = verValores ? 'Quanto pagar' : 'Dias no período';
+    $('drPagBloco').hidden = !verValores;
+    $('drPagBloco').parentElement.classList.toggle('dr-uma', !verValores);
+    if (!verValores) { renderPeriodoSemValores(r, noPer); return; }
+    const total = soma(noPer, valorDia), pago = soma(noPer.filter((d) => d.pagamento_id), valorDia), falta = centavos(total - pago);
+    const comDias = [...new Set(noPer.map((d) => d.prestador_id))];
+    const comFalta = new Set(noPer.filter((d) => !d.pagamento_id).map((d) => d.prestador_id)).size;
+    $('drResumo').innerHTML = `
+      <div><span>Diárias trabalhadas</span><strong>${fmtQtd(soma(noPer, (d) => Number(d.fracao)))}</strong><small>${comDias.length === 1 ? '1 prestador' : comDias.length + ' prestadores'} ${rotuloPeriodo()}</small></div>
+      <div><span>Valor das diárias</span><strong>${brl.format(total)}</strong><small>já pago: ${brl.format(pago)}</small></div>
+      <div class="${falta > 0 ? 'rf-res-defeito' : ''}"><span>A pagar</span><strong>${brl.format(falta)}</strong><small>${falta > 0 ? (comFalta === 1 ? '1 prestador' : comFalta + ' prestadores') : 'nada a pagar no período'}</small></div>`;
+
+    const lista = comDias.map(prestador).filter(Boolean).sort(ordemNome);
+    $('drPorPrestador').innerHTML = lista.length ? lista.map((p) => {
+      const l = noPer.filter((d) => d.prestador_id === p.id), t = soma(l, valorDia), fp = soma(l.filter((d) => !d.pagamento_id), valorDia);
+      return `<div class="dr-item" data-p="${p.id}">
+        <div class="dr-item-info"><b>${esc(p.nome)}</b><span>${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}</span><br><span>${diarias(soma(l, (d) => Number(d.fracao)))}${contagem(l)}</span></div>
+        <div class="dr-item-valor"><strong>${brl.format(t)}</strong>${l.some(semPreco) ? '<span class="dr-apagar">Falta cadastrar o preço</span>' : fp > 0 ? '<span class="dr-apagar">A pagar: ' + brl.format(fp) + '</span>' : '<span class="dr-pago-tag">Tudo pago</span>'}</div>
+        <div class="dr-acoes"><button type="button" class="link-btn" data-acao="dias">Ver dias</button>${l.some((d) => !d.pagamento_id) ? '<button type="button" class="btn btn-small btn-primary" data-acao="pagar">Marcar como pago</button>' : ''}</div>
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + rotuloPeriodo() + '.</p>';
+
+    const pags = pagamentos.filter((g) => g.data >= r.de && g.data <= r.ate).sort((a, b) => b.data.localeCompare(a.data) || String(b.criado_em).localeCompare(String(a.criado_em)));
+    $('drPagNota').textContent = pags.length ? 'Pagamentos registrados ' + rotuloPeriodo() + ': ' + brl.format(soma(pags, (g) => Number(g.valor))) + '.' : '';
+    $('drPagamentos').innerHTML = pags.length ? pags.map((g) => {
+      const p = prestador(g.prestador_id);
+      return `<div class="dr-item" data-g="${g.id}">
+        <div class="dr-item-info"><b>${esc(p ? p.nome : 'Prestador')}</b><span>Pago em ${fmtData(g.data)} · ${diarias(g.dias)}${g.de && g.ate ? ' de ' + fmtCurta(g.de) + ' a ' + fmtData(g.ate) : ''}</span>
+          ${g.observacao ? '<br><span>' + esc(g.observacao) + '</span>' : ''}${nomes[g.criado_por] ? '<br><span>Registrado por ' + esc(nomes[g.criado_por]) + '</span>' : ''}</div>
+        <div class="dr-item-valor"><strong>${brl.format(Number(g.valor))}</strong></div>
+        ${podeEditar ? '<div class="dr-acoes"><button type="button" class="link-btn" data-acao="desfazer">Desfazer pagamento</button></div>' : ''}
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Nenhum pagamento registrado ' + rotuloPeriodo() + '.</p>';
+  }
+
+  // Quem não é administrador vê só a quantidade de dias, sem preço nem pagamento.
+  function renderPeriodoSemValores(r, noPer) {
+    const comDias = [...new Set(noPer.map((d) => d.prestador_id))];
+    const inteiros = noPer.filter((d) => Number(d.fracao) === 1).length;
+    $('drResumo').innerHTML = `
+      <div><span>Diárias trabalhadas</span><strong>${fmtQtd(qtdDias(noPer))}</strong><small>${esc(rotuloPeriodo())}</small></div>
+      <div><span>Prestadores</span><strong>${comDias.length}</strong><small>com dias marcados</small></div>
+      <div><span>Dias inteiros e meios</span><strong>${inteiros} e ${noPer.length - inteiros}</strong><small>inteiros e meios dias</small></div>`;
+    const lista = comDias.map(prestador).filter(Boolean).sort(ordemNome);
+    $('drPorPrestador').innerHTML = lista.length ? lista.map((p) => {
+      const l = noPer.filter((d) => d.prestador_id === p.id);
+      return `<div class="dr-item" data-p="${p.id}">
+        <div class="dr-item-info"><b>${esc(p.nome)}</b>${p.servico ? '<span>' + esc(p.servico) + '</span>' : ''}</div>
+        <div class="dr-item-valor"><strong>${diarias(qtdDias(l))}</strong><span>${esc(contagem(l).replace(/^ \(|\)$/g, ''))}</span></div>
+        <div class="dr-acoes"><button type="button" class="link-btn" data-acao="dias">Ver dias</button></div>
+      </div>`;
+    }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + rotuloPeriodo() + '.</p>';
+  }
+
+  /* ---------- Marcar dias ---------- */
+  async function gravar(acao) {
+    const { error } = await acao;
+    if (error) { console.error(error); toast(erroMsg(error)); }
+    return !error;
+  }
+  async function tocar(pid, data) {
+    if (!podeEditar) { toast('Você tem acesso a esta aba só para consulta.'); return; }
+    const k = pid + '|' + data; if (salvando.has(k)) return;
+    const d = diaDe(pid, data), p = prestador(pid); if (!p) return;
+    if (d && d.pagamento_id) { toast(verValores ? 'Este dia já foi pago. Para mudar, desfaça o pagamento em "Pagamentos feitos".' : 'Este dia já foi pago. Para mudar, fale com um administrador.'); return; }
+    if (!d && !p.ativo) { toast('Este prestador está fora de uso. Volte a usar em "Prestadores" para marcar dias.'); return; }
+    salvando.add(k);
+    let ok;
+    if (!d) {
+      const novo = { id: novoId(), prestador_id: pid, data, fracao: 1, valor_diaria: p.valor_diaria, pagamento_id: null };
+      dias.push(novo); render();
+      ok = await gravar(sb.from('diarias_dias').insert({ id: novo.id, prestador_id: pid, data, fracao: 1 }));
+    } else if (Number(d.fracao) === 1) {
+      d.fracao = 0.5; render();
+      ok = await gravar(sb.from('diarias_dias').update({ fracao: 0.5 }).eq('id', d.id));
+    } else {
+      dias = dias.filter((x) => x !== d); render();
+      ok = await gravar(sb.from('diarias_dias').delete().eq('id', d.id));
+    }
+    salvando.delete(k);
+    render();
+    if (!ok) carregar().catch(console.error); else atualizar();
+  }
+
+  /* ---------- Dias de um prestador ---------- */
+  function verDias(pid) {
+    const p = prestador(pid); if (!p) return;
+    const r = intervalo(), l = diasEntre(r.de, r.ate, pid).sort((a, b) => a.data.localeCompare(b.data));
+    const fp = soma(l.filter((d) => !d.pagamento_id), valorDia);
+    const foraPer = aPagarDe(pid).filter((d) => d.data < r.de || d.data > r.ate);
+    SN.ui.openModal(p.nome, `
+      <p class="modal-context">${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · ') || 'Prestador')}. Dias ${esc(rotuloPeriodo())}: ${diarias(qtdDias(l))}${contagem(l)}${verValores ? ', ' + brl.format(soma(l, valorDia)) : ''}.</p>
+      <div data-lista>${l.length ? l.map((d) => {
+        const g = d.pagamento_id ? pagamento(d.pagamento_id) : null;
+        return `<div class="dr-item" data-id="${d.id}">
+          <div class="dr-item-info"><b>${diaSemana(d.data)}, ${fmtData(d.data)}</b><span>${Number(d.fracao) === 1 ? 'Dia inteiro' : 'Meio dia'}${d.pagamento_id ? ' · <span class="dr-pago-tag">Pago' + (g ? ' em ' + fmtData(g.data) : '') + '</span>' : verValores ? ' · <span class="dr-apagar">A pagar</span>' : ''}</span>
+            ${d.observacao ? '<br><span>' + esc(d.observacao) + '</span>' : ''}</div>
+          ${verValores ? `<div class="dr-item-valor"><strong>${semPreco(d) ? '<span class="dr-apagar">sem preço</span>' : brl.format(valorDia(d))}</strong>${!semPreco(d) && precoEm(p.id, d.data) !== precoAtual(p.id) ? '<span>diária de ' + brl.format(precoEm(p.id, d.data)) + '</span>' : ''}</div>` : ''}
+          ${podeEditar && !d.pagamento_id ? `<div class="dr-acoes"><button type="button" class="link-btn" data-acao="trocar">${Number(d.fracao) === 1 ? 'Mudar para meio dia' : 'Mudar para dia inteiro'}</button>
+            <button type="button" class="link-btn" data-acao="obs">${d.observacao ? 'Alterar anotação' : 'Anotar'}</button><button type="button" class="link-btn" data-acao="tirar">Desmarcar</button></div>` : ''}
+        </div>`;
+      }).join('') : '<p class="empty-state-msg">Nenhum dia trabalhado ' + esc(rotuloPeriodo()) + '.</p>'}</div>
+      ${foraPer.length && verValores ? `<p class="muted-note">Fora deste período ainda há ${diarias(soma(foraPer, (d) => Number(d.fracao)))} a pagar (${brl.format(soma(foraPer, valorDia))}).</p>` : ''}
+      ${podeEditar && p.ativo ? `<form class="form dr-marcar" data-marcar>
+        <h3>Marcar outro dia</h3>
+        <div class="two"><label>Data<input type="date" name="data" value="${hojeISO()}" required></label>
+          <label>Quanto trabalhou<select name="fracao"><option value="1">Dia inteiro</option><option value="0.5">Meio dia</option></select></label></div>
+        <label>Anotação (opcional)<input type="text" name="obs" maxlength="200" placeholder="Ex.: limpeza do pátio" autocomplete="off"></label>
+        <div><button type="submit" class="btn btn-small">Marcar dia</button></div>
+      </form>` : ''}
+      <div class="modal-actions"><button type="button" class="btn" data-fechar>Fechar</button>${verValores && fp > 0 ? '<button type="button" class="btn btn-primary" data-pagar>Marcar como pago</button>' : ''}</div>`, (root) => {
+      root.querySelector('[data-fechar]').addEventListener('click', SN.ui.closeModal);
+      const bp = root.querySelector('[data-pagar]'); if (bp) bp.addEventListener('click', () => pagar(pid, () => verDias(pid)));
+      root.querySelector('[data-lista]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b) return;
+        const d = dias.find((x) => x.id === b.closest('[data-id]').dataset.id); if (!d) return;
+        if (b.dataset.acao === 'obs') { anotar(d, () => verDias(pid)); return; }
+        b.disabled = true;
+        const ok = b.dataset.acao === 'trocar'
+          ? await gravar(sb.from('diarias_dias').update({ fracao: Number(d.fracao) === 1 ? 0.5 : 1 }).eq('id', d.id))
+          : await gravar(sb.from('diarias_dias').delete().eq('id', d.id));
+        if (ok) toast(b.dataset.acao === 'trocar' ? 'Dia alterado.' : 'Dia desmarcado.');
+        await carregar().catch(console.error); verDias(pid);
+      });
+      const f = root.querySelector('[data-marcar]');
+      if (f) f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = f.data.value, fracao = Number(f.fracao.value), obs = f.obs.value.trim() || null;
+        if (!data) { toast('Informe a data.'); return; }
+        const ja = diaDe(pid, data);
+        if (ja) { toast(ja.pagamento_id ? 'Esse dia já está marcado e pago.' : 'Esse dia já está marcado. Use "Mudar" ou "Desmarcar" na lista.'); return; }
+        f.querySelector('button[type="submit"]').disabled = true;
+        const ok = await gravar(sb.from('diarias_dias').insert({ id: novoId(), prestador_id: pid, data, fracao, observacao: obs }));
+        if (ok) toast(data >= intervalo().de && data <= intervalo().ate ? 'Dia marcado.' : 'Dia marcado (fora do período que está na tela).');
+        await carregar().catch(console.error); verDias(pid);
+      });
+    });
+  }
+  function anotar(d, voltar) {
+    SN.ui.openModal('Anotação do dia ' + fmtData(d.data), `<form class="form" data-f>
+      <label>Anotação<textarea name="obs" rows="3" maxlength="200" placeholder="Ex.: serviço feito, horário">${esc(d.observacao || '')}</textarea></label>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form>`, (root) => {
+      root.querySelector('[data-voltar]').addEventListener('click', voltar);
+      const f = root.querySelector('[data-f]');
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ok = await gravar(sb.from('diarias_dias').update({ observacao: f.obs.value.trim() || null }).eq('id', d.id));
+        if (ok) toast('Anotação salva.');
+        await carregar().catch(console.error); voltar();
+      });
+    });
+  }
+
+  /* ---------- Pagamento ---------- */
+  function pagar(pid, voltar) {
+    const p = prestador(pid); if (!p) return;
+    const r = intervalo();
+    const deIni = menor(r.de, ...aPagarDe(pid).filter((d) => d.data <= r.ate).map((d) => d.data)) || r.de;
+    SN.ui.openModal('Marcar como pago', `<form class="form" data-f>
+      <p class="modal-context"><b>${esc(p.nome)}</b>${p.servico ? ' · ' + esc(p.servico) : ''}. Todos os dias ainda não pagos entre as datas abaixo ficam marcados como pagos.</p>
+      <div class="two"><label>Dias de<input type="date" name="de" value="${r.de}" required></label><label>até<input type="date" name="ate" value="${r.ate}" required></label></div>
+      ${deIni < r.de ? `<p class="form-hint">Há dias a pagar antes deste período, desde ${fmtData(deIni)}. <button type="button" class="link-btn" data-desde="${deIni}">Incluir esses dias</button></p>` : ''}
+      <div class="dr-total-pagar" data-total aria-live="polite"></div>
+      <div class="two"><label>Data do pagamento<input type="date" name="data" value="${hojeISO()}" required></label>
+        <label>Como pagou (opcional)<input type="text" name="obs" maxlength="200" placeholder="Ex.: Pix, dinheiro" autocomplete="off"></label></div>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar pagamento</button></div></form>`, (root) => {
+      const f = root.querySelector('[data-f]');
+      const selec = () => { const de = f.de.value, ate = f.ate.value; return de && ate ? aPagarDe(pid).filter((d) => d.data >= menor(de, ate) && d.data <= (de > ate ? de : ate)) : []; };
+      const mostrar = () => {
+        const l = selec();
+        root.querySelector('[data-total]').innerHTML = l.length
+          ? 'A pagar: <strong>' + brl.format(soma(l, valorDia)) + '</strong><br>' + diarias(soma(l, (d) => Number(d.fracao))) + contagem(l) + ', de ' + fmtData(l.map((d) => d.data).sort()[0]) + ' a ' + fmtData(l.map((d) => d.data).sort().pop()) + '.'
+          : 'Não há dias a pagar entre essas datas.';
+      };
+      f.de.addEventListener('input', mostrar); f.ate.addEventListener('input', mostrar); mostrar();
+      const bd = root.querySelector('[data-desde]'); if (bd) bd.addEventListener('click', () => { f.de.value = bd.dataset.desde; bd.closest('p').hidden = true; mostrar(); });
+      root.querySelector('[data-voltar]').addEventListener('click', voltar || SN.ui.closeModal);
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selec().length) { toast('Não há dias a pagar entre essas datas.'); return; }
+        const falta = selec().filter(semPreco).map((d) => d.data).sort()[0];
+        if (falta) { toast('Falta o preço da diária para o dia ' + fmtData(falta) + '. Cadastre o preço no prestador.'); return; }
+        if (!f.data.value) { toast('Informe a data do pagamento.'); return; }
+        const de = menor(f.de.value, f.ate.value), ate = f.de.value > f.ate.value ? f.de.value : f.ate.value;
+        const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
+        const ok = await gravar(sb.rpc('diarias_pagar', { p_prestador: pid, p_de: de, p_ate: ate, p_data: f.data.value, p_observacao: f.obs.value.trim() || null }));
+        if (!ok) { btn.disabled = false; return; }
+        toast('Pagamento registrado.');
+        SN.ui.closeModal();
+        carregar().catch(console.error);
+      });
+    });
+  }
+  function desfazerPagamento(gid) {
+    const g = pagamento(gid); if (!g) return;
+    const p = prestador(g.prestador_id);
+    SN.ui.confirmar({
+      titulo: 'Desfazer pagamento',
+      mensagem: 'O pagamento de ' + brl.format(Number(g.valor)) + ' para ' + (p ? p.nome : 'o prestador') + ', feito em ' + fmtData(g.data) + ', será apagado e os ' + diarias(g.dias) + ' voltam a ficar a pagar.',
+      botao: 'Desfazer pagamento', perigo: true,
+      acao: async () => {
+        const ok = await gravar(sb.rpc('diarias_desfazer_pagamento', { p_pagamento: gid }));
+        SN.ui.closeModal();
+        if (ok) toast('Pagamento desfeito.');
+        carregar().catch(console.error);
+      }
+    });
+  }
+
+  /* ---------- Cadastro de prestadores ---------- */
+  function gerenciar() {
+    const lista = prestadores.slice().sort((a, b) => (b.ativo - a.ativo) || ordemNome(a, b));
+    SN.ui.openModal('Prestadores', `
+      <p class="modal-context">O prestador que sai de uso deixa de aparecer na marcação dos dias, mas os dias e pagamentos dele continuam guardados.</p>
+      <div class="vd-cad" data-lista>
+        ${lista.length ? lista.map((p) => { const fp = soma(aPagarDe(p.id), valorDia); return `<div class="vd-cad-item${p.ativo ? '' : ' inativo'}" data-id="${p.id}">
+          <span><b>${esc(p.nome)}</b><br><small>${esc([p.servico, precoTexto(p)].filter(Boolean).join(' · '))}${p.ativo ? '' : ' · fora de uso'}${verValores && fp > 0 ? ' · a pagar ' + brl.format(fp) : ''}</small>${p.observacao ? '<br><small>' + esc(p.observacao) + '</small>' : ''}</span>
+          ${podeEditar ? `<span class="vd-acoes"><button type="button" class="link-btn" data-acao="editar">Editar</button><button type="button" class="link-btn" data-acao="ativo">${p.ativo ? 'Tirar de uso' : 'Voltar a usar'}</button></span>` : ''}</div>`; }).join('') : '<p class="empty-state-msg">Nenhum prestador cadastrado ainda.</p>'}
+      </div>
+      <div class="modal-actions"><button type="button" class="btn" data-fechar>Fechar</button>${podeEditar ? '<button type="button" class="btn btn-primary" data-novo>Novo prestador</button>' : ''}</div>`, (root) => {
+      root.querySelector('[data-fechar]').addEventListener('click', SN.ui.closeModal);
+      const bn = root.querySelector('[data-novo]'); if (bn) bn.addEventListener('click', () => editar(null, gerenciar));
+      root.querySelector('[data-lista]').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+        const p = prestador(b.closest('[data-id]').dataset.id); if (!p) return;
+        if (b.dataset.acao === 'editar') { editar(p, gerenciar); return; }
+        b.disabled = true;
+        const ok = await gravar(sb.from('diarias_prestadores').update({ ativo: !p.ativo }).eq('id', p.id));
+        if (ok) toast(p.ativo ? 'Prestador tirado de uso.' : 'Prestador voltou a ser usado.');
+        await carregar().catch(console.error); gerenciar();
+      });
+    });
+  }
+  function editar(p, voltar) {
+    const atual = p ? precoAtual(p.id) : null, hist = p ? precosDe(p.id) : [];
+    const histTexto = hist.length > 1 || (hist[0] && hist[0].desde !== DESDE_SEMPRE)
+      ? 'Preços: ' + hist.map((x) => brl.format(Number(x.valor_diaria)) + (x.desde === DESDE_SEMPRE ? ' (desde o início)' : ' a partir de ' + fmtData(x.desde))).join('; ') + '.' : '';
+    SN.ui.openModal(p ? 'Editar prestador' : 'Novo prestador', `<form class="form" data-f>
+      <label>Nome do prestador<input type="text" name="nome" maxlength="120" value="${esc(p ? p.nome : '')}" required autocomplete="off"></label>
+      <label>Tipo de serviço<input type="text" name="servico" maxlength="120" value="${esc(p ? p.servico : '')}" list="drServicos" placeholder="Ex.: pedreiro, eletricista, limpeza" autocomplete="off"></label>
+      <datalist id="drServicos">${servicos().map((s) => '<option value="' + esc(s) + '">').join('')}</datalist>
+      ${verValores ? `<label>Preço da diária (R$)<input type="text" name="valor" inputmode="decimal" value="${fmtValorCampo(atual)}" placeholder="Ex.: 150,00" autocomplete="off"></label>
+      <p class="form-hint">Meio dia vale metade da diária. Só administradores veem o preço.${histTexto ? ' ' + esc(histTexto) : ''}</p>
+      ${atual != null ? `<label data-desde hidden>O preço novo vale para os dias a partir de<input type="date" name="desde" value="${hojeISO()}"></label>
+        <p class="form-hint" data-desde-dica hidden>Os dias antes dessa data continuam com o preço antigo. Pagamentos já feitos não mudam.</p>` : ''}` : ''}
+      <label>Observação (opcional)<input type="text" name="obs" maxlength="200" value="${esc(p ? p.observacao || '' : '')}" placeholder="Ex.: telefone, chave Pix" autocomplete="off"></label>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" data-voltar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form>`, (root) => {
+      const f = root.querySelector('[data-f]');
+      root.querySelector('[data-voltar]').addEventListener('click', voltar || SN.ui.closeModal);
+      const bd = root.querySelector('[data-desde]');
+      const mudou = () => { const v = lerValor(f.valor.value); return v != null && centavos(v) !== centavos(atual); };
+      if (bd) f.valor.addEventListener('input', () => { bd.hidden = !mudou(); root.querySelector('[data-desde-dica]').hidden = bd.hidden; });
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = f.nome.value.trim();
+        if (!nome) { toast('Digite o nome do prestador.'); f.nome.focus(); return; }
+        let valor = null;
+        if (verValores && f.valor.value.trim() !== '') {
+          valor = lerValor(f.valor.value);
+          if (valor == null || valor < 0) { toast('O preço da diária não está certo. Use, por exemplo, 150,00.'); f.valor.focus(); return; }
+        }
+        if (verValores && valor == null && atual == null && !confirm('Salvar sem o preço da diária? Ele pode ser cadastrado depois.')) return;
+        if (bd && mudou() && !f.desde.value) { toast('Informe a partir de quando vale o preço novo.'); f.desde.focus(); return; }
+        const dados = { nome, servico: f.servico.value.trim(), observacao: f.obs.value.trim() || null };
+        const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
+        const id = p ? p.id : novoId();
+        const ok = await gravar(p ? sb.from('diarias_prestadores').update(dados).eq('id', id) : sb.from('diarias_prestadores').insert({ id, ...dados }));
+        if (!ok) { btn.disabled = false; return; }
+        if (verValores && valor != null && centavos(valor) !== centavos(atual)) {
+          const desde = atual == null ? DESDE_SEMPRE : f.desde.value;
+          const ok2 = await gravar(sb.from('diarias_precos').upsert({ prestador_id: id, desde, valor_diaria: centavos(valor) }, { onConflict: 'prestador_id,desde' }));
+          if (!ok2) toast('O cadastro foi salvo, mas o preço não. Tente de novo em "Editar".');
+        }
+        toast(p ? 'Prestador alterado.' : 'Prestador cadastrado.');
+        await carregar().catch(console.error);
+        if (voltar) voltar(); else SN.ui.closeModal();
+      });
+    });
+  }
+  /* ---------- Início ---------- */
+  async function iniciar(ctx) {
+    sb = ctx.sb; podeEditar = !!ctx.podeEditar; verValores = !!ctx.verValores;
+    if (!verValores) document.querySelector('#diariasRoot .page-head p').textContent = 'Prestadores de serviço e os dias que cada um trabalhou.';
+    if (!podeEditar) { const n = $('drNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; $('drDica').textContent = '1 = dia inteiro, ½ = meio dia. Dia com ✓ já foi pago.'; }
+    else $('drNovo').hidden = false;
+    $('drNovo').addEventListener('click', () => editar(null, null));
+    $('drPrestadores').addEventListener('click', gerenciar);
+    $('drGrade').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-d]'); if (!b) return;
+      tocar(b.closest('[data-p]').dataset.p, b.dataset.d);
+    });
+    const irSemana = (s) => { semanaIni = s; renderSemana(); if (carregadoDesde && semanaIni < carregadoDesde) atualizar(); };
+    $('drSemAnt').addEventListener('click', () => irSemana(addDias(semanaIni, -7)));
+    $('drSemProx').addEventListener('click', () => irSemana(addDias(semanaIni, 7)));
+    $('drSemHoje').addEventListener('click', () => irSemana(segunda(hojeISO())));
+    $('drPeriodo').addEventListener('click', (e) => {
+      const b = e.target.closest('.seg-btn'); if (!b) return;
+      if (b.dataset.periodo === 'custom' && !$('drDe').value) { const r = intervalo(); $('drDe').value = r.de; $('drAte').value = r.ate; }
+      periodo = b.dataset.periodo;
+      $('drPeriodo').querySelectorAll('.seg-btn').forEach((x) => x.classList.toggle('is-active', x === b));
+      $('drCustom').hidden = periodo !== 'custom';
+      renderPeriodo();
+      if (carregadoDesde && intervalo().de < carregadoDesde) atualizar();
+    });
+    ['drDe', 'drAte'].forEach((id) => $(id).addEventListener('change', () => { renderPeriodo(); if (carregadoDesde && intervalo().de < carregadoDesde) atualizar(); }));
+    $('drPorPrestador').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao]'); if (!b) return;
+      const pid = b.closest('[data-p]').dataset.p;
+      if (b.dataset.acao === 'dias') verDias(pid); else pagar(pid, null);
+    });
+    $('drPagamentos').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="desfazer"]'); if (b) desfazerPagamento(b.closest('[data-g]').dataset.g);
+    });
+    try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
+    try { await carregar(); }
+    catch (e) { console.error(e); $('drGrade').innerHTML = '<p class="fatal">Não foi possível carregar as diárias. Recarregue a página.</p>'; return; }
+    ['diarias_prestadores', 'diarias_dias'].concat(verValores ? ['diarias_pagamentos', 'diarias_precos'] : []).forEach((t) => {
+      sb.channel('sn-dr-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
+  }
+  let iniciado = false;
+  window.SN_Diarias = { iniciar(ctx) { if (iniciado) return; iniciado = true; iniciar(ctx); } };
 })();
 </script>
 </body>
