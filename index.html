@@ -7060,6 +7060,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     }
     return null;
   }
+  // Lotes misturados, sem número de lote: grava este texto no lugar do número.
+  const LOTE_VARIADOS = 'Variados';
   async function estoqueInicial() {
     let prods;
     try { prods = (await carregarProdutos()).filter((x) => x.ativo); }
@@ -7072,8 +7074,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           <label>Queijo<select name="produto">${opcoes}</select></label>
           <label>Lote<input type="text" name="lote" maxlength="30" autocomplete="off" inputmode="numeric" placeholder="Ex.: 28011"></label>
         </div>
+        <label class="check"><input type="checkbox" name="variados"> Lotes variados (sem número de lote)</label>
         <div class="three">
-          <label>Data de fabricação<input type="date" name="fabricacao"></label>
+          <label><span data-rot-fab>Data de fabricação</span><input type="date" name="fabricacao"></label>
           <label>Peças<input type="number" name="pecas" min="1" step="1" inputmode="numeric" placeholder="0"></label>
           <label>Peso (kg), se já pesou<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
         </div>
@@ -7097,7 +7100,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
       const linhas = () => [...lista.querySelectorAll('[data-ini]')];
       const ler = (el) => ({
-        el, produto_id: el.querySelector('[name="produto"]').value, lote: el.querySelector('[name="lote"]').value.trim(),
+        el, produto_id: el.querySelector('[name="produto"]').value, variados: el.querySelector('[name="variados"]').checked,
+        lote: el.querySelector('[name="variados"]').checked ? LOTE_VARIADOS : el.querySelector('[name="lote"]').value.trim(),
         data_fabricacao: el.querySelector('[name="fabricacao"]').value, pecas: lerNum(el.querySelector('[name="pecas"]').value),
         peso_kg: lerNum(el.querySelector('[name="peso"]').value)
       });
@@ -7110,9 +7114,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       // A data vem do lote enquanto a pessoa não trocar a data à mão; a dica avisa se não conferir.
       function dica(el) {
         const lt = el.querySelector('[name="lote"]').value.trim(), dt = el.querySelector('[name="fabricacao"]');
+        const d = el.querySelector('[data-dica]');
+        if (el.querySelector('[name="variados"]').checked) {
+          d.textContent = 'Sem número de lote: na venda e no estoque aparece "lote ' + LOTE_VARIADOS + '". A data de fabricação é opcional; em branco, fica a data da entrada no estoque.';
+          d.classList.remove('erro'); return;
+        }
         const daLote = dataDoLote(lt);
         if (daLote && !dt.dataset.mexeu) dt.value = daLote;
-        const d = el.querySelector('[data-dica]');
         if (!lt) { d.textContent = ''; d.classList.remove('erro'); return; }
         if (!daLote) { d.textContent = 'O lote não começa com o dia do ano: confira a data de fabricação.'; d.classList.add('erro'); return; }
         const confere = dt.value === daLote;
@@ -7122,7 +7130,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       lista.addEventListener('input', (e) => {
         const el = e.target.closest('[data-ini]'); if (!el) return;
         if (e.target.name === 'fabricacao') e.target.dataset.mexeu = '1';
-        if (e.target.name === 'lote' || e.target.name === 'fabricacao') dica(el);
+        if (e.target.name === 'variados') {
+          const campo = el.querySelector('[name="lote"]'), dt = el.querySelector('[name="fabricacao"]');
+          campo.disabled = e.target.checked;
+          campo.placeholder = e.target.checked ? 'Lotes variados' : 'Ex.: 28011';
+          if (e.target.checked) { campo.dataset.antes = campo.value; campo.value = ''; if (!dt.dataset.mexeu) dt.value = ''; }
+          else { campo.value = campo.dataset.antes || ''; }
+          el.querySelector('[data-rot-fab]').textContent = e.target.checked ? 'Data de fabricação (a mais antiga, se souber)' : 'Data de fabricação';
+        }
+        if (e.target.name === 'lote' || e.target.name === 'fabricacao' || e.target.name === 'variados') dica(el);
         arrumar();
       });
       lista.addEventListener('change', (e) => { const el = e.target.closest('[data-ini]'); if (el && e.target.name === 'fabricacao') dica(el); });
@@ -7141,25 +7157,26 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       arrumar();
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const ls = linhas().map(ler).filter((x) => x.produto_id || x.lote || x.pecas || x.peso_kg);
+        const ls = linhas().map(ler).filter((x) => x.produto_id || x.variados || x.lote || x.pecas || x.peso_kg);
         if (!ls.length) { toast('Preencha pelo menos um lote.'); return; }
+        const q = form.querySelector('[name="quando"]').value, quando = q ? new Date(q) : null;
+        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da entrada.'); return; }
         const vistos = new Set();
         for (const x of ls) {
           const nome = 'Lote ' + (linhas().indexOf(x.el) + 1);
           if (!x.produto_id) { toast(nome + ': escolha o queijo.'); x.el.querySelector('[name="produto"]').focus(); return; }
-          if (!x.lote) { toast(nome + ': informe o número do lote.'); x.el.querySelector('[name="lote"]').focus(); return; }
+          if (!x.lote) { toast(nome + ': informe o número do lote (ou marque "Lotes variados").'); x.el.querySelector('[name="lote"]').focus(); return; }
+          if (x.variados && !x.data_fabricacao) x.data_fabricacao = q.slice(0, 10); // sem data: fica a da entrada no estoque
           if (!x.data_fabricacao) { toast(nome + ': informe a data de fabricação.'); x.el.querySelector('[name="fabricacao"]').focus(); return; }
           if (x.data_fabricacao > localInput(new Date()).slice(0, 10)) { toast(nome + ': a data de fabricação está no futuro.'); return; }
           if (!(x.pecas >= 1) || x.pecas !== Math.round(x.pecas)) { toast(nome + ': informe as peças, em número inteiro.'); x.el.querySelector('[name="pecas"]').focus(); return; }
           if (x.peso_kg != null && !(x.peso_kg > 0)) { toast(nome + ': o peso precisa ser maior que zero (ou deixe em branco).'); return; }
           const chave = x.produto_id + '|' + x.lote;
-          if (vistos.has(chave)) { toast(nome + ': o mesmo queijo e lote aparece duas vezes. Junte as peças numa linha só.'); return; }
+          if (vistos.has(chave)) { toast(nome + (x.variados ? ': o mesmo queijo aparece duas vezes com "Lotes variados".' : ': o mesmo queijo e lote aparece duas vezes.') + ' Junte as peças numa linha só.'); return; }
           vistos.add(chave);
         }
         let motivo = null;
         if (caixaSeg.checked) { motivo = lerMotivo(form); if (!motivo) { toast('Escolha o motivo das peças de segunda.'); return; } }
-        const q = form.querySelector('[name="quando"]').value, quando = q ? new Date(q) : null;
-        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da entrada.'); return; }
         const pc = ls.reduce((a, x) => a + x.pecas, 0);
         enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_estoque_inicial', {
           p_itens: ls.map((x) => ({ produto_id: x.produto_id, lote: x.lote, data_fabricacao: x.data_fabricacao, pecas: x.pecas, peso_kg: x.peso_kg > 0 ? Math.round(x.peso_kg * 1000) / 1000 : null })),
