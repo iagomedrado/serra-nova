@@ -272,6 +272,19 @@
   #producaoRoot:is([data-visao="lancamento"], [data-visao="resumo"]) :is(#qjResumo, #qjNota),
   #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not(:is([data-visao="lancamento"], [data-visao="resumo"])) #prNota { display: none !important; }
   .pr-porproduto, #pdSegunda { margin-bottom: 20px; }
+  /* Salmoura, Secagem e Estoque: só o total do próprio setor, numa linha. */
+  #qjResumo { display: block; }
+  #qjResumo > div { display: none !important; border: 0 !important; }
+  #producaoRoot[data-visao="salmoura"] #qjResumo > [data-setor="salmoura"],
+  #producaoRoot[data-visao="secagem"] #qjResumo > [data-setor="secagem"],
+  #producaoRoot[data-visao="estoque"] #qjResumo > [data-setor="estoque"] { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+  #qjResumo span { display: inline; }
+  /* Resumo: peças em cada setor agora e o total na fábrica. */
+  .pd-fabrica { margin-bottom: 8px; }
+  #qjFabrica { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  #qjFabrica .qj-total { background: rgba(242,184,30,.14); border-radius: 0 10px 10px 0; }
+  @media (max-width: 760px) { #qjFabrica { grid-template-columns: repeat(2, minmax(0, 1fr)); } #qjFabrica .qj-total { grid-column: 1 / -1; border-left: 0; border-radius: 0 0 10px 10px; } }
+  @media (max-width: 560px) { #qjFabrica { grid-template-columns: repeat(2, minmax(0, 1fr)); } #qjFabrica div:nth-child(2n) { border-left: 1px solid var(--line); } #qjFabrica div:nth-child(2) { border-top: 0; } }
   .pr-acomp { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
   @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .pr-acomp:has(> #pdMovResumo[hidden]) { grid-template-columns: minmax(0, 1fr); } }
   #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
@@ -1160,7 +1173,7 @@
         <li data-modulo="producao queijos"><a href="#producao"><svg class="i"><use href="#i-producao"/></svg>Produção</a></li>
         <li data-modulo="estoque"><a href="#estoque"><svg class="i"><use href="#i-estoque"/></svg>Insumos</a></li>
         <li data-modulo="resfriadores"><a href="#resfriadores"><svg class="i"><use href="#i-frio"/></svg>Resfriadores</a></li>
-        <li class="grupo" data-modulo="vendas livro diarias">Dinheiro</li>
+        <li class="grupo" data-modulo="vendas livro diarias">Financeiro</li>
         <li data-modulo="vendas"><a href="#vendas"><svg class="i"><use href="#i-vendas"/></svg>Vendas</a></li>
         <li data-modulo="livro"><a href="#livro"><svg class="i"><use href="#i-livro"/></svg>Livro de contas</a></li>
         <li data-modulo="diarias"><a href="#diarias"><svg class="i"><use href="#i-diarias"/></svg>Diárias</a></li>
@@ -1356,6 +1369,10 @@
       </div>
 
       <div id="pdPainelResumo" role="tabpanel" aria-label="Resumo" hidden>
+        <section class="pd-fabrica" id="pdFabrica" aria-labelledby="h-pd-fab" data-modulo="queijos">
+          <h2 id="h-pd-fab">Peças na fábrica agora</h2>
+          <div class="ledger pr-resumo" id="qjFabrica"></div>
+        </section>
         <div class="lv-row">
           <h2>Resumo</h2>
           <div class="summary-controls">
@@ -5951,11 +5968,17 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const ocupados = (et) => new Set(posicoes.filter((p) => p.etapa === et && p.numero > 0).map((p) => p.numero)).size;
     const naGrade = posicoes.filter((p) => ehGrade(p.etapa, p.numero)).reduce((a, p) => a + p.pecas, 0);
     const aguardando = pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0);
-    $('qjResumo').innerHTML = `
-      <div><span>Aguardando destino</span><strong>${fmtNum(aguardando)}</strong><small>${pendentes.length === 1 ? '1 lote da produção' : pendentes.length + ' lotes da produção'}</small></div>
-      <div><span>Na salmoura</span><strong>${fmtNum(soma('salmoura'))}</strong><small>${ocupados('salmoura')} de 20 ocupadas</small></div>
-      <div><span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas${naGrade ? ' · Grade: ' + fmtNum(naGrade) : ''}</small></div>
-      <div><span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small></div>`;
+    // Cada sub-aba (Salmoura, Secagem, Estoque) mostra só o total do seu setor; o Resumo mostra todos e o total na fábrica.
+    const setores = {
+      aguardando: `<span>Aguardando destino</span><strong>${fmtNum(aguardando)}</strong><small>${pendentes.length === 1 ? '1 lote da produção' : pendentes.length + ' lotes da produção'}</small>`,
+      salmoura: `<span>Na salmoura</span><strong>${fmtNum(soma('salmoura'))}</strong><small>${ocupados('salmoura')} de 20 ocupadas</small>`,
+      secagem: `<span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas${naGrade ? ' · Grade: ' + fmtNum(naGrade) : ''}</small>`,
+      estoque: `<span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small>`
+    };
+    const naFabrica = aguardando + soma('salmoura') + soma('secagem') + soma('estoque');
+    $('qjResumo').innerHTML = ['salmoura', 'secagem', 'estoque'].map((k) => `<div data-setor="${k}">${setores[k]}</div>`).join('');
+    $('qjFabrica').innerHTML = Object.values(setores).map((h) => `<div>${h}</div>`).join('')
+      + `<div class="qj-total"><span>Total na fábrica</span><strong>${fmtNum(naFabrica)}</strong><small>peças de queijo</small></div>`;
     renderFila();
     document.querySelectorAll('.qj-leg-fila').forEach((el) => { el.hidden = !posicoes.some((p) => p.na_fila); });
     $('qjSalmoura').innerHTML = mapa('salmoura');
