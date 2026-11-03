@@ -5860,20 +5860,21 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 (function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  /* Saída prevista (pedido do Iago, 03/11/2026): em horas, conta da hora da entrada; em dias, vence às 00:00 do último dia
-     (as horas do último dia não contam). Ex.: entrou 03/11 14:00 com 2 dias = sai 05/11 00:00. */
+  /* Saída prevista (pedido do Iago, 03/11/2026): em horas, conta da hora da entrada; em dias, o dia da entrada é o 1º dia
+     e vence às 00:00 do último dia (as horas não contam). Ex.: entrou 03/11 14:00 com 2 dias = sai 04/11 00:00.
+     Se isso cair antes da entrada (1 dia ou menos), conta as horas como antes. */
   function somarTempo(quando, t, unidade) {
     const ini = new Date(quando);
     if (unidade !== 'd') return new Date(ini.getTime() + t * 3600000);
-    const d = new Date(ini.getTime() + t * 86400000);
+    const d = new Date(ini.getTime() + (t - 1) * 86400000);
     d.setHours(0, 0, 0, 0);
     return d > ini ? d : new Date(ini.getTime() + t * 86400000);
   }
   // Se a saída prevista caiu às 00:00 de um dia contado como acima, devolve quantos dias foram; senão null.
   function diasDaPrevisao(entrada, previsao) {
     const e = new Date(entrada), s = new Date(previsao), z = new Date(e); z.setHours(0, 0, 0, 0);
-    const n = Math.round((s - z) / 86400000);
-    return n >= 1 && somarTempo(e, n, 'd').getTime() === s.getTime() ? n : null;
+    const n = Math.round((s - z) / 86400000) + 1;
+    return n >= 2 && somarTempo(e, n, 'd').getTime() === s.getTime() ? n : null;
   }
   const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
   // Peças por prateleira em uso normal, por produto (cadastro em Produtos; vem de queijos_padroes()).
