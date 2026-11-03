@@ -6462,8 +6462,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     function previsao() {
       const out = form.querySelector('[data-previsao]');
       const d = lerDestino(form, true);
-      const emDias = form.querySelector('[name="unidade"]').value === 'd';
-    out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) + (emDias ? ' (início do último dia; as horas não contam)' : '') : '';
+      out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) + (diasDaPrevisao(d.quando, d.previsao) ? ' (início do último dia; as horas não contam)' : '') : '';
     }
     form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
     if (caixaSeg) caixaSeg.addEventListener('change', () => {
@@ -6835,7 +6834,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (!(t > 0)) return null;
         return somarTempo(p.entrada_em, t, form.querySelector('[name="unidade"]').value);
       };
-      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) + (form.querySelector('[name="unidade"]').value === 'd' ? ' (início do último dia; as horas não contam)' : '') : ''; };
+      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) + (diasDaPrevisao(p.entrada_em, d) ? ' (início do último dia; as horas não contam)' : '') : ''; };
       form.addEventListener('input', mostrar); form.addEventListener('change', mostrar); mostrar();
       root.querySelector('[data-cancelar]').addEventListener('click', () => voltarAnterior(p));
       form.addEventListener('submit', (e) => {
