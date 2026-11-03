@@ -2,12 +2,12 @@
    A cópia é usada SÓ quando não há internet: com internet, a página vem sempre do site
    (versão mais nova) e a cópia é renovada. Os dados do Supabase não passam por aqui:
    quem guarda a cópia dos dados é a própria página. */
-const COPIA = 'sn-pagina-v2';
+const COPIA = 'sn-pagina-v3';
 // Endereços de fora do site que a página precisa para abrir (biblioteca do Supabase e fontes).
 const DE_FORA = ['https://cdn.jsdelivr.net/npm/@supabase/', 'https://fonts.googleapis.com/', 'https://fonts.gstatic.com/'];
 
 // Na instalação já guarda a página e o que ela precisa: basta abrir o sistema uma vez com internet.
-const ARQUIVOS = ['./', 'manifest.webmanifest', 'icon-192.png', 'favicon.png',
+const ARQUIVOS = ['./', 'manifest.webmanifest', 'logo.webp', 'icon-192.png', 'favicon.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js'];
 self.addEventListener('install', (e) => e.waitUntil((async () => {
   const copia = await caches.open(COPIA);
