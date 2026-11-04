@@ -5860,6 +5860,22 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
 (function () {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  /* Saída prevista (pedido do Iago, 03/11/2026): em horas, conta da hora da entrada; em dias, o dia da entrada é o 1º dia
+     e vence às 00:00 do último dia (as horas não contam). Ex.: entrou 03/11 14:00 com 2 dias = sai 04/11 00:00.
+     Se isso cair antes da entrada (1 dia ou menos), conta as horas como antes. */
+  function somarTempo(quando, t, unidade) {
+    const ini = new Date(quando);
+    if (unidade !== 'd') return new Date(ini.getTime() + t * 3600000);
+    const d = new Date(ini.getTime() + (t - 1) * 86400000);
+    d.setHours(0, 0, 0, 0);
+    return d > ini ? d : new Date(ini.getTime() + t * 86400000);
+  }
+  // Se a saída prevista caiu às 00:00 de um dia contado como acima, devolve quantos dias foram; senão null.
+  function diasDaPrevisao(entrada, previsao) {
+    const e = new Date(entrada), s = new Date(previsao), z = new Date(e); z.setHours(0, 0, 0, 0);
+    const n = Math.round((s - z) / 86400000) + 1;
+    return n >= 2 && somarTempo(e, n, 'd').getTime() === s.getTime() ? n : null;
+  }
   const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
   // Peças por prateleira em uso normal, por produto (cadastro em Produtos; vem de queijos_padroes()).
   let padroes = {};
@@ -6446,7 +6462,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     function previsao() {
       const out = form.querySelector('[data-previsao]');
       const d = lerDestino(form, true);
-      out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) : '';
+      out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) + (diasDaPrevisao(d.quando, d.previsao) ? ' (início do último dia; as horas não contam)' : '') : '';
     }
     form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
     if (caixaSeg) caixaSeg.addEventListener('change', () => {
@@ -6505,8 +6521,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (etapa !== 'estoque') {
       const t = lerNum(form.querySelector('[name="tempo"]').value);
       if (!(t > 0)) return falha('Informe quanto tempo as peças vão ficar.');
-      const unidade = form.querySelector('[name="unidade"]').value === 'd' ? 86400000 : 3600000;
-      r.previsao = new Date(quando.getTime() + t * unidade).toISOString();
+      r.previsao = somarTempo(quando, t, form.querySelector('[name="unidade"]').value).toISOString();
     }
     return r;
   }
@@ -6801,8 +6816,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const p = posicoes.find((x) => x.id === posId); if (!p) return;
     const l = lote(p.lote_id);
     const horas = p.previsao_saida ? (new Date(p.previsao_saida) - new Date(p.entrada_em)) / 3600000 : 0;
-    const emDias = p.etapa === 'secagem' && horas > 0 && Math.abs(horas / 24 - Math.round(horas / 24)) < 0.01;
-    const valor = horas > 0 ? (emDias ? Math.round(horas / 24) : Math.round(horas * 100) / 100) : '';
+    const dias = p.previsao_saida ? diasDaPrevisao(p.entrada_em, p.previsao_saida) : null;
+    const emDias = dias != null || (p.etapa === 'secagem' && horas > 0 && Math.abs(horas / 24 - Math.round(horas / 24)) < 0.01);
+    const valor = horas > 0 ? (dias != null ? dias : emDias ? Math.round(horas / 24) : Math.round(horas * 100) / 100) : '';
     SN.ui.openModal('Ajustar tempo', `
       <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}, ${esc(noLugar(p))}. Entrou ${fmtDataHora(p.entrada_em)}.</p>
       <form class="form" id="qjForm">
@@ -6816,10 +6832,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const calcular = () => {
         const t = lerNum(form.querySelector('[name="tempo"]').value);
         if (!(t > 0)) return null;
-        const u = form.querySelector('[name="unidade"]').value === 'd' ? 86400000 : 3600000;
-        return new Date(new Date(p.entrada_em).getTime() + t * u);
+        return somarTempo(p.entrada_em, t, form.querySelector('[name="unidade"]').value);
       };
-      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) : ''; };
+      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) + (diasDaPrevisao(p.entrada_em, d) ? ' (início do último dia; as horas não contam)' : '') : ''; };
       form.addEventListener('input', mostrar); form.addEventListener('change', mostrar); mostrar();
       root.querySelector('[data-cancelar]').addEventListener('click', () => voltarAnterior(p));
       form.addEventListener('submit', (e) => {
@@ -6893,7 +6908,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da entrada na Grade.'); return; }
         if (quando < new Date(p.entrada_em)) { toast('A entrada na Grade não pode ser antes da entrada atual.'); return; }
         let previsao = p.previsao_saida ? new Date(p.previsao_saida) : null;
-        if (p.etapa === 'salmoura') { const t = lerNum(form.querySelector('[name="tempo"]').value); if (!(t > 0)) { toast('Informe quantos dias as peças vão ficar na Grade.'); return; } previsao = new Date(quando.getTime() + t * 86400000); }
+        if (p.etapa === 'salmoura') { const t = lerNum(form.querySelector('[name="tempo"]').value); if (!(t > 0)) { toast('Informe quantos dias as peças vão ficar na Grade.'); return; } previsao = somarTempo(quando, t, 'd'); }
         if (!previsao || previsao <= quando) { toast('A saída prevista já passou. Desmarque "Levar agora para a Grade" e use "Mover peças".'); return; }
         enviar(form.querySelector('[type="submit"]'), async () => {
           const r1 = await sb.rpc('queijos_segunda', { p_posicao: p.id, p_pecas: n, p_segunda: true, p_motivo: motivo });
