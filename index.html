@@ -411,6 +411,7 @@
   .filtros-grid label { font-size: .85rem; min-width: 0; }
   .filtros-grid select { width: 100%; }
   .filtros-periodo { margin-top: 12px; flex-wrap: wrap; }
+  .filtros-dica { flex-basis: 100%; font-size: .82rem; }
   .filtros-acoes { display: flex; justify-content: flex-end; align-items: center; gap: 16px; margin-top: 14px; }
   .filtros-ativos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
   .filtro-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--vermelho); color: var(--vermelho); background: var(--surface);
@@ -1294,15 +1295,17 @@
                 <option value="pago">Pago</option>
               </select></label>
               <label>Forma de pagamento<select id="filterForma"><option value="">Todas</option></select></label>
-              <label>Vencimento<select id="filterVencimento">
-                <option value="todos">Todos</option>
+              <label>Data<select id="filterVencimento">
+                <option value="todos">Todas as datas</option>
                 <option value="hoje">Vencem hoje</option>
-                <option value="custom">Período específico</option>
+                <option value="custom">Vencimento em um dia ou período</option>
+                <option value="pago">Pagamento em um dia ou período</option>
               </select></label>
             </div>
             <div class="custom-range filtros-periodo" id="vencCustomRange" hidden>
               <span>De</span><input type="date" id="vencFromInput" aria-label="De">
               <span>até</span><input type="date" id="vencToInput" aria-label="Até">
+              <small class="filtros-dica">Para um dia só, use a mesma data nos dois campos (o "até" acompanha o "De").</small>
             </div>
             <div class="filtros-acoes">
               <button type="button" class="link-btn" id="btnLimparFiltros">Limpar filtros</button>
@@ -2938,7 +2941,7 @@ let periodMode = 'preset'; // 'preset' | 'custom'
 let presetDays = 0;
 let customFrom = null;
 let customTo = null;
-let vencFilterMode = 'todos'; // 'todos' | 'hoje' | 'custom'
+let vencFilterMode = 'todos'; // 'todos' | 'hoje' | 'custom' (vencimento) | 'pago' (data do pagamento)
 let vencFilterFrom = null;
 let vencFilterTo = null;
 const expandedSet = new Set();
@@ -3301,7 +3304,7 @@ function ligarGastosMensais() {
 }
 
 function parcelaCorrespondeAoRelatorio(p, todayStr, vencAtivo, win, statusFiltro) {
-  if (vencAtivo) return vencFilterMatches(p, win);
+  if (vencAtivo) return vencFilterMatches(p, win, todayStr, statusFiltro);
   const st = parcelaStatus(p, todayStr);
   if (statusFiltro === 'pago') return st === 'pago';
   if (statusFiltro === 'vencido') return st === 'vencido';
@@ -3318,14 +3321,16 @@ function montarRelatorioImpressao(todayStr) {
     const totalParcelas = (c.parcelas || []).length;
     (c.parcelas || []).forEach(p => {
       if (!parcelaCorrespondeAoRelatorio(p, todayStr, vencAtivo, win, statusFiltro)) return;
-      total += p.valor || 0;
+      const porPagamento = vencFilterMode === 'pago';
+      const valor = porPagamento ? (p.valorPago || 0) : (p.valor || 0);
+      total += valor;
       linhas.push({
         nome: c.nome,
         numero: c.numero,
         categoria: c.categoria,
         parcelaLabel: totalParcelas > 1 ? ` (parcela ${p.numero}/${totalParcelas})` : '',
-        vencimento: p.dataVencimento,
-        valor: p.valor || 0
+        vencimento: porPagamento ? p.dataPagamento : p.dataVencimento,
+        valor
       });
     });
   });
@@ -3344,7 +3349,7 @@ function montarRelatorioImpressao(todayStr) {
   `).join('');
   els.printReport.innerHTML = `
     <table class="print-table">
-      <thead><tr><th>Conta</th><th>Categoria</th><th>Vencimento</th><th class="num">Valor</th></tr></thead>
+      <thead><tr><th>Conta</th><th>Categoria</th><th>${vencFilterMode === 'pago' ? 'Pago em' : 'Vencimento'}</th><th class="num">${vencFilterMode === 'pago' ? 'Valor pago' : 'Valor'}</th></tr></thead>
       <tbody>${linhasHtml}</tbody>
       <tfoot><tr><td colspan="3">Total</td><td class="num">${fmtCur(total)}</td></tr></tfoot>
     </table>
@@ -3355,15 +3360,16 @@ function imprimirLancamentos() {
   let periodoTexto;
   if (vencFilterMode === 'hoje') {
     periodoTexto = `vencimento em ${fmtDate(todayStr)}`;
-  } else if (vencFilterMode === 'custom') {
+  } else if (vencFilterMode === 'custom' || vencFilterMode === 'pago') {
     const win = getVencFilterWindow(todayStr);
-    periodoTexto = `vencimento de ${fmtDate(win.from)} a ${fmtDate(win.to)}`;
+    const dias = win.from === win.to ? `em ${fmtDate(win.from)}` : `de ${fmtDate(win.from)} a ${fmtDate(win.to)}`;
+    periodoTexto = (vencFilterMode === 'pago' ? 'pagamento ' : 'vencimento ') + dias;
   } else {
     periodoTexto = 'todos os lançamentos exibidos nesta lista';
   }
   const agora = new Date();
   const horaStr = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
-  els.printHeaderMeta.textContent = `Contas com ${periodoTexto}. Impresso em ${fmtDate(todayStr)} às ${horaStr}.`;
+  els.printHeaderMeta.textContent = `Contas com ${periodoTexto}${els.filterCategoria.value ? `, categoria ${els.filterCategoria.value}` : ''}. Impresso em ${fmtDate(todayStr)} às ${horaStr}.`;
   montarRelatorioImpressao(todayStr);
   try { window.print(); } catch (e) { /* impressão via script pode ser bloqueada; o aviso abaixo cobre esse caso */ }
   openModal('Relatório pronto para impressão', `
@@ -3386,15 +3392,20 @@ function populateCategoryFilterOptions() {
 }
 function getVencFilterWindow(todayStr) {
   if (vencFilterMode === 'hoje') return { from: todayStr, to: todayStr };
-  if (vencFilterMode === 'custom' && vencFilterFrom && vencFilterTo) {
-    let from = vencFilterFrom, to = vencFilterTo;
+  if ((vencFilterMode === 'custom' || vencFilterMode === 'pago') && (vencFilterFrom || vencFilterTo)) {
+    let from = vencFilterFrom || vencFilterTo, to = vencFilterTo || vencFilterFrom;
     if (from > to) { const tmp = from; from = to; to = tmp; }
     return { from, to };
   }
   return { from: '0000-01-01', to: '9999-12-31' };
 }
-function vencFilterMatches(p, win) {
-  return !p.pago && p.dataVencimento >= win.from && p.dataVencimento <= win.to;
+// Filtro de data: por vencimento ("Vencem hoje" e "Vencimento em…") ou pela data do pagamento ("Pagamento em…").
+// Vale para parcelas pagas e não pagas; a Situação escolhida é conferida em cada parcela.
+function vencFilterMatches(p, win, todayStr, statusFiltro) {
+  if (vencFilterMode === 'pago') {
+    if (!((p.valorPago || 0) > 0 && p.dataPagamento && p.dataPagamento >= win.from && p.dataPagamento <= win.to)) return false;
+  } else if (!(p.dataVencimento >= win.from && p.dataVencimento <= win.to)) return false;
+  return !statusFiltro || parcelaStatus(p, todayStr) === statusFiltro;
 }
 function getFilteredDecorated(todayStr) {
   const term = els.searchInput.value.trim().toLowerCase();
@@ -3407,14 +3418,14 @@ function getFilteredDecorated(todayStr) {
     .map(c => ({ c, s: contaSummary(c, todayStr) }))
     .filter(({ c, s }) => {
       if (cat && c.categoria !== cat) return false;
-      if (status && s.status !== status) return false;
+      if (status && !vencAtivo && s.status !== status) return false;
       if (forma && c.formaPagamento !== forma && !(c.parcelas || []).some(p => p.formaPagamento === forma)) return false;
       if (term) {
         const hay = `${c.nome} ${c.numero || ''} ${c.categoria}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       if (vencAtivo) {
-        const tem = (c.parcelas || []).some(p => vencFilterMatches(p, win));
+        const tem = (c.parcelas || []).some(p => vencFilterMatches(p, win, todayStr, status));
         if (!tem) return false;
       }
       return true;
@@ -3459,15 +3470,24 @@ function renderTable(todayStr) {
   const vencAtivo = vencFilterMode !== 'todos';
   const win = vencAtivo ? getVencFilterWindow(todayStr) : null;
 
+  const statusFiltro = els.filterStatus.value;
   if (vencAtivo) {
-    let total = 0, count = 0;
+    let valor = 0, pago = 0, aPagar = 0, count = 0;
     decorated.forEach(({ c }) => {
       (c.parcelas || []).forEach(p => {
-        if (vencFilterMatches(p, win)) { total += remaining(p); count++; }
+        if (!vencFilterMatches(p, win, todayStr, statusFiltro)) return;
+        count++; valor += p.valor || 0; pago += p.valorPago || 0; aPagar += remaining(p);
       });
     });
-    const label = vencFilterMode === 'hoje' ? 'hoje' : `de ${fmtDate(win.from)} a ${fmtDate(win.to)}`;
-    els.vencFilterSummary.textContent = `${count} ${plural(count, 'parcela', 'parcelas')} a pagar ${label}: ${fmtCur(total)}`;
+    const dias = win.from === win.to ? `em ${fmtDate(win.from)}` : `de ${fmtDate(win.from)} a ${fmtDate(win.to)}`;
+    const cat = els.filterCategoria.value ? `${els.filterCategoria.value}: ` : '';
+    if (vencFilterMode === 'pago') {
+      els.vencFilterSummary.textContent = `${cat}${count} ${plural(count, 'parcela paga', 'parcelas pagas')} ${dias}: ${fmtCur(pago)}`;
+    } else {
+      const label = vencFilterMode === 'hoje' ? 'hoje' : dias;
+      els.vencFilterSummary.textContent = `${cat}${count} ${plural(count, 'parcela vence', 'parcelas vencem')} ${label}: ${fmtCur(valor)}`
+        + (count ? ` (pago ${fmtCur(pago)}, a pagar ${fmtCur(aPagar)})` : '');
+    }
     els.vencFilterSummary.hidden = false;
   } else {
     els.vencFilterSummary.hidden = true;
@@ -3482,7 +3502,7 @@ function renderTable(todayStr) {
     return;
   }
   els.contasBody.innerHTML = decorated.map(({ c, s }) => {
-    const matchVenc = vencAtivo && (c.parcelas || []).some(p => vencFilterMatches(p, win));
+    const matchVenc = vencAtivo && (c.parcelas || []).some(p => vencFilterMatches(p, win, todayStr, statusFiltro));
     const expanded = matchVenc || expandedSet.has(c.id);
     return `<article class="conta-card">
       <div class="conta-card-head">
@@ -3537,9 +3557,10 @@ function filtrosAtivos(todayStr) {
   if (els.filterStatus.value) lista.push({ chave: 'status', texto: 'Situação: ' + (ROTULO_STATUS[els.filterStatus.value] || els.filterStatus.value) });
   if (els.filterForma.value) lista.push({ chave: 'forma', texto: 'Pagamento: ' + els.filterForma.value });
   if (vencFilterMode === 'hoje') lista.push({ chave: 'venc', texto: 'Vencem hoje' });
-  else if (vencFilterMode === 'custom') {
+  else if (vencFilterMode === 'custom' || vencFilterMode === 'pago') {
     const w = getVencFilterWindow(todayStr);
-    lista.push({ chave: 'venc', texto: 'Vencimento: ' + fmtDate(w.from) + ' a ' + fmtDate(w.to) });
+    const dias = w.from === w.to ? fmtDate(w.from) : fmtDate(w.from) + ' a ' + fmtDate(w.to);
+    lista.push({ chave: 'venc', texto: (vencFilterMode === 'pago' ? 'Pago em: ' : 'Vencimento: ') + dias });
   }
   return lista;
 }
@@ -4583,8 +4604,8 @@ async function init(ctx) {
   els.filtrosAtivos.addEventListener('click', (e) => { const b = e.target.closest('[data-limpar]'); if (b) limparFiltro(b.dataset.limpar); });
   els.filterVencimento.addEventListener('change', () => {
     vencFilterMode = els.filterVencimento.value;
-    els.vencCustomRange.hidden = vencFilterMode !== 'custom';
-    if (vencFilterMode === 'custom') {
+    els.vencCustomRange.hidden = vencFilterMode !== 'custom' && vencFilterMode !== 'pago';
+    if (vencFilterMode === 'custom' || vencFilterMode === 'pago') {
       const today = localISODate();
       if (!vencFilterFrom) vencFilterFrom = today;
       if (!vencFilterTo) vencFilterTo = today;
@@ -4594,7 +4615,12 @@ async function init(ctx) {
     renderTableOnly();
   });
   els.vencFromInput.addEventListener('change', () => {
+    // Quem escolhe só um dia não precisa mexer no "até": ele acompanha o "De" enquanto os dois forem iguais (ou o "até" ficar antes).
+    const antes = vencFilterFrom;
     vencFilterFrom = els.vencFromInput.value;
+    if (vencFilterFrom && (!vencFilterTo || vencFilterTo === antes || vencFilterTo < vencFilterFrom)) {
+      vencFilterTo = vencFilterFrom; els.vencToInput.value = vencFilterTo;
+    }
     if (vencFilterFrom) renderTableOnly();
   });
   els.vencToInput.addEventListener('change', () => {
