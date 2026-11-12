@@ -272,23 +272,41 @@
   #producaoRoot:is([data-visao="lancamento"], [data-visao="resumo"]) :is(#qjResumo, #qjNota),
   #producaoRoot:not([data-visao="lancamento"]) #prAcoes, #producaoRoot:not(:is([data-visao="lancamento"], [data-visao="resumo"])) #prNota { display: none !important; }
   .pr-porproduto, #pdSegunda { margin-bottom: 20px; }
-  /* Salmoura, Secagem e Estoque: só o total do próprio setor, numa linha. */
+  /* Em processo e Estoque: só o total do próprio setor, numa linha. */
   #qjResumo { display: block; }
   #qjResumo > div { display: none !important; border: 0 !important; }
-  #producaoRoot[data-visao="salmoura"] #qjResumo > [data-setor="salmoura"],
-  #producaoRoot[data-visao="secagem"] #qjResumo > [data-setor="secagem"],
+  #producaoRoot[data-visao="processo"] #qjResumo > [data-setor="processo"],
   #producaoRoot[data-visao="estoque"] #qjResumo > [data-setor="estoque"] { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
   #qjResumo span { display: inline; }
   /* Resumo: peças em cada setor agora e o total na fábrica. */
   .pd-fabrica { margin-bottom: 8px; }
-  #qjFabrica { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  #qjFabrica { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   #qjFabrica .qj-total { background: rgba(242,184,30,.14); border-radius: 0 10px 10px 0; }
   @media (max-width: 760px) { #qjFabrica { grid-template-columns: repeat(2, minmax(0, 1fr)); } #qjFabrica .qj-total { grid-column: 1 / -1; border-left: 0; border-radius: 0 0 10px 10px; } }
   @media (max-width: 560px) { #qjFabrica { grid-template-columns: repeat(2, minmax(0, 1fr)); } #qjFabrica div:nth-child(2n) { border-left: 1px solid var(--line); } #qjFabrica div:nth-child(2) { border-top: 0; } }
   .pr-acomp { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
   @media (min-width: 1100px) { .pr-acomp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .pr-acomp:has(> #pdMovResumo[hidden]) { grid-template-columns: minmax(0, 1fr); } }
-  #qjFilaBloco > .muted-note { margin: -6px 0 4px; }
-  #pdPainelSalmoura > #qjFilaBloco { margin-bottom: 20px; }
+  /* Em processo (pedido do Iago, 11/11/2026): salmoura e secagem viraram uma etapa só. */
+  .pr-so-form { max-width: 620px; }
+  @media (min-width: 1100px) { .pr-so-form { grid-template-columns: minmax(0, 1fr); } .pr-so-form .pr-form { position: static; } }
+  .qj-proc-filtro { margin-left: auto; }
+  #pdPainelProcesso .muted-note { margin: -4px 0 8px; }
+  #pdPainelProcesso .qj-legenda { margin: 0 0 12px; }
+  .qj-legenda i.passou { background: var(--danger-soft); border-color: var(--danger); }
+  .qj-legenda i.pronto-ok { background: var(--ok-soft); border-color: var(--ok); }
+  .pc-lote { cursor: default; }
+  .pc-lote:hover { border-color: var(--line); }
+  .pc-lote.passou { background: var(--danger-soft); border-color: var(--danger); border-left-color: var(--danger); }
+  .pc-lote.pronto-ok { border-left-color: var(--ok); }
+  .pc-dias { font-family: Merriweather, Georgia, serif; font-weight: 900; font-size: 1.15rem; }
+  .pc-dias small { display: block; font-family: "Source Sans 3", system-ui, sans-serif; font-size: .78rem; font-weight: 400; color: var(--muted); }
+  .pc-sit { margin: 0; font-weight: 700; font-size: .92rem; color: var(--muted); }
+  .pc-lote.passou .pc-sit { color: var(--danger); }
+  .pc-lote.pronto-ok .pc-sit { color: var(--ok); }
+  .pc-antes { margin: 0; font-size: .85rem; color: var(--muted); }
+  .qj-retirar fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; margin: 0 0 12px; }
+  .qj-retirar legend { font-weight: 700; padding: 0 4px; }
+  .qj-retirar .qj-conta { margin: 0 0 12px; }
   #lvVisaoLancamentos { margin-bottom: 20px; }
   .lv-cat-nota { margin: -6px 0 12px; font-size: .85rem; }
   @media (min-width: 1180px) { .content-grid { grid-template-columns: minmax(0, 1fr) 290px; align-items: start; } }
@@ -1226,7 +1244,7 @@
           <p class="sem-acesso" id="semAcesso" hidden>Você ainda não tem acesso a nenhuma área. Fale com o administrador do sistema.</p>
           <ul class="areas">
             <li data-modulo="producao"><a href="#producao/resumo"><span class="ico"><svg class="i"><use href="#i-producao"/></svg></span><span><b>Produção</b><span class="muted">Leite processado na semana</span></span><span class="fig" id="homeProducaoFig">…<small>&nbsp;</small></span></a></li>
-            <li data-modulo="queijos"><a href="#producao/estoque"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Salmoura, secagem e estoque</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
+            <li data-modulo="queijos"><a href="#producao/estoque"><span class="ico"><svg class="i"><use href="#i-queijo"/></svg></span><span><b>Em processo e estoque</b><span class="muted">Peças embaladas no estoque</span></span><span class="fig" id="homeQueijosFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="estoque"><a href="#estoque"><span class="ico"><svg class="i"><use href="#i-estoque"/></svg></span><span><b>Insumos</b><span class="muted">Insumos para comprar</span></span><span class="fig" id="homeEstoqueFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="resfriadores"><a href="#resfriadores"><span class="ico"><svg class="i"><use href="#i-frio"/></svg></span><span><b>Resfriadores</b><span class="muted">Nos produtores e no pátio</span></span><span class="fig" id="homeResfFig">…<small>&nbsp;</small></span></a></li>
             <li data-modulo="vendas"><a href="#vendas"><span class="ico"><svg class="i"><use href="#i-vendas"/></svg></span><span><b>Vendas</b><span class="muted">Vendido neste mês</span></span><span class="fig" id="homeVendasFig">…<small>&nbsp;</small></span></a></li>
@@ -1341,16 +1359,15 @@
       <p class="fatal" id="fatalMessage" hidden></p>
     </section>
 
-    <!-- ================= PRODUÇÃO (lançamento, salmoura, secagem e estoque) ================= -->
+    <!-- ================= PRODUÇÃO (lançamento, em processo e estoque) ================= -->
     <section data-tab="producao" aria-labelledby="t-producao" id="producaoRoot" data-visao="lancamento">
       <div class="page-head">
-        <div><h1 id="t-producao">Produção</h1><p>Fabricação de queijos e cremes e o caminho de cada lote: salmoura, secagem e estoque embalado.</p></div>
+        <div><h1 id="t-producao">Produção</h1><p>Fabricação de queijos e cremes e o caminho de cada lote: em processo (salmoura e secagem) e estoque embalado.</p></div>
         <div class="actions" id="prAcoes" data-modulo="producao"><button type="button" class="btn" id="prGerenciar">Produtos</button></div>
       </div>
       <div class="segmented pd-visao" id="pdVisao" role="tablist" aria-label="O que mostrar">
-        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" aria-controls="pdPainelLancamento" data-visao="lancamento" data-modulo="producao">Lançamento<span class="pd-num" id="pdNumLancamento" hidden></span></button>
-        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSalmoura" data-visao="salmoura" data-modulo="queijos">Salmoura<span class="pd-num" id="pdNumSalmoura" hidden></span></button>
-        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelSecagem" data-visao="secagem" data-modulo="queijos">Secagem<span class="pd-num" id="pdNumSecagem" hidden></span></button>
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" aria-controls="pdPainelLancamento" data-visao="lancamento" data-modulo="producao">Lançamento</button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelProcesso" data-visao="processo" data-modulo="queijos">Em processo<span class="pd-num" id="pdNumProcesso" hidden></span></button>
         <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelEstoque" data-visao="estoque" data-modulo="queijos">Estoque</button>
         <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-controls="pdPainelResumo" data-visao="resumo" id="pdBtnResumo" hidden>Resumo</button>
       </div>
@@ -1361,13 +1378,8 @@
 
       <div id="pdPainelLancamento" role="tabpanel" aria-label="Lançamento">
         <section class="panel pr-envio" id="prFilaEnvio" aria-labelledby="h-pr-envio" hidden></section>
-        <div class="pr-grid" id="pdColForm">
+        <div class="pr-grid pr-so-form" id="pdColForm">
           <form class="panel form pr-form" id="prForm" data-modulo="producao"></form>
-          <section class="panel" id="qjFilaBloco" aria-labelledby="h-qj-fila" data-modulo="queijos">
-            <h2 id="h-qj-fila">Aguardando destino</h2>
-            <p class="muted-note">Lotes de queijo lançados que ainda não foram para a salmoura, a secagem ou o estoque.</p>
-            <div id="qjFila"><p class="empty-state-msg">Carregando…</p></div>
-          </section>
         </div>
       </div>
 
@@ -1416,27 +1428,13 @@
         </div>
       </div>
 
-      <div id="pdPainelSalmoura" role="tabpanel" aria-label="Salmoura" hidden>
-        <section class="panel qj-bloco" aria-labelledby="h-qj-sal">
-          <div class="qj-cab"><h2 id="h-qj-sal">Salmoura</h2>
-            <div class="segmented qj-modo" role="group" aria-label="Mostrar a salmoura"><button type="button" class="seg-btn" data-modo="lote">Por lote</button><button type="button" class="seg-btn" data-modo="numero">Por número</button></div></div>
-          <p class="qj-legenda qj-leg-lote"><span><i class="pronto"></i>Tempo cumprido</span><span><i class="misto"></i>Lugar dividido com outro lote</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p>
-          <div class="qj-lotes" id="qjSalmouraLotes"></div>
-          <div class="qj-cab qj-leg-mapa">
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
-          <div class="qj-mapa qj-leg-mapa" id="qjSalmoura"></div>
-        </section>
-      </div>
-
-      <div id="pdPainelSecagem" role="tabpanel" aria-label="Secagem" hidden>
-        <section class="panel qj-bloco" aria-labelledby="h-qj-sec">
-          <div class="qj-cab"><h2 id="h-qj-sec">Secagem</h2>
-            <div class="segmented qj-modo" role="group" aria-label="Mostrar a secagem"><button type="button" class="seg-btn" data-modo="lote">Por lote</button><button type="button" class="seg-btn" data-modo="numero">Por número</button></div></div>
-          <p class="qj-legenda qj-leg-lote"><span><i class="pronto"></i>Tempo cumprido</span><span><i class="misto"></i>Lugar dividido com outro lote</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p>
-          <div class="qj-lotes" id="qjSecagemLotes"></div>
-          <div class="qj-cab qj-leg-mapa">
-            <p class="qj-legenda"><span><i class="livre"></i>Livre</span><span><i></i>Com peças</span><span><i class="misto"></i>Mais de um lote</span><span><i class="pronto"></i>Tempo cumprido</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p></div>
-          <div class="qj-mapa qj-leg-mapa" id="qjSecagem"></div>
+      <div id="pdPainelProcesso" role="tabpanel" aria-label="Em processo" hidden>
+        <section class="panel qj-bloco" aria-labelledby="h-qj-proc">
+          <div class="qj-cab"><h2 id="h-qj-proc">Em processo</h2>
+            <select id="qjProcFiltro" class="select-inline qj-proc-filtro" aria-label="Mostrar o queijo"><option value="">Todos os queijos</option></select></div>
+          <p class="muted-note">Lotes de queijo que já foram fabricados e ainda não foram para o estoque (salmoura e secagem). Os dias contam a partir da data de fabricação.</p>
+          <p class="qj-legenda"><span><i class="passou"></i>Passou do tempo máximo</span><span><i class="pronto-ok"></i>Já pode ir para o estoque</span><span><b class="qj-2a">2ª</b>Peças de segunda</span><span class="qj-leg-fila" hidden><i class="na-fila"></i>Aguardando envio</span></p>
+          <div class="qj-lotes" id="qjProcesso"><p class="empty-state-msg">Carregando…</p></div>
         </section>
       </div>
 
@@ -1690,7 +1688,7 @@
     { id: "livro", nome: "Livro de contas" },
     { id: "producao", nome: "Produção: lançamento" },
     { id: "producao_resumo", nome: "Produção: resumo" },
-    { id: "queijos", nome: "Produção: salmoura, secagem e estoque" },
+    { id: "queijos", nome: "Produção: em processo e estoque" },
     { id: "vendas", nome: "Vendas" },
     { id: "estoque", nome: "Insumos" },
     { id: "resfriadores", nome: "Resfriadores" },
@@ -1744,7 +1742,7 @@
      Gravações não são guardadas aqui: só o lançamento de produção tem fila própria (SN_Producao). */
   const COPIA_DADOS = "sn-dados-v1";
   const SESSAO_GUARDADA = "sb-lxpkigztunalreqlsbul-auth-token";
-  const LEITURAS_RPC = ["sistema_configurado", "nomes_usuarios", "queijos_padroes", "queijos_pendentes", "vendas_a_receber"];
+  const LEITURAS_RPC = ["sistema_configurado", "nomes_usuarios", "queijos_padroes", "queijos_pendentes", "queijos_prazos", "vendas_a_receber"];
   // Conferências feitas na hora de enviar o que foi guardado sem internet: precisam da resposta do banco, nunca da cópia.
   const SEM_COPIA = [/\/queijos_movimentos\?.*quando=eq\./, /\/producao_lancamentos\?.*leite_compartilhado=eq\.false/];
   let semInternet = navigator.onLine === false;
@@ -1875,6 +1873,7 @@
   function show() {
     let [id, sub] = (location.hash || "#inicio").slice(1).split("/");
     if (id === "queijos") { id = "producao"; sub = sub || "estoque"; } // endereço antigo do Estoque de Produção
+    if (id === "producao" && (sub === "salmoura" || sub === "secagem")) sub = "processo"; // endereços antigos
     if (!TABS[id] || !permitido(id)) id = "inicio";
     if (id === "producao") mostrarProducao(sub, !!sub);
     document.querySelectorAll("section[data-tab]").forEach((s) => s.classList.toggle("active", s.dataset.tab === id));
@@ -1888,8 +1887,9 @@
   }
   window.addEventListener("hashchange", () => { if (SN.perfil) show(); });
 
-  /* ---------- Produção: sub-abas Lançamento, Salmoura, Secagem e Estoque ---------- */
-  const PD_VISOES = ["lancamento", "salmoura", "secagem", "estoque", "resumo"];
+  /* ---------- Produção: sub-abas Lançamento, Em processo, Estoque e Resumo ----------
+     Em processo (pedido do Iago, 11/11/2026): a salmoura e a secagem viraram uma etapa só. */
+  const PD_VISOES = ["lancamento", "processo", "estoque", "resumo"];
   // Resumo (acompanhamento da produção: totais, por produto e lista de lançamentos) é da gerência:
   // precisa da permissão "Produção: resumo" (módulo producao_resumo) além do acesso ao lançamento.
   const podeResumoProducao = () => SN.pode("producao_resumo", "ver") && SN.pode("producao", "ver");
@@ -1910,10 +1910,6 @@
     history.replaceState(null, "", "#producao/" + b.dataset.visao);
   });
   function arrumarProducao() {
-    // Sem acesso ao lançamento, a fila "Aguardando destino" vai para o topo da Salmoura.
-    const fila = $("qjFilaBloco");
-    if (SN.pode("producao", "ver")) $("pdColForm").appendChild(fila);
-    else $("pdPainelSalmoura").prepend(fila);
     $("pdBtnResumo").hidden = !podeResumoProducao();
     $("pdVisao").hidden = pdPermitidas().length < 2;
   }
@@ -1995,20 +1991,13 @@
   });
   document.addEventListener("queijos:resumo", (e) => {
     const r = e.detail; if (!r || !r.carregado) return;
-    pdNum("pdNumLancamento", r.pendentesLotes, pl(r.pendentesLotes, "lote aguardando destino", "lotes aguardando destino"));
-    pdNum("pdNumSalmoura", r.prontosSalmoura, pl(r.prontosSalmoura, "salmoura com tempo cumprido", "salmouras com tempo cumprido"));
-    pdNum("pdNumSecagem", r.prontosSecagem, pl(r.prontosSecagem, "secagem com tempo cumprido", "secagens com tempo cumprido"));
-    $("homeQueijosFig").innerHTML = n1(r.estoque, 0) + " peças<small>" + n1(r.salmoura, 0) + " na salmoura · " + n1(r.secagem, 0) + " na secagem</small>";
+    pdNum("pdNumProcesso", r.passaramLotes, pl(r.passaramLotes, "lote passou do tempo máximo", "lotes passaram do tempo máximo"));
+    $("homeQueijosFig").innerHTML = n1(r.estoque, 0) + " peças<small>" + n1(r.processo, 0) + " em processo</small>";
     const att = $("attQueijos");
-    const pend = r.pendentesLotes ? pl(r.pendentesLotes, "lote", "lotes") + " da produção (" + pl(r.pendentesPecas, "peça", "peças") + ") sem destino." : "";
-    if (r.lugaresProntos.length) {
-      const l = r.lugaresProntos, lista = l.length > 4 ? l.slice(0, 4).join(", ") + " e mais " + (l.length - 4) : l.join(", ");
-      att.innerHTML = '<span class="dot"></span><span><strong>Queijos com tempo cumprido</strong><span class="muted">' + esc(lista) + "." +
-        (pend ? " Também há " + esc(pend.charAt(0).toLowerCase() + pend.slice(1)) : "") + '</span></span><a href="#producao/' + (r.prontosSalmoura ? "salmoura" : "secagem") + '">Ver</a>';
-      att.hidden = false;
-    } else if (r.pendentesLotes) {
-      att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.pendentesLotes, "lote aguardando destino", "lotes aguardando destino") +
-        '</strong><span class="muted">' + esc(pend) + '</span></span><a href="#producao/lancamento">Ver</a>';
+    if (r.passaramLotes) {
+      const l = r.passaram, lista = l.length > 4 ? l.slice(0, 4).join(", ") + " e mais " + (l.length - 4) : l.join(", ");
+      att.innerHTML = '<span class="dot"></span><span><strong>' + pl(r.passaramLotes, "lote passou do tempo máximo em processo", "lotes passaram do tempo máximo em processo") +
+        '</strong><span class="muted">' + esc(lista) + '.</span></span><a href="#producao/processo">Ver</a>';
       att.hidden = false;
     } else { att.hidden = true; }
   });
@@ -5793,13 +5782,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <label class="check"><input type="checkbox" data-campo="ativo" ${p.ativo ? 'checked' : ''}> Em uso</label>
         ${p.tipo === 'queijo' ? `<div class="pr-g-extra">
           <label>Peso médio da peça (kg)<input type="number" min="0" step="any" inputmode="decimal" data-campo="peso_medio_kg" value="${p.peso_medio_kg == null ? '' : Number(p.peso_medio_kg)}" placeholder="Ex.: 6"></label>
-          <label>Peças por salmoura<input type="number" min="1" step="1" inputmode="numeric" data-campo="pecas_salmoura" value="${p.pecas_salmoura == null ? '' : p.pecas_salmoura}" placeholder="Sem padrão"></label>
-          <label>Peças por secagem<input type="number" min="1" step="1" inputmode="numeric" data-campo="pecas_secagem" value="${p.pecas_secagem == null ? '' : p.pecas_secagem}" placeholder="Sem padrão"></label>
+          <label>Tempo mínimo em processo (dias)<input type="number" min="0" step="1" inputmode="numeric" data-campo="dias_min_processo" value="${p.dias_min_processo == null ? '' : p.dias_min_processo}" placeholder="Sem aviso"></label>
+          <label>Tempo máximo em processo (dias)<input type="number" min="1" step="1" inputmode="numeric" data-campo="dias_max_processo" value="${p.dias_max_processo == null ? '' : p.dias_max_processo}" placeholder="Sem aviso"></label>
         </div>` : ''}
       </li>`;
     SN.ui.openModal('Produtos fabricados', `
       <p class="modal-context">Queijos são lançados com leite e número de peças. Cremes são lançados com o peso. Desmarque "Em uso" para tirar um produto da lista sem apagar os lançamentos dele.</p>
-      <p class="hint" style="margin:-6px 0 10px">O peso médio da peça serve para o rendimento quando um queijo é feito com o leite de outro (ex.: Meia Cura de 1 kg vale 1/6 de um Tropical de 6 kg). Peças por salmoura e por secagem são o número que já vem preenchido em cada prateleira na salmoura e na secagem; em branco, as peças não são divididas sozinhas.</p>
+      <p class="hint" style="margin:-6px 0 10px">O peso médio da peça serve para o rendimento quando um queijo é feito com o leite de outro (ex.: Meia Cura de 1 kg vale 1/6 de um Tropical de 6 kg). Tempo mínimo e máximo em processo (dias, contando da fabricação): retirar para o estoque antes do mínimo pede confirmação, e o lote que passa do máximo fica em vermelho e aparece em "Precisa de atenção". Em branco, sem aviso.</p>
       <ul class="cat-manage-list" id="prGLista">${produtos.map(linha).join('')}</ul>
       <form class="add-cat-form" id="prGNovo" style="margin-top:14px">
         <input type="text" id="prGNome" placeholder="Novo produto" required>
@@ -5811,16 +5800,23 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       root.querySelector('#prGLista').addEventListener('change', async (ev) => {
         const el = ev.target.closest('[data-campo]'); if (!el) return;
         const id = el.closest('[data-id]').dataset.id, campo = el.dataset.campo;
-        const numerico = ['peso_medio_kg', 'pecas_salmoura', 'pecas_secagem'].includes(campo);
+        const numerico = ['peso_medio_kg', 'dias_min_processo', 'dias_max_processo'].includes(campo);
         let valor = campo === 'ativo' ? el.checked : el.value.trim();
         if (numerico) {
           const n = lerNum(valor);
-          if (valor !== '' && !(n > 0)) { toast('Informe um número maior que zero, ou deixe em branco.'); return; }
+          const zeroOk = campo === 'dias_min_processo';
+          if (valor !== '' && !(n > 0 || (zeroOk && n === 0))) { toast('Informe um número maior que zero, ou deixe em branco.'); return; }
           valor = valor === '' ? null : (campo === 'peso_medio_kg' ? n : Math.round(n));
+          if (campo.startsWith('dias_') && valor != null) {
+            const p = produtos.find((x) => x.id === id) || {};
+            const min = campo === 'dias_min_processo' ? valor : p.dias_min_processo, max = campo === 'dias_max_processo' ? valor : p.dias_max_processo;
+            if (min != null && max != null && max < min) { toast('O tempo máximo não pode ser menor que o mínimo.'); return; }
+          }
         }
         if (campo === 'nome' && !valor) { toast('O nome não pode ficar vazio.'); return; }
         const { error } = await sb.from('producao_produtos').update({ [campo]: valor }).eq('id', id);
-        if (error) { toast(String(error.message || '').includes('unique') || String(error.code) === '23505' ? 'Já existe um produto com esse nome.' : 'Não foi possível salvar.'); return; }
+        if (error) { toast(String(error.message || '').includes('unique') || String(error.code) === '23505' ? 'Já existe um produto com esse nome.' : String(error.message || '').includes('dias_') ? 'Os campos de tempo em processo ainda não existem no banco. Rode o comando do banco primeiro.' : 'Não foi possível salvar.'); return; }
+        const pr = produtos.find((x) => x.id === id); if (pr) pr[campo] = valor;
         toast('Produto atualizado.'); atualizar();
       });
       root.querySelector('#prGNovo').addEventListener('submit', async (ev) => {
@@ -5896,16 +5892,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     d.setHours(0, 0, 0, 0);
     return d > ini ? d : new Date(ini.getTime() + t * 86400000);
   }
-  // Se a saída prevista caiu às 00:00 de um dia contado como acima, devolve quantos dias foram; senão null.
-  function diasDaPrevisao(entrada, previsao) {
-    const e = new Date(entrada), s = new Date(previsao), z = new Date(e); z.setHours(0, 0, 0, 0);
-    const n = Math.round((s - z) / 86400000) + 1;
-    return n >= 2 && somarTempo(e, n, 'd').getTime() === s.getTime() ? n : null;
-  }
   const ETAPAS = { salmoura: { nome: 'Salmoura', max: 20, unidade: 'h' }, secagem: { nome: 'Secagem', max: 30, unidade: 'd' }, estoque: { nome: 'Estoque', max: 0 } };
-  // Peças por prateleira em uso normal, por produto (cadastro em Produtos; vem de queijos_padroes()).
-  let padroes = {};
-  function padraoPrateleira(produtoId, etapa) { const p = padroes[produtoId]; const v = p && p[etapa === 'salmoura' ? 'pecas_salmoura' : 'pecas_secagem']; return v > 0 ? v : null; }
   let sb = null, podeEditar = false, carregado = false;
   // posicoes/pendentes = o que a tela mostra: o que veio do banco (posServ/pendServ) mais o que está guardado sem internet.
   let posicoes = [], pendentes = [], movimentos = [], posServ = [], pendServ = [];
@@ -5928,7 +5915,6 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   // A Grade é a secagem número 0: fica fora das prateleiras 1 a 30, sem limite de peças (usada para os queijos de segunda).
   const GRADE = 0;
   const ehGrade = (etapa, numero) => etapa === 'secagem' && numero != null && Number(numero) === GRADE;
-  function numerosDe(etapa) { const r = etapa === 'secagem' ? [GRADE] : []; for (let n = 1; n <= ETAPAS[etapa].max; n++) r.push(n); return r; }
   function lugar(etapa, numero) { return etapa === 'estoque' ? 'Estoque' : ehGrade(etapa, numero) ? 'Grade' : ETAPAS[etapa].nome + ' ' + numero; }
   // Nome do produto com a marca de segunda (as peças de segunda ficam separadas no estoque e na venda).
   const nomeProd = (p) => lote(p.lote_id).produto_nome + (p.segunda ? ' 2ª' : '');
@@ -5942,30 +5928,15 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const detalhe = error && (error.message || error.code) ? ' (' + String(error.message || error.code).split('\n')[0].slice(0, 120) + ')' : '';
     return (padrao || 'Não foi possível concluir. Verifique a conexão e tente de novo.') + detalhe;
   }
-  // tempo que falta (ou que passou), em texto curto
-  function duracao(ms) {
-    const min = Math.max(1, Math.ceil(ms / 60000));
-    if (min < 60) return min + ' min';
-    const h = Math.round(min / 60);
-    if (h < 48) return h + ' h';
-    const d = Math.floor(h / 24), r = h % 24;
-    return d + (d === 1 ? ' dia' : ' dias') + (r ? ' e ' + r + ' h' : '');
-  }
-  const faltaMs = (p) => (p.previsao_saida ? new Date(p.previsao_saida).getTime() - Date.now() : null);
-  const pronta = (p) => p.etapa !== 'estoque' && p.previsao_saida && faltaMs(p) <= 0;
-  function situacao(p) {
-    const ms = faltaMs(p); if (ms == null) return '';
-    return ms <= 0 ? 'Tempo cumprido há ' + duracao(-ms) : 'Faltam ' + duracao(ms);
-  }
   function lote(id) { return lotes[id] || { produto_nome: 'Queijo', lote: '?', data_fabricacao: null }; }
-  const noLugarAtual = (etapa, numero) => posicoes.filter((p) => p.etapa === etapa && (etapa === 'estoque' || p.numero === numero));
 
   /* ---------- Dados ---------- */
   async function carregar() {
     const [p, pe, , m] = await Promise.all([
       sb.from('queijos_posicoes').select('*').order('entrada_em'),
       sb.rpc('queijos_pendentes'),
-      sb.rpc('queijos_padroes').then((r) => { if (!r.error) { const m = {}; (r.data || []).forEach((x) => { m[x.produto_id] = x; }); padroes = m; } return r; }, () => ({})),
+      // Tempo mínimo e máximo em processo, por queijo. Antes de o banco ter a função, segue sem prazos.
+      sb.rpc('queijos_prazos').then((r) => { if (!r.error) { const m = {}; (r.data || []).forEach((x) => { m[x.produto_id] = x; }); prazos = m; } return r; }, () => ({})),
       sb.from('queijos_movimentos').select('*').is('desfeito_em', null).order('ordem', { ascending: false }).limit(30)
     ]);
     if (p.error) throw p.error;
@@ -5993,13 +5964,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function resumoInicio() {
     const soma = (et) => posicoes.filter((p) => p.etapa === et).reduce((a, p) => a + p.pecas, 0);
-    const prontas = posicoes.filter(pronta).sort((a, b) => (a.etapa === b.etapa ? a.numero - b.numero : a.etapa === 'salmoura' ? -1 : 1));
-    const lugares = [...new Set(prontas.map((p) => lugar(p.etapa, p.numero)))];
+    const grupos = gruposProcesso(), passaram = grupos.filter((o) => o.passou);
     document.dispatchEvent(new CustomEvent('queijos:resumo', { detail: {
-      carregado: true, estoque: soma('estoque'), salmoura: soma('salmoura'), secagem: soma('secagem'), lugaresProntos: lugares,
-      prontosSalmoura: new Set(prontas.filter((p) => p.etapa === 'salmoura').map((p) => p.numero)).size,
-      prontosSecagem: new Set(prontas.filter((p) => p.etapa === 'secagem').map((p) => p.numero)).size,
-      pendentesLotes: pendentes.length, pendentesPecas: pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0)
+      carregado: true, estoque: soma('estoque'), processo: grupos.reduce((a, o) => a + o.total, 0), processoLotes: grupos.length,
+      passaramLotes: passaram.length, passaram: passaram.map((o) => o.produto_nome + ' lote ' + o.lote + ' (' + txtDias(o.dias) + ')')
     } }));
   }
 
@@ -6007,312 +5975,26 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function render() {
     if (!carregado) return;
     const soma = (et) => posicoes.filter((p) => p.etapa === et).reduce((a, p) => a + p.pecas, 0);
-    const ocupados = (et) => new Set(posicoes.filter((p) => p.etapa === et && p.numero > 0).map((p) => p.numero)).size;
-    const naGrade = posicoes.filter((p) => ehGrade(p.etapa, p.numero)).reduce((a, p) => a + p.pecas, 0);
-    const aguardando = pendentes.reduce((a, x) => a + Math.max(0, x.pecas - x.recebidas), 0);
-    // Cada sub-aba (Salmoura, Secagem, Estoque) mostra só o total do seu setor; o Resumo mostra todos e o total na fábrica.
+    const grupos = gruposProcesso();
+    const emProc = grupos.reduce((a, o) => a + o.total, 0), passaram = grupos.filter((o) => o.passou).length;
+    // Cada sub-aba (Em processo, Estoque) mostra só o total do seu setor; o Resumo mostra os dois e o total na fábrica.
     const setores = {
-      aguardando: `<span>Aguardando destino</span><strong>${fmtNum(aguardando)}</strong><small>${pendentes.length === 1 ? '1 lote da produção' : pendentes.length + ' lotes da produção'}</small>`,
-      salmoura: `<span>Na salmoura</span><strong>${fmtNum(soma('salmoura'))}</strong><small>${ocupados('salmoura')} de 20 ocupadas</small>`,
-      secagem: `<span>Na secagem</span><strong>${fmtNum(soma('secagem'))}</strong><small>${ocupados('secagem')} de 30 ocupadas${naGrade ? ' · Grade: ' + fmtNum(naGrade) : ''}</small>`,
+      processo: `<span>Em processo</span><strong>${fmtNum(emProc)}</strong><small>${grupos.length === 1 ? '1 lote' : grupos.length + ' lotes'}${passaram ? ' · ' + passaram + (passaram === 1 ? ' passou' : ' passaram') + ' do tempo máximo' : ''}</small>`,
       estoque: `<span>No estoque</span><strong>${fmtNum(soma('estoque'))}</strong><small>peças embaladas</small>`
     };
-    const naFabrica = aguardando + soma('salmoura') + soma('secagem') + soma('estoque');
-    $('qjResumo').innerHTML = ['salmoura', 'secagem', 'estoque'].map((k) => `<div data-setor="${k}">${setores[k]}</div>`).join('');
+    $('qjResumo').innerHTML = Object.keys(setores).map((k) => `<div data-setor="${k}">${setores[k]}</div>`).join('');
     $('qjFabrica').innerHTML = Object.values(setores).map((h) => `<div>${h}</div>`).join('')
-      + `<div class="qj-total"><span>Total na fábrica</span><strong>${fmtNum(naFabrica)}</strong><small>peças de queijo</small></div>`;
-    renderFila();
-    document.querySelectorAll('.qj-leg-fila').forEach((el) => { el.hidden = !posicoes.some((p) => p.na_fila); });
-    $('qjSalmoura').innerHTML = mapa('salmoura');
-    $('qjSecagem').innerHTML = mapa('secagem');
-    $('qjSalmouraLotes').innerHTML = porLote('salmoura');
-    $('qjSecagemLotes').innerHTML = porLote('secagem');
-    mostrarModo();
+      + `<div class="qj-total"><span>Total na fábrica</span><strong>${fmtNum(emProc + soma('estoque'))}</strong><small>peças de queijo</small></div>`;
+    renderProcesso();
     renderEstoque();
     renderMovimentos();
     resumoInicio();
   }
-  function renderFila() {
-    $('qjFila').innerHTML = pendentes.length ? pendentes.map((x) => {
-      const faltam = Math.max(0, x.pecas - x.recebidas);
-      return `<div class="qj-item" data-lanc="${x.lancamento_id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(x.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(x.lote)}</span>${x.na_fila ? '<span class="badge qj-badge-fila">Aguardando envio</span>' : ''}
-          ${podeEditar ? `<span class="qj-fila-acoes">${x.na_fila ? '' : '<button type="button" class="link-btn" data-acao="dispensar">Não controlar</button>'}<button type="button" class="btn btn-primary btn-small" data-acao="receber">Dar destino</button></span>` : ''}</div>
-        <div class="pr-nums"><span><small>Fabricação</small>${fmtData(x.data_fabricacao)}</span><span><small>Aguardando</small>${pecas(faltam)}</span>${x.recebidas ? `<span><small>Já encaminhadas</small>${fmtNum(x.recebidas)} de ${fmtNum(x.pecas)}</span>` : ''}</div>
-      </div>`;
-    }).join('') : '<p class="empty-state-msg">Nenhum lote esperando. Tudo o que foi produzido já tem destino.</p>';
-  }
-  function mapa(etapa) {
-    let html = '';
-    for (const n of numerosDe(etapa)) {
-      const ps = noLugarAtual(etapa, n);
-      const nome = lugar(etapa, n);
-      const grade = ehGrade(etapa, n);
-      const rotulo = grade ? 'Grade' : n;
-      if (!ps.length) { html += `<button type="button" class="qj-tile livre${grade ? ' grade' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${nome}: livre"><span class="qj-n">${rotulo}</span><span class="qj-t">${grade ? 'Livre, sem limite de peças' : 'Livre'}</span></button>`; continue; }
-      const total = ps.reduce((a, p) => a + p.pecas, 0);
-      const lotesAqui = [...new Set(ps.map((p) => p.lote_id))];
-      const comPrevisao = ps.filter((p) => p.previsao_saida).map(faltaMs);
-      const menor = comPrevisao.length ? Math.min(...comPrevisao) : null;
-      const pronto = menor != null && menor <= 0;
-      const titulo = lotesAqui.length > 1 ? lotesAqui.length + ' lotes' : lote(lotesAqui[0]).produto_nome;
-      const tempo = menor == null ? '' : pronto ? 'Pronto' : duracao(menor);
-      // Lotes em miniatura (pedido do Iago): até 3 números, o resto vira "+N".
-      const nums = lotesAqui.map((id) => lote(id).lote);
-      const mini = (nums.length > 1 ? 'Lotes ' : 'Lote ') + nums.slice(0, 3).join(' · ') + (nums.length > 3 ? ' +' + (nums.length - 3) : '');
-      const seg = ps.some((p) => p.segunda);
-      html += `<button type="button" class="qj-tile${grade ? ' grade' : ''}${lotesAqui.length > 1 ? ' misto' : ''}${pronto ? ' pronto' : ''}${ps.some((p) => p.na_fila) ? ' na-fila' : ''}" data-etapa="${etapa}" data-numero="${n}" aria-label="${esc(nome)}: ${esc(titulo)}, ${esc(mini)}, ${pecas(total)}${seg ? ', com peças de segunda' : ''}${tempo ? ', ' + (pronto ? 'tempo cumprido' : 'faltam ' + tempo) : ''}${ps.some((p) => p.na_fila) ? ', aguardando envio' : ''}">
-        <span class="qj-n">${rotulo}${seg ? ' <b class="qj-2a">2ª</b>' : ''}</span><span class="qj-p">${esc(titulo)}</span><span class="qj-l">${esc(mini)}</span><span class="qj-q">${pecas(total)}</span>${tempo ? `<span class="qj-t">${pronto ? 'Pronto' : 'faltam ' + tempo}</span>` : ''}</button>`;
-    }
-    return html;
-  }
-  /* ---------- Salmoura e secagem por lote (pedido do Iago, 02/11/2026) ----------
-     Um cartão por lote (produto + número do lote) com os lugares onde está, o total de peças, a entrada e a saída prevista.
-     "Por número" mostra o mapa antigo, número por número. A escolha fica no aparelho (sn_qj_modo). */
-  let modo = 'lote';
-  try { if (localStorage.getItem('sn_qj_modo') === 'numero') modo = 'numero'; } catch (e) { /* ok */ }
-  function mostrarModo() {
-    document.querySelectorAll('.qj-modo .seg-btn').forEach((b) => { const ativo = b.dataset.modo === modo; b.classList.toggle('is-active', ativo); b.setAttribute('aria-pressed', ativo ? 'true' : 'false'); });
-    document.querySelectorAll('.qj-leg-lote, .qj-lotes').forEach((el) => { el.hidden = modo !== 'lote'; });
-    document.querySelectorAll('.qj-leg-mapa').forEach((el) => { el.hidden = modo === 'lote'; });
-  }
-  const chaveLote = (p) => { const l = lote(p.lote_id); return l.produto_nome + '|' + l.lote; };
-  const ordemNum = (n) => (Number(n) === GRADE ? 999 : Number(n));
-  function lotesNaEtapa(etapa) {
-    const grupos = new Map();
-    posicoes.filter((p) => p.etapa === etapa).forEach((p) => {
-      const k = chaveLote(p);
-      if (!grupos.has(k)) grupos.set(k, []);
-      grupos.get(k).push(p);
-    });
-    const tempo = (ps, f) => { const v = ps.map(f).filter((x) => x).map((x) => new Date(x).getTime()); return v.length ? v : null; };
-    return [...grupos.entries()].map(([k, ps]) => {
-      ps.sort((a, b) => ordemNum(a.numero) - ordemNum(b.numero) || (a.segunda ? 1 : 0) - (b.segunda ? 1 : 0));
-      const ent = tempo(ps, (p) => p.entrada_em), sai = tempo(ps, (p) => p.previsao_saida);
-      return { chave: k, ps, l: lote(ps[0].lote_id), total: ps.reduce((a, p) => a + p.pecas, 0),
-        entMin: ent && Math.min(...ent), entMax: ent && Math.max(...ent), saiMin: sai && Math.min(...sai), saiMax: sai && Math.max(...sai),
-        pronto: ps.some(pronta), prontos: ps.filter(pronta).length, segunda: ps.some((p) => p.segunda), fila: ps.some((p) => p.na_fila) };
-    // Primeiro os que já podem sair; depois quem sai antes; sem saída prevista no fim.
-    }).sort((a, b) => (b.pronto - a.pronto) || ((a.saiMin == null) - (b.saiMin == null)) || ((a.saiMin || 0) - (b.saiMin || 0)) || ((a.entMin || 0) - (b.entMin || 0)));
-  }
-  // Datas iguais (ou quase) viram uma só; diferentes viram "de … a …".
-  function faixaDatas(min, max) {
-    if (min == null) return '—';
-    if (max - min < 60000) return fmtDataHora(min);
-    return 'de ' + fmtDataHora(min) + '<br>a ' + fmtDataHora(max);
-  }
-  function faixasNumeros(ns) {
-    const r = [];
-    for (let i = 0; i < ns.length; i++) {
-      let j = i; while (j + 1 < ns.length && ns[j + 1] === ns[j] + 1) j++;
-      r.push(j - i >= 2 ? ns[i] + ' a ' + ns[j] : j > i ? ns[i] + ', ' + ns[j] : String(ns[i]));
-      i = j;
-    }
-    return r.join(', ');
-  }
-  function porLote(etapa) {
-    const grupos = lotesNaEtapa(etapa);
-    const livres = numerosDe(etapa).filter((n) => n !== GRADE && !posicoes.some((p) => p.etapa === etapa && p.numero === n));
-    const txtLivres = `<p class="qj-livres">${livres.length ? `<b>${etapa === 'salmoura' ? 'Salmouras livres' : 'Prateleiras livres'} (${livres.length}):</b> ${faixasNumeros(livres)}` : `<b>Nenhuma ${etapa === 'salmoura' ? 'salmoura' : 'prateleira'} livre.</b>`}${etapa === 'secagem' ? ' · A Grade não tem limite de peças.' : ''}</p>`;
-    if (!grupos.length) return `<p class="empty-state-msg">Nenhum lote na ${etapa} agora.</p>` + txtLivres;
-    return grupos.map((g) => {
-      // Só os números dos lugares (pedido do Iago, 02/11/2026); as peças aparecem no total do lote e no detalhe.
-      const chips = [...new Set(g.ps.map((p) => p.numero))].map((n) => {
-        const aqui = g.ps.filter((p) => p.numero === n);
-        const outros = new Set(noLugarAtual(etapa, n).map(chaveLote)).size > 1;
-        return `<span class="qj-chip${aqui.some(pronta) ? ' pronto' : ''}${outros ? ' misto' : ''}${aqui.some((p) => p.na_fila) ? ' na-fila' : ''}"><b>${ehGrade(etapa, n) ? 'Grade' : n}</b>${aqui.some((p) => p.segunda) ? '<b class="qj-2a">2ª</b>' : ''}</span>`;
-      }).join('');
-      const nLug = new Set(g.ps.map((p) => p.numero)).size;
-      const rotuloLug = etapa === 'salmoura' ? (nLug === 1 ? 'Salmoura' : 'Salmouras (' + nLug + ')') : (nLug === 1 ? 'Prateleira' : 'Prateleiras (' + nLug + ')');
-      let sit = '';
-      if (g.pronto) sit = g.prontos === g.ps.length ? 'Tempo cumprido há ' + duracao(Date.now() - g.saiMax) : 'Tempo cumprido em ' + g.prontos + ' de ' + g.ps.length + ' lugares';
-      else if (g.saiMin != null) sit = 'Faltam ' + duracao(g.saiMin - Date.now());
-      const rotulo = `${g.l.produto_nome}, lote ${g.l.lote}, ${pecas(g.total)}, em ${g.ps.map((p) => lugar(etapa, p.numero)).join(', ')}${sit ? ', ' + sit : ''}${g.fila ? ', aguardando envio' : ''}`;
-      return `<button type="button" class="qj-lote${g.pronto ? ' pronto' : ''}${g.fila ? ' na-fila' : ''}" data-etapa="${etapa}" data-chave="${esc(g.chave)}" aria-label="${esc(rotulo)}">
-        <span class="qj-lote-top"><span class="qj-lote-num"><small>Lote</small>${esc(g.l.lote)}${g.segunda ? ' <b class="qj-2a">2ª</b>' : ''}</span><span class="qj-lote-tot"><small>Total</small>${pecas(g.total)}</span></span>
-        <span class="qj-lote-prod">${esc(g.l.produto_nome)}${g.l.data_fabricacao ? `<small>Fabricado em ${fmtData(g.l.data_fabricacao)}</small>` : ''}</span>
-        <span class="qj-lote-lug"><small>${rotuloLug}</small><span class="qj-chips">${chips}</span></span>
-        <span class="qj-lote-datas"><span><small>Entrada</small>${faixaDatas(g.entMin, g.entMax)}</span><span><small>Saída prevista</small>${faixaDatas(g.saiMin, g.saiMax)}</span></span>
-        ${sit ? `<span class="qj-lote-sit">${esc(sit)}</span>` : ''}${g.fila ? '<span class="qj-lote-sit" style="color:var(--warn)">Feito sem internet: aguardando envio</span>' : ''}
-      </button>`;
-    }).join('') + txtLivres;
-  }
-  // Detalhe do lote: cada lugar onde ele está, com os mesmos botões do detalhe do número.
-  let voltarJanela = null;
-  function voltarAnterior(p) {
-    if (p.etapa === 'estoque') SN.ui.closeModal();
-    else if (voltarJanela) voltarJanela();
-    else abrirLugar(p.etapa, p.numero);
-  }
-  function abrirLote(etapa, chave) {
-    voltarJanela = () => abrirLote(etapa, chave);
-    const g = lotesNaEtapa(etapa).find((x) => x.chave === chave);
-    if (!g) { SN.ui.closeModal(); return; }
-    const corpo = g.ps.map((p) => {
-      const sit = situacao(p);
-      const outros = noLugarAtual(etapa, p.numero).filter((o) => chaveLote(o) !== chave);
-      const junto = outros.length ? [...new Set(outros.map((o) => { const l = lote(o.lote_id); return l.produto_nome + ' lote ' + l.lote; }))].join(', ') : '';
-      return `<div class="qj-item" data-pos="${p.id}">
-        <div class="pr-item-top"><p class="qj-lote-lugar">${esc(lugar(etapa, p.numero))}</p>${selo2a(p)}</div>
-        <div class="pr-nums"><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
-        ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
-        ${junto ? `<p class="muted-note" style="margin:6px 0 0">Divide o lugar com: ${esc(junto)}.</p>` : ''}
-        ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
-        ${podeEditar && !p.na_fila ? '<div class="qj-botoes"><button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="segunda">' + (p.segunda ? 'Voltar para primeira' : 'Passar para segunda') + '</button></div>' : ''}
-      </div>`;
-    }).join('');
-    const titulo = g.l.produto_nome + ', lote ' + g.l.lote;
-    // "Mover peças" do lote (pedido do Iago, 02/11/2026): um botão para cada qualidade (as peças de segunda vão separadas).
-    const grupos = [false, true].map((seg) => g.ps.filter((p) => !!p.segunda === seg)).filter((x) => x.length);
-    const misto = grupos.length > 1;
-    const botoesLote = podeEditar ? `<div class="qj-botoes qj-lote-todo">${grupos.map((ps) => {
-      const seg = !!ps[0].segunda;
-      return `<button type="button" class="btn ${seg ? '' : 'btn-primary'}" data-todo="${seg ? 2 : 1}">${misto ? (seg ? 'Mover peças de segunda' : 'Mover peças de primeira') : 'Mover peças'}</button>`;
-    }).join('')}</div>` : '';
-    const numsTxt = [...new Set(g.ps.map((p) => p.numero))].map((n) => (ehGrade(etapa, n) ? 'Grade' : n)).join(', ');
-    SN.ui.openModal(titulo, `<p class="modal-context">${pecas(g.total)} na ${etapa} (${etapa === 'salmoura' ? 'salmouras' : 'secagem'} ${esc(numsTxt)})${g.l.data_fabricacao ? ', fabricado em ' + fmtData(g.l.data_fabricacao) : ''}.</p>${botoesLote}<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
-      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
-      root.querySelectorAll('[data-todo]').forEach((b) => b.addEventListener('click', () => moverLote(etapa, chave, b.dataset.todo === '2')));
-      root.querySelector('[data-lugar]').addEventListener('click', (e) => {
-        const b = e.target.closest('[data-acao]'); if (!b) return;
-        const id = b.closest('[data-pos]').dataset.pos;
-        if (b.dataset.acao === 'mover') mover(id);
-        if (b.dataset.acao === 'tempo') ajustarTempo(id);
-        if (b.dataset.acao === 'perda') perda(id);
-        if (b.dataset.acao === 'segunda') qualidade(id);
-      });
-    });
-  }
-  /* "Mover peças" do lote (pedido do Iago, 02/11/2026). O lote é tratado como um grupo de números com um total:
-     a pessoa marca para onde vão e o total que vai. Se não for o lote todo, marca os números que ficam com peças e
-     confirma (ou corrige) quantas peças ficam. Não muda o banco: a tela esvazia os números que não ficam (o que não
-     foi para o destino passa para os números que ficam), deixa os que ficam com partes iguais e, se ficarem menos
-     peças do que o sistema tinha, registra a diferença como perda ("Acerto da contagem ao mover", precisa de internet).
-     Cada lugar de origem vira uma gravação de "Mover peças" (queijos_mover_varios / queijos_mover_estoque). */
-  function moverLote(etapa, chave, segunda) {
-    const g = lotesNaEtapa(etapa).find((x) => x.chave === chave); if (!g) { SN.ui.closeModal(); return; }
-    const ps = g.ps.filter((p) => !!p.segunda === segunda);
-    if (!ps.length) return;
-    const totalGrupo = ps.reduce((a, p) => a + p.pecas, 0);
-    const l = g.l, nome = l.produto_nome + (segunda ? ' 2ª' : '');
-    const numsLote = [...new Set(ps.map((p) => p.numero))];
-    const rot = (n) => (ehGrade(etapa, n) ? 'Grade' : n);
-    const origem = { etapa, numero: -1, numeros: [...new Set(g.ps.map((p) => p.numero))], segunda, texto: 'no lote' };
-    SN.ui.openModal(segunda ? 'Mover peças de segunda' : 'Mover peças', `
-      <p class="modal-context">${esc(nome)}, lote ${esc(l.lote)}: ${pecas(totalGrupo)} ${numsLote.length > 1 ? 'nos números ' + numsLote.map(rot).join(', ') : esc(noLugar(ps[0]))}.${segunda ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
-      <form class="form" id="qjForm">${destinoHTML({ max: totalGrupo, rotuloQuando: 'Data e hora da entrada' })}
-        <fieldset class="qj-destino qj-ficam" data-ficam hidden><legend>O que fica no lote (${etapa === 'salmoura' ? 'salmoura' : 'secagem'})</legend>
-          <p class="muted-note" style="margin:0 0 6px">Números que continuam com peças deste lote:</p>
-          <div class="qj-nums" data-ficam-nums>${numsLote.map((n, i) => `<label class="qj-num${ehGrade(etapa, n) ? ' grade' : ''}"><input type="checkbox" value="${n}" ${i === numsLote.length - 1 ? 'checked' : ''} aria-label="${esc(lugar(etapa, n))}"><span>${rot(n)}</span></label>`).join('')}</div>
-          <label style="margin-top:10px">Peças que ficam<input type="number" name="pecas_ficam" min="0" step="1" inputmode="numeric"></label>
-          <p class="qj-conta" data-ficam-conta aria-live="polite"></p>
-        </fieldset>
-        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
-      const form = root.querySelector('#qjForm');
-      ligarDestino(form, origem, null, totalGrupo, l.produto_id);
-      const bloco = form.querySelector('[data-ficam]'), campoFicam = form.querySelector('[name="pecas_ficam"]');
-      let ficamMexido = false;
-      const vaiTotal = () => { const r = form.querySelector('[name="etapa"]:checked'); if (!r) return null;
-        return lerNum(form.querySelector(r.value === 'estoque' ? '[name="pecas_estoque"]' : '[name="pecas_total"]').value) || 0; };
-      const ficamNums = () => [...form.querySelectorAll('[data-ficam-nums] input:checked')].map((c) => Number(c.value));
-      const atualizarFicam = () => {
-        const vai = vaiTotal();
-        const parcial = vai != null && vai > 0 && vai < totalGrupo;
-        bloco.hidden = !parcial;
-        if (!parcial) return;
-        if (!ficamMexido) campoFicam.value = totalGrupo - vai;
-        const fica = lerNum(campoFicam.value), esperado = totalGrupo - vai, c = form.querySelector('[data-ficam-conta]');
-        c.classList.remove('erro');
-        if (fica == null) c.textContent = '';
-        else if (fica > esperado) { c.classList.add('erro'); c.textContent = `O sistema tinha ${pecas(totalGrupo)}: indo ${fmtNum(vai)}, ficam no máximo ${pecas(esperado)}. Confira o total.`; }
-        else if (fica < esperado) c.textContent = `O sistema tinha ${pecas(esperado)} aqui depois da mudança. A diferença (${pecas(esperado - fica)}) será registrada como perda (acerto da contagem).`;
-        else c.textContent = ficamNums().length ? `Ficam ${pecas(fica)} em ${ficamNums().length === 1 ? lugar(etapa, ficamNums()[0]) : 'nos números ' + ficamNums().map(rot).join(', ')}.` : '';
-      };
-      campoFicam.addEventListener('input', () => { ficamMexido = true; });
-      form.addEventListener('input', atualizarFicam); form.addEventListener('change', atualizarFicam);
-      root.querySelector('[data-cancelar]').addEventListener('click', () => abrirLote(etapa, chave));
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const d = lerDestino(form); if (!d) return;
-        const entradaMax = Math.max(...ps.map((p) => new Date(p.entrada_em).getTime()));
-        if (new Date(d.quando).getTime() < entradaMax) { toast('A data da mudança não pode ser antes da entrada atual (' + fmtDataHora(entradaMax) + ').'); return; }
-        let fica = 0, ficamEm = [];
-        if (d.total < totalGrupo) {
-          ficamEm = ficamNums();
-          fica = lerNum(campoFicam.value);
-          if (fica == null || fica < 0 || fica !== Math.round(fica)) { toast('Informe quantas peças ficam, em número inteiro.'); return; }
-          if (fica > totalGrupo - d.total) { toast('Ficam no máximo ' + pecas(totalGrupo - d.total) + '. Confira o total.'); return; }
-          if (fica > 0 && !ficamEm.length) { toast('Marque os números que continuam com peças.'); return; }
-          if (fica > 0 && fica < ficamEm.length) { toast('São ' + ficamEm.length + ' números para ' + pecas(fica) + '. Desmarque algum.'); return; }
-          if (fica === 0) ficamEm = [];
-        }
-        const perdaQtd = totalGrupo - d.total - fica;
-        if (perdaQtd > 0 && (SN.semInternet() || minhaFilaQj().length || ps.some((p) => ehProvisorio(p.id)))) { toast('O acerto da contagem (perda) precisa de internet e de nada esperando envio. Deixe "Peças que ficam" com ' + fmtNum(totalGrupo - d.total) + ' e registre a perda depois.'); return; }
-        // Quanto cada número que fica deve ter no fim (partes iguais) e quanto cada posição tem para dar.
-        const alvo = {}; repartirTotal(ficamEm, fica).forEach((x) => { alvo[x.numero] = x.pecas; });
-        const sobra = ps.map((p) => ({ p, livre: p.pecas }));
-        // Nos números que ficam, a primeira posição de cada número guarda o alvo; o resto é livre para sair.
-        ficamEm.forEach((n) => { let quer = alvo[n] || 0; sobra.filter((x) => x.p.numero === n).forEach((x) => { const q = Math.min(x.livre, quer); x.livre -= q; quer -= q; alvo[n] = quer; }); });
-        // Fontes: primeiro os números que não ficam, depois o excesso dos que ficam.
-        const fontes = sobra.filter((x) => !ficamEm.includes(x.p.numero)).concat(sobra.filter((x) => ficamEm.includes(x.p.numero)));
-        const pega = (qtd) => { const r = []; for (const x of fontes) { if (qtd <= 0) break; const q = Math.min(x.livre, qtd); if (q > 0) { r.push({ p: x.p, pecas: q }); x.livre -= q; qtd -= q; } } return r; };
-        const tira = pega(d.total);
-        if (tira.reduce((a, t) => a + t.pecas, 0) < d.total) { toast('Só há ' + pecas(totalGrupo) + ' deste lote aqui.'); return; }
-        const itens = repartir(tira, d).map((x) => {
-          const tot = x.itens.reduce((a, i) => a + i.pecas, 0);
-          return { tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
-            etapa: d.etapa, itens: x.itens, total: tot, quando: d.quando, previsao: d.previsao, ...(x.peso ? { peso: x.peso } : {}),
-            texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${resumoDestino({ etapa: d.etapa, itens: x.itens, total: tot, peso: x.peso })}` };
-        });
-        // Números que ficam e ainda precisam de peças: recebem o que sobrou nos números que não ficam (mesma etapa, mesma saída prevista).
-        ficamEm.forEach((n) => {
-          let quer = alvo[n] || 0;
-          for (const x of fontes) {
-            if (quer <= 0) break; if (x.p.numero === n || x.livre <= 0) continue;
-            const q = Math.min(x.livre, quer); x.livre -= q; quer -= q;
-            itens.push({ tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao,
-              etapa, itens: [{ numero: n, pecas: q }], total: q, quando: d.quando, previsao: x.p.previsao_saida,
-              texto: `Mover: ${nome}, lote ${l.lote}, ${lugarCurto(x.p)} → ${lugar(etapa, n)} (${pecas(q)}, fica no lote)` });
-          }
-        });
-        // O que ainda sobrar fora dos números que ficam é a diferença da contagem: perda.
-        const perdas = sobra.filter((x) => x.livre > 0).map((x) => ({ p: x.p, pecas: x.livre }));
-        const okPerdas = async () => {
-          for (const x of perdas) {
-            const { error } = await sb.rpc('queijos_perda', { p_posicao: x.p.id, p_pecas: x.pecas, p_motivo: 'Acerto da contagem ao mover' });
-            if (error) { console.error(error); toast('As peças foram movidas, mas o acerto da contagem não foi gravado: ' + erroMsg(error) + ' Registre a perda na ' + lugarCurto(x.p) + '.'); return false; }
-          }
-          return true;
-        };
-        enviarVarios(form.querySelector('[type="submit"]'), itens,
-          'Peças movidas: ' + resumoDestino(d) + (fica ? '. Ficam ' + pecas(fica) + ' no lote' : '') + (perdaQtd > 0 ? '. Acerto: ' + pecas(perdaQtd) + ' como perda' : '') + '.',
-          perdas.length ? okPerdas : null);
-      });
-    });
-  }
-  // Reparte o que sai de cada lugar de origem ([{p, pecas}]), na ordem, pelos lugares de destino. O peso (estoque) é dividido pelas peças.
-  function repartir(tira, d) {
-    const destinos = d.itens.map((x) => ({ numero: x.numero, resta: x.pecas }));
-    let k = 0, pesoUsado = 0;
-    return tira.map((t, idx) => {
-      let falta = t.pecas; const itens = [];
-      while (falta > 0 && k < destinos.length) {
-        const q = Math.min(falta, destinos[k].resta);
-        if (q > 0) { const ja = itens.find((i) => i.numero === destinos[k].numero); if (ja) ja.pecas += q; else itens.push({ numero: destinos[k].numero, pecas: q }); }
-        falta -= q; destinos[k].resta -= q;
-        if (destinos[k].resta === 0) k++;
-      }
-      let peso = null;
-      if (d.peso > 0) {
-        peso = idx === tira.length - 1 ? Math.round((d.peso - pesoUsado) * 1000) / 1000 : Math.round(d.peso * t.pecas / d.total * 1000) / 1000;
-        pesoUsado += peso;
-      }
-      return { p: t.p, itens, peso };
-    });
-  }
-  // Grava vários "Mover peças" em seguida. Se a internet cair no meio, o que falta vai para a fila (na ordem).
+  // Cancelar nas janelas de perda e qualidade fecha a janela (só o estoque abre essas janelas agora).
+  function voltarAnterior() { SN.ui.closeModal(); }
+  // Grava vários registros em seguida (retirada para o estoque). Se a internet cair no meio, o que falta vai para a fila (na ordem).
   async function enviarVarios(botao, itens, sucesso, depois) {
-    const guardarTudo = SN.semInternet() || itens.some((it) => ehProvisorio(it.posicao)) || minhaFilaQj().length > 0;
+    const guardarTudo = SN.semInternet() || itens.some((it) => ehProvisorio(it.posicao) || (it.lancamento_id && lancNaFila().some((l) => l.id === it.lancamento_id))) || minhaFilaQj().length > 0;
     let i = 0;
     if (!guardarTudo) {
       botao.disabled = true;
@@ -6323,7 +6005,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (error.code) {
           botao.disabled = false;
           SN.ui.closeModal(); atualizar();
-          toast((i ? `Foram movidas as peças de ${i} de ${itens.length} lugares. ` : '') + `Parou na ${lugarCurto(posicoes.find((p) => p.id === itens[i].posicao))}: ` + erroMsg(error));
+          toast((i ? `Foram gravadas ${i} de ${itens.length} partes. ` : '') + `Parou em "${itens[i].texto}": ` + erroMsg(error));
           return;
         }
         break; // sem código: não chegou ao banco; o resto vai para a fila
@@ -6341,7 +6023,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     catch (e) { console.error(e); toast('Sem internet e não foi possível guardar neste aparelho. Anote e registre depois.'); if (i) atualizar(); return; }
     SN.ui.closeModal();
     aplicarFila(); render(); renderFilaQj();
-    toast((i ? `Foram movidas as peças de ${i} de ${itens.length} lugares; o resto ` : '') + (SN.semInternet() || i ? (i ? 'ficou guardado neste aparelho e será enviado quando a internet voltar.' : 'Sem internet: guardado neste aparelho. Será enviado quando a internet voltar.') : 'Guardado. Será enviado em seguida, depois dos registros que estão esperando.'));
+    toast((i ? `Foram gravadas ${i} de ${itens.length} partes; o resto ` : '') + (SN.semInternet() || i ? (i ? 'ficou guardado neste aparelho e será enviado quando a internet voltar.' : 'Sem internet: guardado neste aparelho. Será enviado quando a internet voltar.') : 'Guardado. Será enviado em seguida, depois dos registros que estão esperando.'));
     if (i) atualizar();
     if (!SN.semInternet()) enviarFilaQj();
   }
@@ -6371,7 +6053,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       case 'segunda': return (m.destino && m.destino.segunda ? 'Passou para segunda ' : 'Voltou para primeira ') + noLugar(m.origem) + ', ' + pecas(m.pecas) + (m.observacao ? ': ' + m.observacao : '');
       case 'perda': return 'Perda de ' + pecas(m.pecas) + ' ' + noLugar(m.origem) + (m.observacao ? ': ' + m.observacao : '');
       case 'tempo': return 'Saída prevista ' + noLugar(m.origem) + ' mudou para ' + (m.destino && m.destino.previsao_saida ? fmtDataHora(m.destino.previsao_saida) : '?');
-      case 'dispensar': return 'Ficou fora do controle de queijos' + (m.pecas ? ' (' + pecas(m.pecas) + ')' : '');
+      case 'dispensar': return 'Encerrado em processo: ' + (m.pecas ? pecas(m.pecas) + ' não foram para o estoque' : 'saiu do controle');
       case 'saida': return 'Saída de ' + pecas(m.pecas) + (m.destino && m.destino.peso_kg ? ' (' + fmtNum(m.destino.peso_kg) + ' kg)' : '') + ' do estoque' + (m.observacao ? ': ' + m.observacao : '');
       default: return m.tipo;
     }
@@ -6394,175 +6076,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     alvos.forEach((el) => { el.innerHTML = html; });
   }
 
-  /* ---------- Formulário de destino (usado ao dar destino e ao mover) ----------
-     Ordem: 1) para onde vão; 2) número(s) da salmoura/secagem e peças em cada um;
-     3) data e hora da entrada; 4) tempo de permanência (o mesmo para todos). */
-  function destinoHTML(o) {
-    return `${o.comSegunda ? `
-      <fieldset class="qj-destino"><legend>Qualidade</legend>
-        <label class="check"><input type="checkbox" name="segunda"> São peças de segunda (com defeito de fabricação)</label>
-        <div data-bloco-motivo hidden>${motivoHTML()}</div>
-        <p class="muted-note" data-nota-segunda hidden>Só parte do lote é de segunda? Dê destino a essas peças aqui e, depois, às de primeira.</p>
-      </fieldset>` : ''}
-      <fieldset class="qj-destino"><legend>Para onde vão</legend><div class="qj-opcoes">
-        <label><input type="radio" name="etapa" value="salmoura"> Salmoura</label>
-        <label><input type="radio" name="etapa" value="secagem"> Secagem</label>
-        <label><input type="radio" name="etapa" value="estoque"> Estoque (embalado)</label>
-      </div></fieldset>
-      <div class="qj-passos" data-passos hidden>
-        <div data-bloco-linhas>
-          <fieldset class="qj-destino"><legend data-leg-num></legend><div class="qj-nums" data-nums></div>
-            <p class="muted-note qj-nums-nota">Toque para marcar ou desmarcar. Com bolinha = já tem peças.</p></fieldset>
-          <label>Total de peças nesses lugares<input type="number" name="pecas_total" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
-        </div>
-        <div class="two" data-bloco-estoque>
-          <label>Quantas peças<input type="number" name="pecas_estoque" min="1" max="${o.max}" step="1" inputmode="numeric" value="${o.max}"></label>
-          <label>Peso do lote (kg), se já pesou<input type="number" name="peso_estoque" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
-        </div>
-        <p class="qj-conta" data-conta aria-live="polite"></p>
-        <label>${esc(o.rotuloQuando)}<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
-        <div class="two" data-bloco-tempo>
-          <label>Tempo de permanência<input type="number" name="tempo" min="0" step="any" inputmode="decimal" placeholder="Ex.: 2"></label>
-          <label>Medido em<select name="unidade"><option value="h">Horas</option><option value="d">Dias</option></select></label>
-        </div>
-        <p class="qj-previsao" data-previsao></p>
-      </div>`;
-  }
-  /* max: peças disponíveis; origem: posição de onde saem (ao mover) ou null; unidadeFixa: 'h'/'d' padrão do tempo.
-     Salmoura e secagem (pedido do Iago, 02/11/2026): marca os números e informa só o total de peças nesses lugares.
-     A tela divide o total por igual entre os lugares marcados (repartirTotal) e grava como antes, um número por linha. */
-  function ligarDestino(form, origem, unidadeFixa, max, produtoId) {
-    const lim = (et) => padraoPrateleira(produtoId, et) || Infinity;
-    // Peças de segunda (já marcadas, ou marcadas agora no "Dar destino") vão inteiras para a Grade na secagem.
-    const caixaSeg = form.querySelector('[name="segunda"]');
-    const deSegunda = () => (origem ? !!origem.segunda : !!(caixaSeg && caixaSeg.checked));
-    const numsEl = form.querySelector('[data-nums]');
-    const etapaAtual = () => { const r = form.querySelector('[name="etapa"]:checked'); return r ? r.value : null; };
-    const bloqueado = (et, n) => !!origem && origem.etapa === et && (origem.numero === n || (origem.numeros || []).includes(n));
-    const marcados = () => [...numsEl.querySelectorAll('input:checked')].map((c) => Number(c.value));
-    function sugerir(et, total) {
-      if (et === 'secagem' && deSegunda() && !(origem && ehGrade(origem.etapa, origem.numero))) return [GRADE];
-      const quantos = Math.max(1, Math.min(ETAPAS[et].max, Math.ceil(total / lim(et))));
-      const r = [];
-      for (let n = 1; n <= ETAPAS[et].max && r.length < quantos; n++) if (!bloqueado(et, n) && !noLugarAtual(et, n).length) r.push(n);
-      for (let n = 1; n <= ETAPAS[et].max && r.length < quantos; n++) if (!bloqueado(et, n) && !r.includes(n)) r.push(n);
-      return r;
-    }
-    function montarNums(et, escolhidos) {
-      numsEl.innerHTML = numerosDe(et).map((n) => {
-        const ps = noLugarAtual(et, n), trava = bloqueado(et, n);
-        const quem = ps.length ? 'Com ' + [...new Set(ps.map((p) => lote(p.lote_id).produto_nome + ' ' + lote(p.lote_id).lote))].join(', ') : 'Livre';
-        return `<label class="qj-num${ehGrade(et, n) ? ' grade' : ''}${ps.length ? ' ocupado' : ''}" title="${esc(trava ? 'Onde as peças estão' : quem)}"><input type="checkbox" value="${n}" ${escolhidos.includes(n) ? 'checked' : ''} ${trava ? 'disabled' : ''} aria-label="${esc(lugar(et, n) + ': ' + (trava ? 'onde as peças estão' : quem))}"><span>${ehGrade(et, n) ? 'Grade' : n}</span></label>`;
-      }).join('');
-      form.querySelector('[data-leg-num]').textContent = et === 'salmoura' ? 'Números das salmouras' : 'Números das prateleiras da secagem';
-    }
-    function atualizar() {
-      const et = etapaAtual();
-      const conta = form.querySelector('[data-conta]');
-      const total = et === 'estoque' ? (lerNum(form.querySelector('[name="pecas_estoque"]').value) || 0) : (lerNum(form.querySelector('[name="pecas_total"]').value) || 0);
-      const resto = max - total;
-      conta.classList.toggle('erro', resto < 0);
-      if (!et) { conta.textContent = ''; previsao(); return; }
-      const nums = et === 'estoque' ? [] : marcados();
-      const onde = et === 'estoque' ? '' : nums.length ? ' em ' + (nums.length === 1 ? lugar(et, nums[0]) : nums.length + ' lugares (' + nums.map((n) => (ehGrade(et, n) ? 'Grade' : n)).join(', ') + ')') : '';
-      if (resto < 0) conta.textContent = `Passou ${pecas(-resto)}: só há ${pecas(max)}.`;
-      else if (et !== 'estoque' && !nums.length) conta.textContent = 'Marque pelo menos um número.';
-      else if (resto === 0) conta.textContent = `Total: ${pecas(total)}${onde}, todas as peças.`;
-      else conta.textContent = `Total: ${pecas(total)}${onde}. ${origem ? 'Ficam ' + pecas(resto) + ' ' + noLugar(origem) : 'Sobram ' + pecas(resto) + ' aguardando destino'}.`;
-      previsao();
-    }
-    function trocarEtapa() {
-      const et = etapaAtual(); if (!et) return;
-      form.querySelector('[data-passos]').hidden = false;
-      const ehEstoque = et === 'estoque';
-      form.querySelector('[data-bloco-linhas]').hidden = ehEstoque;
-      form.querySelector('[data-bloco-estoque]').hidden = !ehEstoque;
-      form.querySelector('[data-bloco-tempo]').hidden = ehEstoque;
-      if (!ehEstoque) {
-        const total = lerNum(form.querySelector('[name="pecas_total"]').value) || max;
-        montarNums(et, sugerir(et, total));
-        form.querySelector('[name="unidade"]').value = unidadeFixa || ETAPAS[et].unidade;
-      }
-      atualizar();
-    }
-    function previsao() {
-      const out = form.querySelector('[data-previsao]');
-      const d = lerDestino(form, true);
-      out.textContent = d && d.previsao ? 'Saída prevista: ' + fmtDataHora(d.previsao) + (diasDaPrevisao(d.quando, d.previsao) ? ' (início do último dia; as horas não contam)' : '') : '';
-    }
-    form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', trocarEtapa));
-    if (caixaSeg) caixaSeg.addEventListener('change', () => {
-      form.querySelector('[data-bloco-motivo]').hidden = !caixaSeg.checked;
-      form.querySelector('[data-nota-segunda]').hidden = !caixaSeg.checked;
-      if (etapaAtual() === 'secagem') trocarEtapa();
-    });
-    ligarMotivo(form);
-    // Enquanto a pessoa não mexer nos números, a sugestão acompanha o total digitado.
-    let numsMexidos = false;
-    numsEl.addEventListener('change', () => { numsMexidos = true; });
-    form.querySelector('[name="pecas_total"]').addEventListener('input', (e) => {
-      const et = etapaAtual(), t = lerNum(e.target.value);
-      if (!numsMexidos && et && et !== 'estoque' && t > 0) montarNums(et, sugerir(et, t));
-    });
-    form.querySelectorAll('[name="etapa"]').forEach((r) => r.addEventListener('change', () => { numsMexidos = false; }));
-    form.addEventListener('input', atualizar);
-    form.addEventListener('change', (e) => { if (e.target.name !== 'etapa' && e.target.name !== 'segunda') atualizar(); });
-    form.dataset.max = max;
-  }
   /* Devolve { etapa, itens: [{numero, pecas}], total, quando, previsao } ou null (com aviso). */
-  function lerDestino(form, silencioso) {
-    const falha = (m) => { if (!silencioso) toast(m); return null; };
-    const r0 = form.querySelector('[name="etapa"]:checked');
-    if (!r0) return falha('Escolha para onde as peças vão.');
-    const etapa = r0.value;
-    const max = Number(form.dataset.max);
-    let itens = [], peso = null;
-    if (etapa === 'estoque') {
-      const pc = lerNum(form.querySelector('[name="pecas_estoque"]').value);
-      if (!silencioso && (!(pc >= 1) || pc !== Math.round(pc))) return falha('Informe quantas peças, em número inteiro.');
-      itens = [{ numero: null, pecas: pc }];
-      peso = lerNum(form.querySelector('[name="peso_estoque"]').value);
-      if (!silencioso && peso != null && !(peso > 0)) return falha('O peso precisa ser maior que zero (ou deixe em branco).');
-    } else {
-      const nums = [...form.querySelectorAll('[data-nums] input:checked')].map((c) => Number(c.value));
-      if (!nums.length) return falha('Marque o número da ' + ETAPAS[etapa].nome.toLowerCase() + '.');
-      const pc = lerNum(form.querySelector('[name="pecas_total"]').value);
-      if (!(pc >= 1) || pc !== Math.round(pc)) return silencioso ? null : falha('Informe o total de peças, em número inteiro.');
-      if (pc < nums.length) return falha('São ' + nums.length + ' lugares marcados para ' + pecas(pc) + '. Desmarque algum.');
-      itens = repartirTotal(nums, pc);
-    }
-    const total = itens.reduce((a, x) => a + (x.pecas || 0), 0);
-    if (!silencioso && total > max) return falha('Só há ' + pecas(max) + ' para dar destino. O total ficou ' + pecas(total) + '.');
-    const q = form.querySelector('[name="quando"]').value;
-    const quando = q ? new Date(q) : null;
-    if (!quando || isNaN(quando.getTime())) return falha('Informe a data e a hora.');
-    const r = { etapa, itens, total, quando: quando.toISOString(), previsao: null };
-    if (etapa === 'estoque' && peso > 0) r.peso = Math.round(peso * 1000) / 1000;
-    const caixaSeg = form.querySelector('[name="segunda"]');
-    if (caixaSeg && caixaSeg.checked) {
-      const motivo = lerMotivo(form);
-      if (!motivo) return falha('Escolha o motivo das peças de segunda.');
-      r.segunda = true; r.motivo = motivo;
-    }
-    if (etapa !== 'estoque') {
-      const t = lerNum(form.querySelector('[name="tempo"]').value);
-      if (!(t > 0)) return falha('Informe quanto tempo as peças vão ficar.');
-      r.previsao = somarTempo(quando, t, form.querySelector('[name="unidade"]').value).toISOString();
-    }
-    return r;
-  }
-  // Divide o total por igual entre os lugares marcados (o que sobra da divisão vai para os primeiros).
-  function repartirTotal(nums, total) {
-    const base = Math.floor(total / nums.length), resto = total - base * nums.length;
-    return nums.map((numero, i) => ({ numero, pecas: base + (i < resto ? 1 : 0) }));
-  }
-  function resumoDestino(d) {
-    const seg = d.segunda ? ', de segunda' : '';
-    if (d.etapa === 'estoque') return pecas(d.total) + (d.peso ? ' (' + kg(d.peso) + ')' : '') + seg + ' no estoque';
-    const nums = d.itens.map((x) => x.numero);
-    const onde = nums.length === 1 ? lugar(d.etapa, nums[0]) : (d.etapa === 'salmoura' ? 'Salmouras ' : 'Secagem ') + nums.map((n) => (ehGrade(d.etapa, n) ? 'Grade' : n)).join(', ');
-    return onde + ' (' + pecas(d.itens.reduce((a, x) => a + x.pecas, 0)) + ')' + seg;
-  }
 
   /* ---------- Motivos de segunda (lista em queijos_motivos_segunda) ---------- */
   let motivos = [];
@@ -6635,26 +6149,6 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function prazo(promessa) {
     return Promise.race([promessa, new Promise((ok) => setTimeout(() => ok({ error: { message: 'TypeError: Failed to fetch (demorou demais)', code: '' } }), 12000))]);
-  }
-  async function enviarOuGuardar(botao, item, chamada, sucesso) {
-    // Guarda direto quando: sem internet, peças com número provisório, lote ainda não enviado ou já há itens esperando (mantém a ordem).
-    const guardar = SN.semInternet() || ehProvisorio(item.posicao) || lancNaFila().some((l) => l.id === item.lancamento_id) || minhaFilaQj().length > 0;
-    if (!guardar) {
-      botao.disabled = true;
-      const { error } = await prazo(chamada());
-      botao.disabled = false;
-      if (!error) { SN.ui.closeModal(); toast(sucesso); atualizar(); return; }
-      // Erro com código veio do banco (ex.: peças a mais): mostra. Sem código, não chegou ao banco: guarda e tenta de novo.
-      if (error.code) { console.error(error); toast(erroMsg(error)); return; }
-      console.error(error);
-    }
-    const novo = { ...item, id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2), usuario: SN.usuario.id, guardado_em: new Date().toISOString() };
-    try { gravarFilaQj(lerFilaQj().concat(novo)); }
-    catch (e) { console.error(e); toast('Sem internet e não foi possível guardar neste aparelho. Anote e registre depois.'); return; }
-    SN.ui.closeModal();
-    aplicarFila(); render(); renderFilaQj();
-    toast(SN.semInternet() ? 'Sem internet: guardado neste aparelho. Será enviado quando a internet voltar.' : 'Guardado. Será enviado em seguida, depois dos registros que estão esperando.');
-    if (!SN.semInternet()) enviarFilaQj();
   }
   async function movimentosDoItem(it, uid) {
     const { data, error } = await sb.from('queijos_movimentos').select('destino_id, destino, pecas')
@@ -6760,116 +6254,230 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     renderFilaQj();
   }
 
-  /* ---------- Ações ---------- */
-  function receber(lancId) {
-    const x = pendentes.find((p) => p.lancamento_id === lancId); if (!x) return;
-    const faltam = Math.max(0, x.pecas - x.recebidas);
-    SN.ui.openModal('Dar destino ao lote', `
-      <p class="modal-context">${esc(x.produto_nome)}, lote ${esc(x.lote)}, fabricado em ${fmtData(x.data_fabricacao)}. ${pecas(faltam)} aguardando destino.</p>
-      <form class="form" id="qjForm">${destinoHTML({ max: faltam, rotuloQuando: 'Data e hora da entrada', comSegunda: true })}
-        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Registrar destino</button></div></form>`, (root) => {
-      const form = root.querySelector('#qjForm');
-      ligarDestino(form, null, 'd', faltam, x.produto_id);
-      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const d = lerDestino(form); if (!d) return;
-        const item = { tipo: 'receber', lancamento_id: x.lancamento_id, lote_id: 'lanc:' + x.lancamento_id, produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao, ...d,
-          texto: `Dar destino: ${x.produto_nome}${d.segunda ? ' 2ª' : ''}, lote ${x.lote} → ${resumoDestino(d)}` };
-        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
-          'Destino registrado: ' + resumoDestino(d) + '.');
-      });
-    });
+  /* ---------- Em processo (pedido do Iago, 11/11/2026) ----------
+     A salmoura e a secagem viraram uma etapa só: o lote lançado na produção fica "em processo" até ser retirado para
+     o estoque. Em processo = o que ainda não recebeu destino (queijos_pendentes) mais as peças que ainda estão em alguma
+     salmoura ou secagem (lotes de antes da mudança). Sem mudança nas funções do banco: retirar usa queijos_receber_estoque
+     (lote ainda sem destino) e queijos_mover_estoque (peças que estavam na salmoura/secagem).
+     Tempo mínimo e máximo por queijo (dias) vêm de queijos_prazos() (cadastro em Produtos). */
+  let prazos = {};
+  const prazoDe = (produtoId) => prazos[produtoId] || {};
+  function hojeZero() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function diasDesde(dataISO) {
+    if (!dataISO) return null;
+    const [a, m, d] = String(dataISO).slice(0, 10).split('-').map(Number);
+    return Math.round((hojeZero() - new Date(a, m - 1, d)) / 86400000);
   }
-  function dispensar(lancId) {
-    const x = pendentes.find((p) => p.lancamento_id === lancId); if (!x) return;
-    const faltam = Math.max(0, x.pecas - x.recebidas);
-    SN.ui.confirmar({
-      titulo: 'Não controlar este lote',
-      mensagem: `${x.produto_nome}, lote ${x.lote}: as ${pecas(faltam)} que faltam saem da fila e não entram na salmoura, na secagem nem no estoque. Use para produções antigas ou lotes que não passam por aqui. Dá para desfazer depois.`,
-      botao: 'Tirar da fila', perigo: true,
-      acao: () => enviar($('cfSim'), () => sb.rpc('queijos_dispensar', { p_lancamento: x.lancamento_id }), 'Lote retirado da fila.')
-    });
+  const txtDias = (n) => (n === 1 ? '1 dia' : n + ' dias');
+  function lancDe(loteId) {
+    if (String(loteId || '').startsWith('lanc:')) return String(loteId).slice(5);
+    const l = lotes[loteId]; return (l && l.lancamento_id) || null;
   }
-  function abrirLugar(etapa, numero) {
-    voltarJanela = () => abrirLugar(etapa, numero);
-    const ps = noLugarAtual(etapa, numero);
-    const nome = lugar(etapa, numero);
-    const corpo = ps.length ? ps.map((p) => {
-      const l = lote(p.lote_id), sit = situacao(p);
-      return `<div class="qj-item" data-pos="${p.id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}</div>
-        <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Entrou</small>${fmtDataHora(p.entrada_em)}</span>${p.previsao_saida ? `<span><small>Saída prevista</small>${fmtDataHora(p.previsao_saida)}</span>` : ''}</div>
-        ${sit ? `<p class="qj-status${pronta(p) ? ' warn' : ''}">${esc(sit)}</p>` : ''}
-        ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
-        ${podeEditar ? `<div class="qj-botoes"><button type="button" class="btn btn-primary btn-small" data-acao="mover">Mover peças</button>${p.na_fila ? '' : '<button type="button" class="btn btn-small" data-acao="tempo">Ajustar tempo</button><button type="button" class="btn btn-small" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="segunda">' + (p.segunda ? 'Voltar para primeira' : 'Passar para segunda') + '</button>'}</div>` : ''}
-      </div>`;
-    }).join('') : '<p class="empty-state-msg">Livre. Nenhuma peça aqui agora.</p>';
-    SN.ui.openModal(nome, `<div data-lugar>${corpo}</div><div class="modal-actions"><button type="button" class="btn" data-cancelar>Fechar</button></div>`, (root) => {
-      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
-      root.querySelector('[data-lugar]').addEventListener('click', (e) => {
-        const b = e.target.closest('[data-acao]'); if (!b) return;
-        const id = b.closest('[data-pos]').dataset.pos;
-        if (b.dataset.acao === 'mover') mover(id);
-        if (b.dataset.acao === 'tempo') ajustarTempo(id);
-        if (b.dataset.acao === 'perda') perda(id);
-        if (b.dataset.acao === 'segunda') qualidade(id);
-      });
+  const porEntrada = (a, b) => String(a.entrada_em).localeCompare(String(b.entrada_em));
+  function gruposProcesso() {
+    const g = new Map();
+    const pega = (k, base) => { if (!g.has(k)) g.set(k, { chave: k, ...base, pend: null, ps: [], total: 0, segunda: 0, fila: false }); return g.get(k); };
+    pendentes.forEach((x) => {
+      const o = pega('l:' + x.lancamento_id, { lancamento_id: x.lancamento_id, produto_id: x.produto_id, produto_nome: x.produto_nome, lote: x.lote, data_fabricacao: x.data_fabricacao });
+      o.pend = x; o.total += Math.max(0, x.pecas - x.recebidas); if (x.na_fila) o.fila = true;
     });
-  }
-  function mover(posId) {
-    const p = posicoes.find((x) => x.id === posId); if (!p) return;
-    const l = lote(p.lote_id);
-    SN.ui.openModal('Mover peças', `
-      <p class="modal-context">${esc(nomeProd(p))}, lote ${esc(l.lote)}: ${pecas(p.pecas)} ${esc(noLugar(p))}, desde ${fmtDataHora(p.entrada_em)}.${p.segunda && p.etapa !== 'estoque' && !ehGrade(p.etapa, p.numero) ? ' Peças de segunda: na secagem, vão para a Grade.' : ''}</p>
-      <form class="form" id="qjForm">${destinoHTML({ max: p.pecas, rotuloQuando: 'Data e hora da entrada' })}
-        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Mover peças</button></div></form>`, (root) => {
-      const form = root.querySelector('#qjForm');
-      ligarDestino(form, p, null, p.pecas, l.produto_id);
-      root.querySelector('[data-cancelar]').addEventListener('click', () => voltarAnterior(p));
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const d = lerDestino(form); if (!d) return;
-        if (new Date(d.quando) < new Date(p.entrada_em)) { toast('A data da mudança não pode ser antes da entrada atual.'); return; }
-        const item = { tipo: 'mover', posicao: p.id, lote_id: p.lote_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao, ...d,
-          texto: `Mover: ${nomeProd(p)}, lote ${l.lote}, ${lugarCurto(p)} → ${resumoDestino(d)}` };
-        enviarOuGuardar(form.querySelector('[type="submit"]'), item, () => gravarDestino(item),
-          'Peças movidas: ' + resumoDestino(d) + '.');
-      });
+    posicoes.filter((p) => p.etapa !== 'estoque').forEach((p) => {
+      const lid = lancDe(p.lote_id), l = lote(p.lote_id);
+      const o = pega(lid ? 'l:' + lid : 'q:' + p.lote_id, { lancamento_id: lid, produto_id: l.produto_id, produto_nome: l.produto_nome, lote: l.lote, data_fabricacao: l.data_fabricacao });
+      if (!o.produto_id && l.produto_id) o.produto_id = l.produto_id;
+      o.ps.push(p); o.total += p.pecas; if (p.segunda) o.segunda += p.pecas; if (p.na_fila) o.fila = true;
     });
+    return [...g.values()].filter((o) => o.total > 0).map((o) => {
+      o.ps.sort(porEntrada);
+      o.dias = diasDesde(o.data_fabricacao);
+      const pz = prazoDe(o.produto_id); o.min = pz.dias_min; o.max = pz.dias_max;
+      o.passou = o.max != null && o.dias != null && o.dias > o.max;
+      o.cedo = o.min != null && o.dias != null && o.dias < o.min;
+      o.podeSair = o.min != null && !o.cedo && !o.passou;
+      return o;
+    }).sort((a, b) => (b.passou - a.passou) || String(a.data_fabricacao || '').localeCompare(String(b.data_fabricacao || '')) || a.produto_nome.localeCompare(b.produto_nome, 'pt-BR'));
   }
-  function ajustarTempo(posId) {
-    const p = posicoes.find((x) => x.id === posId); if (!p) return;
-    const l = lote(p.lote_id);
-    const horas = p.previsao_saida ? (new Date(p.previsao_saida) - new Date(p.entrada_em)) / 3600000 : 0;
-    const dias = p.previsao_saida ? diasDaPrevisao(p.entrada_em, p.previsao_saida) : null;
-    const emDias = dias != null || (p.etapa === 'secagem' && horas > 0 && Math.abs(horas / 24 - Math.round(horas / 24)) < 0.01);
-    const valor = horas > 0 ? (dias != null ? dias : emDias ? Math.round(horas / 24) : Math.round(horas * 100) / 100) : '';
-    SN.ui.openModal('Ajustar tempo', `
-      <p class="modal-context">${esc(l.produto_nome)}, lote ${esc(l.lote)}, ${esc(noLugar(p))}. Entrou ${fmtDataHora(p.entrada_em)}.</p>
-      <form class="form" id="qjForm">
-        <div class="two">
-          <label>Tempo de permanência, contado da entrada<input type="number" name="tempo" min="0" step="any" inputmode="decimal" value="${valor}" required></label>
-          <label>Medido em<select name="unidade"><option value="h" ${emDias ? '' : 'selected'}>Horas</option><option value="d" ${emDias ? 'selected' : ''}>Dias</option></select></label>
-        </div>
-        <p class="qj-previsao" data-previsao></p>
-        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Salvar tempo</button></div></form>`, (root) => {
-      const form = root.querySelector('#qjForm');
-      const calcular = () => {
-        const t = lerNum(form.querySelector('[name="tempo"]').value);
-        if (!(t > 0)) return null;
-        return somarTempo(p.entrada_em, t, form.querySelector('[name="unidade"]').value);
+  function situacaoProc(o) {
+    if (o.dias == null) return '';
+    if (o.passou) return 'Passou do tempo máximo (' + txtDias(o.max) + ') há ' + txtDias(o.dias - o.max);
+    if (o.cedo) return 'Tempo mínimo: ' + txtDias(o.min) + '. Faltam ' + txtDias(o.min - o.dias);
+    if (o.podeSair) return 'Já pode ir para o estoque' + (o.max != null ? ' (máximo ' + txtDias(o.max) + ')' : '');
+    if (o.max != null) return 'Tempo máximo: ' + txtDias(o.max) + '. Faltam ' + txtDias(o.max - o.dias);
+    return '';
+  }
+  function textoDias(n) { return n == null ? '—' : n <= 0 ? 'Fabricado hoje' : 'Há ' + txtDias(n); }
+  function lugaresAntes(o) {
+    if (!o.ps.length) return '';
+    const sal = [...new Set(o.ps.filter((p) => p.etapa === 'salmoura').map((p) => p.numero))].sort((a, b) => a - b);
+    const sec = [...new Set(o.ps.filter((p) => p.etapa === 'secagem').map((p) => p.numero))].sort((a, b) => a - b);
+    const partes = [];
+    if (sal.length) partes.push((sal.length === 1 ? 'salmoura ' : 'salmouras ') + sal.join(', '));
+    if (sec.length) partes.push(sec.map((n) => (ehGrade('secagem', n) ? 'Grade' : 'secagem ' + n)).join(', '));
+    return partes.join(' · ');
+  }
+  function renderProcesso() {
+    const grupos = gruposProcesso();
+    const sel = $('qjProcFiltro'), atual = sel.value;
+    const prods = [...new Set(grupos.map((o) => o.produto_nome))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    sel.innerHTML = '<option value="">Todos os queijos</option>' + prods.map((n) => `<option ${n === atual ? 'selected' : ''}>${esc(n)}</option>`).join('');
+    sel.hidden = prods.length < 2;
+    const lista = grupos.filter((o) => !sel.value || o.produto_nome === sel.value);
+    document.querySelectorAll('#pdPainelProcesso .qj-leg-fila').forEach((el) => { el.hidden = !grupos.some((o) => o.fila); });
+    if (!lista.length) { $('qjProcesso').innerHTML = '<p class="empty-state-msg">Nenhum lote em processo agora. Tudo o que foi produzido já está no estoque.</p>'; return; }
+    $('qjProcesso').innerHTML = lista.map((o) => {
+      const sit = situacaoProc(o), antes = lugaresAntes(o);
+      return `<article class="qj-lote pc-lote${o.passou ? ' passou' : o.podeSair ? ' pronto-ok' : ''}${o.fila ? ' na-fila' : ''}" data-chave="${esc(o.chave)}">
+        <span class="qj-lote-top"><span class="qj-lote-num"><small>Lote</small>${esc(o.lote)}${o.segunda ? ' <b class="qj-2a">2ª</b>' : ''}</span><span class="qj-lote-tot"><small>Peças</small>${fmtNum(o.total)}</span></span>
+        <span class="qj-lote-prod">${esc(o.produto_nome)}${o.data_fabricacao ? `<small>Fabricado em ${fmtData(o.data_fabricacao)}</small>` : ''}</span>
+        <span class="pc-dias"><small>Em processo</small>${textoDias(o.dias)}</span>
+        ${sit ? `<p class="pc-sit">${esc(sit)}</p>` : ''}
+        ${o.segunda ? `<p class="pc-antes">${pecas(o.segunda)} de segunda.</p>` : ''}
+        ${antes ? `<p class="pc-antes">Estava em: ${esc(antes)}.</p>` : ''}
+        ${o.fila ? '<p class="pc-sit" style="color:var(--warn)">Feito sem internet: aguardando envio</p>' : ''}
+        ${podeEditar ? '<button type="button" class="btn btn-primary" data-acao="retirar">Retirar para o estoque</button>' : ''}
+      </article>`;
+    }).join('');
+  }
+  /* Retirar para o estoque: peças de primeira e (se houver) de segunda, peso opcional, data e hora.
+     O que sobrar continua em processo, ou a pessoa encerra o lote (o que falta vira perda; precisa de internet). */
+  function retirar(chave) {
+    const o = gruposProcesso().find((x) => x.chave === chave); if (!o) return;
+    const segPos = o.ps.filter((p) => p.segunda), priPos = o.ps.filter((p) => !p.segunda);
+    const pendLivre = o.pend ? Math.max(0, o.pend.pecas - o.pend.recebidas) : 0;
+    const priMax = priPos.reduce((a, p) => a + p.pecas, 0) + pendLivre;
+    SN.ui.openModal('Retirar para o estoque', `
+      <p class="modal-context">${esc(o.produto_nome)}, lote ${esc(o.lote)}${o.data_fabricacao ? ', fabricado em ' + fmtData(o.data_fabricacao) : ''}: ${pecas(o.total)} em processo${o.dias != null && o.dias > 0 ? ' há ' + txtDias(o.dias) : ''}.${o.segunda ? ' Destas, ' + pecas(o.segunda) + ' já são de segunda.' : ''}</p>
+      <form class="form qj-retirar" id="qjForm">
+        <label>Peças de primeira para o estoque<input type="number" name="n1" min="0" step="1" inputmode="numeric" value="${o.total - o.segunda}"></label>
+        <label>Peso das peças de primeira (kg), se já pesou<input type="number" name="peso1" min="0" step="any" inputmode="decimal" placeholder="Opcional"></label>
+        <label class="check"><input type="checkbox" name="tem2" ${o.segunda ? 'checked' : ''}> Há peças de segunda neste lote</label>
+        <fieldset data-seg ${o.segunda ? '' : 'hidden'}><legend>Peças de segunda</legend>
+          <label>Peças de segunda para o estoque<input type="number" name="n2" min="0" step="1" inputmode="numeric" value="${o.segunda || ''}"></label>
+          <div data-motivo-bloco>${motivoHTML()}</div>
+          <label>Peso das peças de segunda (kg), se já pesou<input type="number" name="peso2" min="0" step="any" inputmode="decimal" placeholder="Opcional"></label>
+        </fieldset>
+        <label>Data e hora da retirada<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
+        <p class="qj-conta" data-conta aria-live="polite"></p>
+        <label class="check" data-encerrar-bloco hidden><input type="checkbox" name="encerrar"> <span data-encerrar-txt>Encerrar o lote</span></label>
+        <label data-perda-bloco hidden>Motivo da perda<input type="text" name="motivo_perda" maxlength="200" autocomplete="off" placeholder="Ex.: acerto da contagem"></label>
+        <p class="qj-status warn" data-aviso-min hidden></p>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-cancelar>Cancelar</button><button type="submit" class="btn btn-primary">Retirar para o estoque</button></div>
+      </form>`, (root) => {
+      const form = root.querySelector('#qjForm'), f = (n) => form.querySelector('[name="' + n + '"]');
+      const botao = form.querySelector('[type="submit"]');
+      ligarMotivo(form);
+      let confirmouMin = false;
+      const ler = () => {
+        const tem2 = f('tem2').checked;
+        return { n1: lerNum(f('n1').value) || 0, n2: tem2 ? (lerNum(f('n2').value) || 0) : 0, tem2 };
       };
-      const mostrar = () => { const d = calcular(); form.querySelector('[data-previsao]').textContent = d ? 'Nova saída prevista: ' + fmtDataHora(d) + (diasDaPrevisao(p.entrada_em, d) ? ' (início do último dia; as horas não contam)' : '') : ''; };
-      form.addEventListener('input', mostrar); form.addEventListener('change', mostrar); mostrar();
-      root.querySelector('[data-cancelar]').addEventListener('click', () => voltarAnterior(p));
-      form.addEventListener('submit', (e) => {
+      const atualizarConta = () => {
+        const { n1, n2, tem2 } = ler();
+        form.querySelector('[data-seg]').hidden = !tem2;
+        // O motivo só é pedido quando entram peças novas de segunda (as que já eram de segunda já têm motivo).
+        form.querySelector('[data-motivo-bloco]').hidden = !(n2 > o.segunda);
+        const vai = n1 + n2, fica = o.total - vai, c = form.querySelector('[data-conta]');
+        c.classList.remove('erro');
+        if (vai > o.total) { c.classList.add('erro'); c.textContent = `São ${pecas(vai)}, mas há só ${pecas(o.total)} em processo neste lote.`; }
+        else c.textContent = `Vão para o estoque: ${pecas(vai)}.` + (fica > 0 ? ` Ficam em processo: ${pecas(fica)}.` : ' O lote sai todo do processo.');
+        const enc = form.querySelector('[data-encerrar-bloco]');
+        enc.hidden = !(fica > 0 && vai <= o.total);
+        form.querySelector('[data-encerrar-txt]').textContent = `Encerrar o lote: as ${pecas(fica)} que faltam não vão para o estoque (registrar como perda)`;
+        if (enc.hidden) f('encerrar').checked = false;
+        form.querySelector('[data-perda-bloco]').hidden = !f('encerrar').checked;
+        const aviso = form.querySelector('[data-aviso-min]');
+        aviso.hidden = !o.cedo || vai === 0;
+        aviso.textContent = o.cedo ? `Atenção: o tempo mínimo do ${o.produto_nome} é ${txtDias(o.min)} e este lote está ${o.dias <= 0 ? 'com menos de 1 dia' : 'há ' + txtDias(o.dias)} em processo.` + (confirmouMin ? ' Clique de novo para confirmar.' : '') : '';
+      };
+      form.addEventListener('input', () => { confirmouMin = false; botao.textContent = 'Retirar para o estoque'; atualizarConta(); });
+      form.addEventListener('change', atualizarConta);
+      atualizarConta();
+      root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const d = calcular(); if (!d) { toast('Informe o tempo de permanência.'); return; }
-        enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_tempo', { p_posicao: p.id, p_previsao: d.toISOString() }), 'Tempo ajustado.');
+        const { n1, n2 } = ler(), encerrar = f('encerrar').checked;
+        if ([n1, n2].some((n) => n < 0 || n !== Math.round(n))) { toast('Informe as peças em número inteiro.'); return; }
+        if (n1 + n2 > o.total) { toast('Há só ' + pecas(o.total) + ' em processo neste lote.'); return; }
+        if (n1 + n2 === 0 && !encerrar) { toast('Informe quantas peças vão para o estoque.'); return; }
+        if (n1 > priMax) { toast('Há só ' + pecas(priMax) + ' de primeira neste lote. As outras já são de segunda.'); return; }
+        const motivo = n2 > o.segunda ? lerMotivo(form) : '';
+        if (n2 > o.segunda && !motivo) { toast('Escolha o motivo das peças de segunda.'); return; }
+        const peso1 = lerNum(f('peso1').value), peso2 = f('tem2').checked ? lerNum(f('peso2').value) : null;
+        if ((peso1 != null && peso1 < 0) || (peso2 != null && peso2 < 0)) { toast('O peso não pode ser negativo.'); return; }
+        const qv = f('quando').value; if (!qv) { toast('Informe a data e a hora da retirada.'); return; }
+        const quando = new Date(qv);
+        if (quando.getTime() > Date.now() + 5 * 60000) { toast('A data da retirada não pode ser no futuro.'); return; }
+        const entradaMax = o.ps.length ? Math.max(...o.ps.map((p) => new Date(p.entrada_em).getTime())) : null;
+        if (entradaMax && quando.getTime() < entradaMax) { toast('A data da retirada não pode ser antes da entrada na salmoura/secagem (' + fmtDataHora(entradaMax) + ').'); return; }
+        if (o.cedo && n1 + n2 > 0 && !confirmouMin) { confirmouMin = true; botao.textContent = 'Retirar mesmo assim'; atualizarConta(); return; }
+        // De onde sai cada peça: segunda das posições de segunda; primeira das posições de primeira;
+        // o que faltar sai do que ainda não tinha destino; o resto da segunda passa para segunda nas posições de primeira.
+        const sobra = new Map(o.ps.map((p) => [p.id, p.pecas]));
+        const tira = (lista, qtd) => { const r = []; for (const p of lista) { if (qtd <= 0) break; const q = Math.min(sobra.get(p.id), qtd); if (q > 0) { r.push({ p, pecas: q }); sobra.set(p.id, sobra.get(p.id) - q); qtd -= q; } } return { r, falta: qtd }; };
+        const s2 = tira(segPos, n2), s1 = tira(priPos, n1);
+        let pendRest = pendLivre;
+        const pend1 = Math.min(s1.falta, pendRest); pendRest -= pend1;
+        const pend2 = Math.min(s2.falta, pendRest); pendRest -= pend2;
+        const conv = tira(priPos, s2.falta - pend2);
+        if (s1.falta - pend1 > 0 || conv.falta > 0) { toast('Não há peças suficientes neste lote. Confira os números.'); return; }
+        const precisaInternet = conv.r.length > 0 || encerrar;
+        if (precisaInternet && (SN.semInternet() || minhaFilaQj().length || o.fila)) {
+          toast(conv.r.length ? 'Passar peças para segunda precisa de internet e de nada esperando envio. Retire agora só as de primeira e o resto depois.' : 'Encerrar o lote precisa de internet e de nada esperando envio. Retire agora sem encerrar e encerre depois.');
+          return;
+        }
+        // Peso: repartido pelas peças, dentro de cada qualidade.
+        const pesoDe = (total, peso) => { let usado = 0; return (q, ultimo) => { if (!(peso > 0)) return null; const v = ultimo ? Math.round((peso - usado) * 1000) / 1000 : Math.round(peso * q / total * 1000) / 1000; usado += v; return v; }; };
+        const base = { lote_id: o.pend ? 'lanc:' + o.lancamento_id : (o.ps[0] && o.ps[0].lote_id), produto_nome: o.produto_nome, lote: o.lote, data_fabricacao: o.data_fabricacao, etapa: 'estoque', quando: quando.toISOString(), previsao: null };
+        const montar = (partes, n, peso, segunda) => {
+          const pz = pesoDe(n, peso), itens = [];
+          partes.forEach((x, i) => {
+            const pv = pz(x.pecas, i === partes.length - 1);
+            const nome = o.produto_nome + (segunda ? ' 2ª' : '');
+            if (x.pend) itens.push({ ...base, tipo: 'receber', lancamento_id: o.lancamento_id, itens: [{ numero: null, pecas: x.pecas }], total: x.pecas, segunda: !!segunda, motivo: segunda ? motivo : '', ...(pv ? { peso: pv } : {}),
+              texto: `Retirar para o estoque: ${nome}, lote ${o.lote}, ${pecas(x.pecas)}` });
+            else itens.push({ ...base, tipo: 'mover', posicao: x.p.id, lote_id: x.p.lote_id, itens: [{ numero: null, pecas: x.pecas }], total: x.pecas, ...(pv ? { peso: pv } : {}),
+              texto: `Retirar para o estoque: ${nome}, lote ${o.lote}, ${pecas(x.pecas)} (${lugarCurto(x.p)})`, conv: x.conv });
+          });
+          return itens;
+        };
+        const partes1 = s1.r.concat(pend1 ? [{ pend: true, pecas: pend1 }] : []);
+        const partes2 = s2.r.concat(pend2 ? [{ pend: true, pecas: pend2 }] : []).concat(conv.r.map((x) => ({ ...x, conv: true })));
+        const itens = montar(partes1, n1, peso1, false).concat(montar(partes2, n2, peso2, true));
+        // Peças que passam para segunda (estavam como primeira na salmoura/secagem): primeiro marca, depois move.
+        if (conv.r.length) {
+          botao.disabled = true;
+          for (const it of itens.filter((x) => x.conv)) {
+            const { data, error } = await sb.rpc('queijos_segunda', { p_posicao: it.posicao, p_pecas: it.total, p_segunda: true, p_motivo: motivo });
+            if (error) { botao.disabled = false; console.error(error); toast(erroMsg(error)); atualizar(); return; }
+            it.posicao = data;
+          }
+          botao.disabled = false;
+        }
+        itens.forEach((it) => { delete it.conv; });
+        // Encerrar: o que sobra nas posições vira perda; o que sobra sem destino sai do controle (queijos_dispensar).
+        const perdas = encerrar ? o.ps.filter((p) => sobra.get(p.id) > 0).map((p) => ({ p, pecas: sobra.get(p.id) })) : [];
+        const dispensa = encerrar && pendRest > 0;
+        const motivoPerda = f('motivo_perda').value.trim() || 'Lote encerrado em processo';
+        const fica = o.total - n1 - n2;
+        const depois = encerrar ? async () => {
+          for (const x of perdas) {
+            const { error } = await sb.rpc('queijos_perda', { p_posicao: x.p.id, p_pecas: x.pecas, p_motivo: motivoPerda });
+            if (error) { console.error(error); toast('As peças foram para o estoque, mas a perda não foi gravada: ' + erroMsg(error)); return false; }
+          }
+          if (dispensa) {
+            const { error } = await sb.rpc('queijos_dispensar', { p_lancamento: o.lancamento_id });
+            if (error) { console.error(error); toast('As peças foram para o estoque, mas o lote não foi encerrado: ' + erroMsg(error)); return false; }
+          }
+          return true;
+        } : null;
+        const sucesso = (n1 + n2 ? 'Retirado para o estoque: ' + pecas(n1 + n2) + (n2 ? ' (' + fmtNum(n2) + ' de segunda)' : '') : 'Lote encerrado') + (encerrar && fica ? '. ' + pecas(fica) + ' registradas como perda' : fica ? '. Ficam ' + pecas(fica) + ' em processo' : '') + '.';
+        if (!itens.length) { botao.disabled = true; const ok = await depois(); botao.disabled = false; SN.ui.closeModal(); if (ok) toast(sucesso); atualizar(); return; }
+        enviarVarios(botao, itens, sucesso, depois);
       });
     });
   }
+
+  /* ---------- Ações ---------- */
   function perda(posId) {
     const p = posicoes.find((x) => x.id === posId); if (!p) return;
     const l = lote(p.lote_id);
@@ -7269,27 +6877,11 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   async function iniciar(ctx) {
     sb = ctx.sb; podeEditar = !!ctx.podeEditar;
     if (!podeEditar) { const n = $('qjNota'); n.textContent = 'Você tem acesso a esta aba só para consulta.'; n.hidden = false; }
-    $('qjFila').addEventListener('click', (e) => {
-      const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
-      const id = b.closest('[data-lanc]').dataset.lanc;
-      if (b.dataset.acao === 'receber') receber(id);
-      if (b.dataset.acao === 'dispensar') dispensar(id);
+    $('qjProcesso').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-acao="retirar"]'); if (!b || !podeEditar) return;
+      retirar(b.closest('[data-chave]').dataset.chave);
     });
-    ['qjSalmoura', 'qjSecagem'].forEach((id) => $(id).addEventListener('click', (e) => {
-      const t = e.target.closest('.qj-tile'); if (!t) return;
-      abrirLugar(t.dataset.etapa, Number(t.dataset.numero));
-    }));
-    ['qjSalmouraLotes', 'qjSecagemLotes'].forEach((id) => $(id).addEventListener('click', (e) => {
-      const t = e.target.closest('.qj-lote'); if (!t) return;
-      abrirLote(t.dataset.etapa, t.dataset.chave);
-    }));
-    document.querySelectorAll('.qj-modo').forEach((g) => g.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-modo]'); if (!b) return;
-      modo = b.dataset.modo;
-      try { localStorage.setItem('sn_qj_modo', modo); } catch (err) { /* ok */ }
-      mostrarModo();
-    }));
-    mostrarModo();
+    $('qjProcFiltro').addEventListener('change', renderProcesso);
     $('qjEstoque').addEventListener('click', (e) => {
       const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
       const id = b.closest('[data-pos]').dataset.pos;
@@ -7312,9 +6904,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     try { const { data } = await sb.rpc('nomes_usuarios'); (data || []).forEach((u) => { nomes[u.id] = u.nome; }); } catch (e) { console.error(e); }
     ligarFilaQj();
     try { await carregar(); }
-    catch (e) { console.error(e); $('qjFila').innerHTML = '<p class="fatal">Não foi possível carregar o estoque de produção. Recarregue a página.</p>'; return; }
+    catch (e) { console.error(e); $('qjProcesso').innerHTML = '<p class="fatal">Não foi possível carregar o estoque de produção. Recarregue a página.</p>'; return; }
     enviarFilaQj();
-    ['queijos_posicoes', 'queijos_movimentos', 'queijos_lotes', 'producao_lancamentos'].forEach((t) => {
+    ['queijos_posicoes', 'queijos_movimentos', 'queijos_lotes', 'producao_lancamentos', 'producao_produtos'].forEach((t) => {
       sb.channel('sn-qj-' + t).on('postgres_changes', { event: '*', schema: 'public', table: t }, atualizar).subscribe();
     });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualizar(); });
