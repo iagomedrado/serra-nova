@@ -812,6 +812,14 @@
   .qj-grid2 { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); margin-bottom: 20px; }
   @media (min-width: 1100px) { .qj-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
   .qj-totais { margin-top: 8px; }
+  .qj-estq { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 10px; display: grid; gap: 6px; }
+  .qj-estq-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .qj-estq-nome { font-size: 1.1rem; }
+  .qj-estq-num { font-size: 1.3rem; }
+  .qj-estq-lotes summary { cursor: pointer; color: var(--muted); font-size: .9rem; padding: 4px 0; }
+  .qj-estq-lotes .qj-item { padding: 10px 0; }
+  .qj-said-lotes { color: var(--muted); font-size: .85rem; }
+  .qj-said-lotes.erro { color: var(--vermelho); }
   .qj-tot { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
   .qj-tot span { font-weight: 600; text-align: right; }
   .qj-tot span small { font-weight: 400; }
@@ -6119,24 +6127,40 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (i) atualizar();
     if (!SN.semInternet()) enviarFilaQj();
   }
+  /* Estoque contado por queijo (27/11/2026, pedido do Iago): o estoque mostra o total de cada queijo
+     (Tropical, Tropical 2ª…) e a saída pede só o queijo, as peças e o peso. O banco continua guardando as
+     peças por lote (o lote fica registrado na entrada); na saída a tela tira dos lotes mais antigos primeiro. */
+  const ordemSaida = (a, b) => String(lote(a.lote_id).data_fabricacao || '').localeCompare(String(lote(b.lote_id).data_fabricacao || '')) || String(a.entrada_em).localeCompare(String(b.entrada_em));
+  function estoquePorQueijo() {
+    const g = {};
+    posicoes.filter((p) => p.etapa === 'estoque').forEach((p) => {
+      const n = nomeProd(p); const t = g[n] = g[n] || { nome: n, pecas: 0, kg: 0, semPeso: 0, ps: [] };
+      t.pecas += p.pecas; t.ps.push(p); if (temPeso(p)) t.kg += Number(p.peso_kg); else t.semPeso += p.pecas;
+    });
+    Object.values(g).forEach((t) => t.ps.sort(ordemSaida));
+    return Object.keys(g).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => g[n]);
+  }
   function renderEstoque() {
-    const ps = posicoes.filter((p) => p.etapa === 'estoque');
-    if (!ps.length) { $('qjEstoque').innerHTML = '<p class="empty-state-msg">Nenhuma peça embalada no estoque.</p>'; return; }
-    // Total por produto; o peso soma só os lotes pesados (avisa quando falta pesar algum).
-    const porProduto = {};
-    ps.forEach((p) => { const n = nomeProd(p); const t = porProduto[n] = porProduto[n] || { pecas: 0, kg: 0, semPeso: 0 }; t.pecas += p.pecas; if (temPeso(p)) t.kg += Number(p.peso_kg); else t.semPeso += p.pecas; });
-    const tot = Object.keys(porProduto).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => { const t = porProduto[n];
-      return `<div class="qj-tot"><b>${esc(n)}</b><span>${pecas(t.pecas)}${t.kg ? ' · ' + kg(t.kg) + (t.semPeso ? `<br><small class="muted">${pecas(t.semPeso)} ainda sem peso</small>` : '') : ''}</span></div>`; }).join('');
-    const itens = ps.slice().sort((a, b) => String(b.entrada_em).localeCompare(String(a.entrada_em))).map((p) => {
+    const grupos = estoquePorQueijo();
+    if (!grupos.length) { $('qjEstoque').innerHTML = '<p class="empty-state-msg">Nenhuma peça embalada no estoque.</p>'; return; }
+    const linhaLote = (p) => {
       const l = lote(p.lote_id);
       return `<div class="qj-item" data-pos="${p.id}">
-        <div class="pr-item-top"><b class="pr-nome">${esc(l.produto_nome)}</b><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}
-          ${podeEditar && !p.na_fila ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="peso">${temPeso(p) ? 'Corrigir peso' : 'Informar peso'}</button><button type="button" class="link-btn" data-acao="segunda">${p.segunda ? 'Voltar para primeira' : 'Passar para segunda'}</button><button type="button" class="link-btn" data-acao="perda">Registrar perda</button><button type="button" class="btn btn-small" data-acao="saida">Saída</button></span>` : ''}</div>
+        <div class="pr-item-top"><span class="badge badge-recorrente">Lote ${esc(l.lote)}</span>${selo2a(p)}
+          ${podeEditar && !p.na_fila ? `<span class="qj-fila-acoes"><button type="button" class="link-btn" data-acao="peso">${temPeso(p) ? 'Corrigir peso' : 'Informar peso'}</button><button type="button" class="link-btn" data-acao="segunda">${p.segunda ? 'Voltar para primeira' : 'Passar para segunda'}</button><button type="button" class="link-btn" data-acao="perda">Registrar perda</button></span>` : ''}</div>
         <div class="pr-nums"><span><small>Peças</small>${fmtNum(p.pecas)}</span><span><small>Peso</small>${temPeso(p) ? kg(p.peso_kg) : '—'}</span>${l.data_fabricacao ? `<span><small>Fabricação</small>${fmtData(l.data_fabricacao)}</span>` : ''}<span><small>Embalado em</small>${fmtData(localInput(new Date(p.entrada_em)))}</span></div>
         ${p.na_fila ? '<p class="qj-status warn">Feito sem internet: aguardando envio.</p>' : ''}
       </div>`;
+    };
+    $('qjEstoque').innerHTML = grupos.map((t) => {
+      const nl = new Set(t.ps.map((p) => lote(p.lote_id).lote)).size;
+      return `<div class="qj-estq" data-prod="${esc(t.nome)}">
+        <div class="qj-estq-top"><b class="qj-estq-nome">${esc(t.nome)}</b>${podeEditar ? '<button type="button" class="btn btn-small" data-acao="saida-prod">Saída</button>' : ''}</div>
+        <div class="pr-nums"><span><small>Peças no estoque</small><b class="qj-estq-num">${fmtNum(t.pecas)}</b></span><span><small>Peso</small>${t.kg ? kg(t.kg) : '—'}</span></div>
+        ${t.kg && t.semPeso ? `<p class="muted-note">${pecas(t.semPeso)} ainda sem peso.</p>` : ''}
+        <details class="qj-estq-lotes"><summary>De quais lotes vieram (${nl === 1 ? '1 lote' : nl + ' lotes'})</summary>${t.ps.map(linhaLote).join('')}</details>
+      </div>`;
     }).join('');
-    $('qjEstoque').innerHTML = `<div class="qj-totais">${tot}</div><h3 class="qj-sub">Lotes no estoque</h3>${itens}`;
   }
   function descricao(m) {
     switch (m.tipo) {
@@ -6711,22 +6735,37 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       ${g.voltaram ? `<small>${pecas(g.voltaram)} ${g.voltaram === 1 ? 'voltou' : 'voltaram'} para primeira.</small>` : ''}</div>`; }).join('')}</div>`;
   }
 
-  function abrirSaida(focoPos) {
-    const ps = posicoes.filter((p) => p.etapa === 'estoque').sort((a, b) => String(a.entrada_em).localeCompare(String(b.entrada_em)));
-    if (!ps.length) { toast('Não há peças embaladas no estoque.'); return; }
-    const grupos = {};
-    ps.forEach((p) => { const n = nomeProd(p); (grupos[n] = grupos[n] || []).push(p); });
-    const lista = Object.keys(grupos).sort((a, b) => a.localeCompare(b, 'pt-BR')).map((n) => `<h3 class="qj-sub">${esc(n)}</h3>` + grupos[n].map((p) => {
-      const l = lote(p.lote_id);
-      return `<div class="qj-said" data-pos="${p.id}" data-kg="${temPeso(p) ? Number(p.peso_kg) : ''}" data-pecas-lote="${p.pecas}">
-        <div class="qj-said-info"><b>Lote ${esc(l.lote)}</b><small>${pecas(p.pecas)}${temPeso(p) ? ' (' + kg(p.peso_kg) + ')' : ''} no estoque, embalado em ${fmtData(localInput(new Date(p.entrada_em)))}</small></div>
+  /* Registrar saída por queijo: a pessoa informa só o queijo, as peças e o peso. A tela reparte entre os lotes
+     no estoque, dos mais antigos para os mais novos (reparteSaida), e manda tudo numa chamada só de queijos_saida
+     (uma linha por lote, numa só transação). O peso é dividido pelo peso guardado de cada lote, quando todos
+     foram pesados, ou pelas peças. Só entram os lotes embalados até a data da saída e já enviados ao banco. */
+  function reparteSaida(t, n, quando) {
+    const ps = t.ps.filter((p) => !p.na_fila && (!quando || new Date(p.entrada_em) <= quando));
+    const disp = ps.reduce((a, p) => a + p.pecas, 0);
+    if (n > disp) return { disp, partes: null };
+    const partes = []; let falta = n;
+    for (const p of ps) { if (!falta) break; const q = Math.min(falta, p.pecas); partes.push({ p, pecas: q }); falta -= q; }
+    return { disp, partes };
+  }
+  // Peso estimado das peças escolhidas (só quando todos os lotes usados foram pesados).
+  const pesoEstimado = (partes) => (partes && partes.length && partes.every((x) => temPeso(x.p)) ? Math.round(partes.reduce((a, x) => a + Number(x.p.peso_kg) * x.pecas / x.p.pecas, 0) * 1000) / 1000 : null);
+  function dividirPeso(partes, peso) {
+    const base = partes.map((x) => (temPeso(x.p) && partes.every((y) => temPeso(y.p)) ? Number(x.p.peso_kg) * x.pecas / x.p.pecas : x.pecas));
+    const soma = base.reduce((a, v) => a + v, 0);
+    let resto = Math.round(peso * 1000);
+    return partes.map((x, i) => { const g = i === partes.length - 1 ? resto : Math.round(peso * 1000 * base[i] / soma); resto -= g; return g / 1000; });
+  }
+  function abrirSaida(focoProd) {
+    const grupos = estoquePorQueijo();
+    if (!grupos.length) { toast('Não há peças embaladas no estoque.'); return; }
+    const lista = grupos.map((t) => `<div class="qj-said" data-prod="${esc(t.nome)}">
+        <div class="qj-said-info"><b>${esc(t.nome)}</b><small>${pecas(t.pecas)}${t.kg ? ' (' + kg(t.kg) + (t.semPeso ? ', ' + pecas(t.semPeso) + ' sem peso' : '') + ')' : ''} no estoque</small></div>
         <div class="two">
-          <label>Peças que saem<input type="number" name="pecas" min="1" max="${p.pecas}" step="1" inputmode="numeric" placeholder="0"></label>
+          <label>Peças que saem<input type="number" name="pecas" min="1" max="${t.pecas}" step="1" inputmode="numeric" placeholder="0"></label>
           <label>Peso (kg)<input type="number" name="peso" min="0" step="0.001" inputmode="decimal" placeholder="0,000"></label>
-        </div></div>`;
-    }).join('')).join('');
+        </div><small class="qj-said-lotes" data-lotes></small></div>`).join('');
     SN.ui.openModal('Registrar saída', `
-      <p class="modal-context">Preencha as peças e o peso só dos lotes que estão saindo. Nos lotes pesados no estoque, o peso já vem calculado pela média por peça: confira na balança e corrija se precisar. O cliente, o preço e a forma de pagamento ficam para a aba Vendas.</p>
+      <p class="modal-context">Preencha as peças e o peso só dos queijos que estão saindo. Não precisa escolher o lote: o sistema tira dos lotes mais antigos primeiro. Quando o estoque já foi pesado, o peso vem calculado pela média por peça: confira na balança e corrija se precisar. O cliente, o preço e a forma de pagamento ficam para a aba Vendas.</p>
       <form class="form" id="qjSaida">
         <div class="qj-said-lista">${lista}</div>
         <label>Data e hora da saída<input type="datetime-local" name="quando" value="${localInput(new Date())}" required></label>
@@ -6736,49 +6775,58 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       </form>`, (root) => {
       const form = root.querySelector('#qjSaida');
       root.querySelector('[data-cancelar]').addEventListener('click', SN.ui.closeModal);
+      const grupo = (nome) => grupos.find((t) => t.nome === nome);
+      const quandoForm = () => { const q = form.querySelector('[name="quando"]').value; const d = q ? new Date(q) : null; return d && !isNaN(d.getTime()) ? d : null; };
       const linhas = () => [...form.querySelectorAll('.qj-said')].map((el) => ({
-        el, pos: el.dataset.pos, max: Number(el.querySelector('[name="pecas"]').max),
-        pecas: lerNum(el.querySelector('[name="pecas"]').value), peso: lerNum(el.querySelector('[name="peso"]').value)
+        el, t: grupo(el.dataset.prod), pecas: lerNum(el.querySelector('[name="pecas"]').value), peso: lerNum(el.querySelector('[name="peso"]').value)
       }));
-      const total = () => {
-        const ls = linhas().filter((x) => x.pecas || x.peso);
-        linhas().forEach((x) => x.el.classList.toggle('ativo', !!(x.pecas || x.peso)));
-        form.querySelector('[data-total]').textContent = ls.length ? 'Saindo: ' + (ls.length === 1 ? '1 lote' : ls.length + ' lotes') + ', ' +
-          pecas(ls.reduce((a, x) => a + (x.pecas || 0), 0)) + ', ' + fmtNum(ls.reduce((a, x) => a + (x.peso || 0), 0), 3) + ' kg.' : '';
+      const atualizarLinha = (x) => {
+        const out = x.el.querySelector('[data-lotes]'), campoPeso = x.el.querySelector('[name="peso"]');
+        x.el.classList.toggle('ativo', !!(x.pecas || x.peso));
+        if (!(x.pecas >= 1)) { out.textContent = ''; if (!campoPeso.dataset.mexeu) { campoPeso.value = ''; x.peso = null; } return; }
+        const r = reparteSaida(x.t, Math.round(x.pecas), quandoForm());
+        if (!r.partes) { out.textContent = 'Só há ' + pecas(r.disp) + ' disponíveis' + (r.disp < x.t.pecas ? ' nessa data (ou já enviadas ao sistema)' : '') + '.'; out.classList.add('erro'); return; }
+        out.classList.remove('erro');
+        out.textContent = 'Sai do' + (r.partes.length > 1 ? 's lotes ' : ' lote ') + r.partes.map((y) => lote(y.p.lote_id).lote + (r.partes.length > 1 ? ' (' + fmtNum(y.pecas) + ')' : '')).join(', ') + '.';
+        // Peso sugerido pela média dos lotes pesados, até a pessoa mexer no peso.
+        const est = pesoEstimado(r.partes);
+        if (est != null && !campoPeso.dataset.mexeu) { campoPeso.value = String(est); x.peso = est; }
       };
+      const total = () => {
+        const ls = linhas(); ls.forEach(atualizarLinha);
+        const at = ls.filter((x) => x.pecas || x.peso);
+        form.querySelector('[data-total]').textContent = at.length ? 'Saindo: ' + pecas(at.reduce((a, x) => a + (x.pecas || 0), 0)) + ', ' + fmtNum(at.reduce((a, x) => a + (x.peso || 0), 0), 3) + ' kg.' : '';
+      };
+      form.querySelectorAll('[name="peso"]').forEach((c) => c.addEventListener('input', () => { c.dataset.mexeu = '1'; }));
       form.addEventListener('input', total);
-      // Peso sugerido: peso do lote no estoque × peças que saem ÷ peças no estoque (até a pessoa mexer no peso).
-      form.querySelectorAll('.qj-said').forEach((el) => {
-        const campoPeso = el.querySelector('[name="peso"]');
-        campoPeso.addEventListener('input', () => { campoPeso.dataset.mexeu = '1'; });
-        el.querySelector('[name="pecas"]').addEventListener('input', (e) => {
-          const kgLote = Number(el.dataset.kg), tot = Number(el.dataset.pecasLote), n = lerNum(e.target.value);
-          if (!(kgLote > 0) || campoPeso.dataset.mexeu) return;
-          campoPeso.value = n > 0 ? String(n >= tot ? kgLote : Math.round(kgLote * n / tot * 1000) / 1000) : '';
-        });
-      });
-      if (focoPos) {
-        const el = form.querySelector(`.qj-said[data-pos="${focoPos}"]`);
+      form.querySelector('[name="quando"]').addEventListener('change', total);
+      if (focoProd) {
+        const el = [...form.querySelectorAll('.qj-said')].find((x) => x.dataset.prod === focoProd);
         if (el) { el.scrollIntoView({ block: 'center' }); el.querySelector('[name="pecas"]').focus(); }
       }
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const ls = linhas().filter((x) => x.pecas || x.peso);
-        if (!ls.length) { toast('Preencha as peças e o peso de pelo menos um lote.'); return; }
+        if (!ls.length) { toast('Preencha as peças e o peso de pelo menos um queijo.'); return; }
+        const quando = quandoForm();
+        if (!quando) { toast('Informe a data e a hora da saída.'); return; }
+        const itens = [];
         for (const x of ls) {
-          const nome = x.el.querySelector('b').textContent;
+          const nome = x.t.nome;
           if (!(x.pecas >= 1) || x.pecas !== Math.round(x.pecas)) { toast(nome + ': informe quantas peças, em número inteiro.'); return; }
-          if (x.pecas > x.max) { toast(nome + ': só há ' + pecas(x.max) + ' no estoque.'); return; }
           if (!(x.peso > 0)) { toast(nome + ': informe o peso em quilos.'); return; }
+          const r = reparteSaida(x.t, x.pecas, quando);
+          if (!r.partes) { toast(nome + ': só há ' + pecas(r.disp) + ' no estoque' + (r.disp < x.t.pecas ? ' nessa data (confira a data e a hora da saída)' : '') + '.'); return; }
+          if (x.peso < r.partes.length * 0.001) { toast(nome + ': confira o peso.'); return; }
+          const pesos = dividirPeso(r.partes, x.peso);
+          r.partes.forEach((y, i) => itens.push({ posicao: y.p.id, pecas: y.pecas, peso_kg: pesos[i] }));
         }
-        const q = form.querySelector('[name="quando"]').value;
-        const quando = q ? new Date(q) : null;
-        if (!quando || isNaN(quando.getTime())) { toast('Informe a data e a hora da saída.'); return; }
+        if (itens.length > 50) { toast('Essa saída pega peças de muitos lotes de uma vez (' + itens.length + '). Divida em duas saídas.'); return; }
         enviar(form.querySelector('[type="submit"]'), () => sb.rpc('queijos_saida', {
-          p_itens: ls.map((x) => ({ posicao: x.pos, pecas: x.pecas, peso_kg: x.peso })),
-          p_quando: quando.toISOString(), p_observacao: form.querySelector('[name="obs"]').value.trim()
+          p_itens: itens, p_quando: quando.toISOString(), p_observacao: form.querySelector('[name="obs"]').value.trim()
         }), 'Saída registrada. Complete a venda na aba Vendas.');
       });
+      total();
     });
   }
   // Informar ou corrigir o peso de um lote que já está no estoque (vazio = tirar o peso).
@@ -6977,10 +7025,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     $('qjProcFiltro').addEventListener('change', renderProcesso);
     $('qjEstoque').addEventListener('click', (e) => {
       const b = e.target.closest('[data-acao]'); if (!b || !podeEditar) return;
+      if (b.dataset.acao === 'saida-prod') { abrirSaida(b.closest('[data-prod]').dataset.prod); return; }
       const id = b.closest('[data-pos]').dataset.pos;
       if (b.dataset.acao === 'perda') perda(id);
       if (b.dataset.acao === 'segunda') qualidade(id);
-      if (b.dataset.acao === 'saida') abrirSaida(id);
       if (b.dataset.acao === 'peso') pesar(id);
     });
     if (podeEditar) {
@@ -7105,9 +7153,25 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
 
   /* ---------- Tela ---------- */
+  /* Itens agrupados por queijo (27/11/2026): a saída do estoque é por queijo e a tela reparte entre os lotes,
+     então uma venda pode ter várias linhas do mesmo queijo. Aqui elas aparecem juntas, com os lotes ao lado,
+     e o preço por quilo é um só por queijo (gravado igual em cada linha). */
+  function gruposItens(v) {
+    const g = {};
+    itensDe(v).forEach((i) => {
+      const t = g[i.produto_nome] = g[i.produto_nome] || { nome: i.produto_nome, itens: [], pecas: 0, peso: 0, valor: 0, lotes: [] };
+      t.itens.push(i); t.pecas += Number(i.pecas || 0); t.peso += Number(i.peso_kg || 0); t.valor += valorItem(i);
+      if (!t.lotes.includes(i.lote)) t.lotes.push(i.lote);
+    });
+    return Object.values(g).map((t) => {
+      const precos = [...new Set(t.itens.map((i) => (i.preco_kg == null ? null : Number(i.preco_kg))))];
+      return { ...t, preco: precos.length === 1 ? precos[0] : (precos.includes(null) ? null : undefined), ids: t.itens.map((i) => i.id) };
+    });
+  }
+  const textoLotes = (t) => (t.lotes.length === 1 ? 'lote ' : 'lotes ') + t.lotes.join(', ');
   function linhasItens(v, comPreco) {
-    return itensDe(v).map((i) => `<div class="vd-item"><span><b>${esc(i.produto_nome)}</b> lote ${esc(i.lote)}</span>
-      <span>${pecas(i.pecas)}, ${kg(i.peso_kg)}${comPreco && i.preco_kg != null ? ` × ${brl.format(i.preco_kg)}/kg = <b>${brl.format(valorItem(i))}</b>` : ''}</span></div>`).join('');
+    return gruposItens(v).map((t) => `<div class="vd-item"><span><b>${esc(t.nome)}</b> ${esc(textoLotes(t))}</span>
+      <span>${pecas(t.pecas)}, ${kg(t.peso)}${comPreco && t.itens.every((i) => i.preco_kg != null) ? (t.preco != null ? ` × ${brl.format(t.preco)}/kg` : '') + ` = <b>${brl.format(t.valor)}</b>` : ''}</span></div>`).join('');
   }
   function situacaoParcela(p) {
     if (p.recebido_em) return { cls: 'ok', txt: 'Recebida em ' + fmtData(p.recebido_em) };
@@ -7235,8 +7299,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           <label><input type="radio" name="modo" value="vista" ${parcelasDe(v).length ? '' : 'checked'}> À vista</label>
           <label><input type="radio" name="modo" value="parcelado" ${parcelasDe(v).length ? 'checked' : ''}> Parcelado</label></div></fieldset>
         <fieldset class="vd-precos"><legend>Preço por quilo</legend>
-          ${itensDe(v).map((i) => `<div class="vd-preco" data-item="${i.id}" data-peso="${i.peso_kg}">
-            <label>${esc(i.produto_nome)}, lote ${esc(i.lote)} (${kg(i.peso_kg)})<span class="vd-campo-rs"><span aria-hidden="true">R$</span><input type="number" name="preco" min="0" step="0.01" inputmode="decimal" value="${i.preco_kg != null ? Number(i.preco_kg) : ''}" placeholder="0,00"></span></label>
+          ${gruposItens(v).map((t) => `<div class="vd-preco" data-prod="${esc(t.nome)}" data-itens="${t.ids.join(',')}" data-pesos="${t.itens.map((i) => Number(i.peso_kg)).join(',')}">
+            <label>${esc(t.nome)}, ${esc(textoLotes(t))} (${kg(t.peso)})<span class="vd-campo-rs"><span aria-hidden="true">R$</span><input type="number" name="preco" min="0" step="0.01" inputmode="decimal" value="${t.preco != null ? t.preco : ''}" placeholder="0,00"></span></label>
             <span class="vd-sub" data-sub></span></div>`).join('')}
         </fieldset>
         <p class="vd-total-form" data-total></p>
@@ -7259,8 +7323,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       const recalcular = () => {
         let total = 0, faltam = 0;
         form.querySelectorAll('.vd-preco').forEach((el) => {
-          const p = lerNum(el.querySelector('[name="preco"]').value), peso = Number(el.dataset.peso);
-          const val = p == null ? null : Math.round(p * peso * 100) / 100;
+          // Soma linha por linha (cada lote), arredondando como o banco faz.
+          const p = lerNum(el.querySelector('[name="preco"]').value), pesos = el.dataset.pesos.split(',').map(Number);
+          const val = p == null ? null : pesos.reduce((a, kgI) => a + Math.round(kgI * Math.round(p * 100) / 100 * 100) / 100, 0);
           el.querySelector('[data-sub]').textContent = val == null ? '' : '= ' + brl.format(val);
           if (val == null) faltam++; else total += val;
         });
@@ -7310,8 +7375,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         form.querySelectorAll('.vd-preco').forEach((el) => {
           const inp = el.querySelector('[name="preco"]');
           if (inp.value !== '' && inp.dataset.auto !== '1') return;
-          const i = itensDe(v).find((x) => x.id === el.dataset.item);
-          const p = (cid && ultimoPreco.cliente[cid + '|' + i.produto_nome]) ?? ultimoPreco.produto[i.produto_nome];
+          const nome = el.dataset.prod;
+          const p = (cid && ultimoPreco.cliente[cid + '|' + nome]) ?? ultimoPreco.produto[nome];
           if (p != null) { inp.value = p; inp.dataset.auto = '1'; } else if (inp.dataset.auto === '1') { inp.value = ''; }
         });
         recalcular();
@@ -7339,7 +7404,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         for (const el of form.querySelectorAll('.vd-preco')) {
           const p = lerNum(el.querySelector('[name="preco"]').value);
           if (p == null || p < 0) { toast('Informe o preço por quilo de todos os itens.'); el.querySelector('[name="preco"]').focus(); return; }
-          precos.push({ item: el.dataset.item, preco_kg: p });
+          el.dataset.itens.split(',').forEach((id) => precos.push({ item: id, preco_kg: p }));
         }
         let parcelas = [];
         if (parcelado()) {
