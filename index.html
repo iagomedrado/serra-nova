@@ -695,6 +695,18 @@
   .pr-compartilhado input { margin-top: 2px; flex: none; }
   .pr-junto { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
   .pr-rend-aviso { color: var(--warn); font-weight: 600; }
+  .pr-somar { align-items: flex-start; line-height: 1.35; }
+  .pr-somar input { margin-top: 2px; flex: none; }
+  .pr-soma { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .pr-soma[hidden], .pr-parte [hidden] { display: none !important; }
+  .pr-soma .link-btn { justify-self: start; }
+  .pr-parte { display: grid; grid-template-columns: 1fr 1fr auto; gap: 4px 10px; align-items: end; }
+  .pr-parte-n { grid-column: 1 / -1; font-size: .85rem; color: var(--muted); }
+  .pr-parte label { font-size: .88rem; }
+  .pr-parte:not(:has([data-parte-leite]:not([hidden]))) { grid-template-columns: 1fr auto; }
+  .pr-parte + .pr-parte { padding-top: 8px; border-top: 1px dashed var(--line); }
+  .pr-soma-total { margin: 0; font-size: .92rem; }
+  .form input[readonly] { background: var(--bg); color: var(--ink); }
   .cat-manage-row select { width: auto; }
   body.producao-leitura #prForm, body.producao-leitura #prGerenciar { display: none !important; }
   @media (max-width: 420px) { .pr-form .two, .form .two { grid-template-columns: 1fr; } }
@@ -5297,10 +5309,16 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const n = Math.round((Date.UTC(a, m - 1, d) - Date.UTC(a, 0, 1)) / 86400000) + 1;
     return String(n).padStart(3, '0');
   }
-  /* Lote novo: dia do ano + tanque + vez no dia nesse tanque. "11" = tanque 1, 1ª vez (27/10/2026 = 30011). */
-  const LOTE_PADRAO = '11';
-  function loteNovo(iso) { const dia = diaDoAno(iso); return dia ? dia + LOTE_PADRAO : ''; }
-  function loteConfere(lote, iso) { const dia = diaDoAno(iso); return !!dia && String(lote || '').trim().startsWith(dia); }
+  /* Lote = só o dia do ano, com 3 números (27/11/2026 = 331). Pedido do Iago em 27/11/2026: voltou a ter 3 números
+     (de 27/10 a 27/11/2026 tinha também o tanque e a vez, ex.: 30011). Lançamentos antigos com 5 números
+     continuam podendo ser editados sem trocar o lote (form.dataset.loteAntigo). */
+  function loteNovo(iso) { return diaDoAno(iso); }
+  function loteConfere(lote, iso, antigo) {
+    const dia = diaDoAno(iso), lt = String(lote || '').trim();
+    if (!dia) return false;
+    if (antigo && lt === antigo && lt.startsWith(dia)) return true;
+    return lt === dia;
+  }
   /* Quando a data muda, troca o começo do lote pelo novo dia (ou preenche, se o lote estiver vazio). */
   function ligarLoteNaData(form) {
     const data = form.querySelector('[name="data"]'), lote = form.querySelector('[name="lote"]');
@@ -5308,7 +5326,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     if (!lote.value.trim()) lote.value = loteNovo(data.value);
     data.addEventListener('change', () => {
       const novo = diaDoAno(data.value), atual = lote.value.trim();
-      if (novo && (!atual || (anterior && atual.startsWith(anterior)))) lote.value = novo + (anterior && atual.startsWith(anterior) ? atual.slice(anterior.length) : LOTE_PADRAO);
+      if (novo && (!atual || /^\d{0,3}$/.test(atual) || (anterior && atual.startsWith(anterior)))) lote.value = novo + (anterior && atual.startsWith(anterior) && atual.length > 3 ? atual.slice(anterior.length) : '');
       anterior = novo;
       ajustarCampos(form);
     });
@@ -5420,6 +5438,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     form.querySelector('[data-campos="creme"]').hidden = tipo !== 'creme';
     const compart = tipo === 'queijo' && form.querySelector('[name="compartilhado"]').checked;
     form.querySelector('[data-bloco-leite]').hidden = compart;
+    ajustarSoma(form, tipo === 'queijo', compart);
     form.querySelector('[name="pecas"]').required = tipo === 'queijo';
     form.querySelector('[name="leite"]').required = tipo === 'queijo' && !compart;
     form.querySelectorAll('[data-campos="creme"] input').forEach((i) => { i.required = tipo === 'creme'; });
@@ -5442,13 +5461,80 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     aviso.hidden = !repetido;
     aviso.textContent = repetido ? 'Atenção: já existe um lançamento de ' + p.nome + ' com o lote ' + lote + ' neste período.' : '';
     const data = form.querySelector('[name="data"]').value, dia = diaDoAno(data), info = form.querySelector('[data-lote-dia]');
-    const errado = !!dia && !!lote && !loteConfere(lote, data);
+    const errado = !!dia && !!lote && !loteConfere(lote, data, form.dataset.loteAntigo);
     info.classList.toggle('erro', errado);
     const futura = !!data && data > hojeISO();
     info.textContent = !dia ? '' : (errado
-      ? `O lote precisa começar com ${dia}, porque ${fmtData(data)} é o dia ${Number(dia)} do ano.`
-      : `${fmtData(data)} é o dia ${Number(dia)} do ano: o lote começa com ${dia}.` + (/^\d{3}[1-9][1-9]$/.test(lote) ? ` Depois vem o tanque ${lote[3]} e a ${lote[4]}ª vez no dia nesse tanque.` : '')) + (futura ? ' Atenção: essa data é depois de hoje.' : '');
+      ? `O lote precisa ser ${dia} (3 números), porque ${fmtData(data)} é o dia ${Number(dia)} do ano.`
+      : (lote.length > 3 ? `Lote antigo, do tempo em que tinha o tanque e a vez. Pode ficar assim.` : `${fmtData(data)} é o dia ${Number(dia)} do ano: o lote é ${dia}.`)) + (futura ? ' Atenção: essa data é depois de hoje.' : '');
     info.classList.toggle('erro', errado || futura);
+  }
+  /* ---------- Somar leite e peças (pedido do Iago, 27/11/2026) ----------
+     Com o lote só com o dia do ano, um lote pode juntar o leite de vários tanques.
+     A caixa "Somar vários volumes" abre uma linha por parte (leite e peças); os campos
+     principais passam a mostrar a soma e ficam travados. No banco grava só o total; as
+     partes vão para a observação (ex.: "Soma: 5.000 L + 5.317 L; 80 + 90 peças"). */
+  function parteHTML(n) {
+    return `<div class="pr-parte" data-parte>
+      <b class="pr-parte-n">Parte ${n}</b>
+      <label data-parte-leite>Leite (litros)<input type="number" name="parte_leite" min="0" step="any" inputmode="decimal" placeholder="0"></label>
+      <label>Peças<input type="number" name="parte_pecas" min="0" step="1" inputmode="numeric" placeholder="0"></label>
+      <button type="button" class="icon-btn" data-tirar-parte aria-label="Tirar esta parte" title="Tirar esta parte"><svg class="i"><use href="#i-trash"/></svg></button>
+    </div>`;
+  }
+  const partes = (form) => [...form.querySelectorAll('[data-parte]')].map((el) => ({ el, leite: lerNum(el.querySelector('[name="parte_leite"]').value), pecas: lerNum(el.querySelector('[name="parte_pecas"]').value) }));
+  function ajustarSoma(form, queijo, compart) {
+    const caixa = form.querySelector('[name="somar"]'), bloco = form.querySelector('[data-soma]');
+    const ligado = queijo && caixa.checked;
+    bloco.hidden = !ligado;
+    const leite = form.querySelector('[name="leite"]'), pecas = form.querySelector('[name="pecas"]');
+    leite.readOnly = pecas.readOnly = ligado;
+    if (!ligado) return;
+    const lista = form.querySelector('[data-partes]');
+    if (!lista.children.length) {
+      // Acabou de marcar: o que já estava digitado vira a parte 1.
+      lista.innerHTML = parteHTML(1) + parteHTML(2);
+      const pr = lista.querySelector('[data-parte]');
+      pr.querySelector('[name="parte_leite"]').value = leite.value; pr.querySelector('[name="parte_pecas"]').value = pecas.value;
+    }
+    const ps = partes(form);
+    ps.forEach((p, i) => {
+      p.el.querySelector('.pr-parte-n').textContent = 'Parte ' + (i + 1);
+      p.el.querySelector('[data-parte-leite]').hidden = compart;
+      p.el.querySelector('[data-tirar-parte]').hidden = ps.length < 3;
+    });
+    const L = ps.reduce((a, p) => a + (p.leite > 0 ? p.leite : 0), 0), P = ps.reduce((a, p) => a + (p.pecas > 0 ? p.pecas : 0), 0);
+    leite.value = compart || !L ? '' : Math.round(L * 1000) / 1000;
+    pecas.value = P ? Math.round(P) : '';
+    const usadas = ps.filter((p) => p.pecas > 0 || (!compart && p.leite > 0)).length;
+    form.querySelector('[data-soma-total]').innerHTML = usadas
+      ? `Total${usadas > 1 ? ' de ' + usadas + ' partes' : ''}: ${compart ? '' : '<strong>' + fmtNum(L) + ' L</strong> e '}<strong>${fmtNum(P, 0)} peças</strong>`
+      : 'Preencha cada parte. A soma aparece aqui e nos campos de cima.';
+  }
+  function ligarSoma(form) {
+    const caixa = form.querySelector('[name="somar"]'), lista = form.querySelector('[data-partes]');
+    caixa.addEventListener('change', () => {
+      if (!caixa.checked) return;
+      setTimeout(() => { const v = [...lista.querySelectorAll('input')].find((i) => !i.value && !i.closest('[hidden]')); if (v) v.focus(); }, 0);
+    });
+    form.querySelector('[data-mais-parte]').addEventListener('click', () => {
+      lista.insertAdjacentHTML('beforeend', parteHTML(lista.children.length + 1));
+      ajustarCampos(form);
+      const ult = lista.lastElementChild; const i = [...ult.querySelectorAll('input')].find((x) => !x.closest('[hidden]')); if (i) i.focus();
+    });
+    lista.addEventListener('click', (e) => { const b = e.target.closest('[data-tirar-parte]'); if (!b) return; b.closest('[data-parte]').remove(); ajustarCampos(form); });
+  }
+  function limparSoma(form) {
+    form.querySelector('[name="somar"]').checked = false;
+    form.querySelector('[data-partes]').innerHTML = '';
+  }
+  // Texto das partes para a observação; vazio se houver menos de 2 partes preenchidas.
+  function textoSoma(form, compart) {
+    if (!form.querySelector('[name="somar"]').checked) return '';
+    const ps = partes(form).filter((p) => p.pecas > 0 || (!compart && p.leite > 0));
+    if (ps.length < 2) return '';
+    const l = compart ? '' : ps.map((p) => fmtNum(p.leite || 0) + ' L').join(' + ') + '; ';
+    return 'Soma: ' + l + ps.map((p) => fmtNum(p.pecas || 0, 0)).join(' + ') + ' peças';
   }
   function lerFormulario(form) {
     const p = produto(form.querySelector('[name="produto"]').value);
@@ -5462,9 +5548,9 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     };
     if (!dados.data_fabricacao) { toast('Informe a data de fabricação.'); return null; }
     if (!dados.lote) { toast('Informe o lote.'); return null; }
-    if (!loteConfere(dados.lote, dados.data_fabricacao)) {
+    if (!loteConfere(dados.lote, dados.data_fabricacao, form.dataset.loteAntigo)) {
       const dia = diaDoAno(dados.data_fabricacao);
-      toast(`O lote precisa começar com ${dia}, que é o dia ${Number(dia)} do ano (${fmtData(dados.data_fabricacao)}).`);
+      toast(`O lote precisa ser ${dia}: só os 3 números do dia do ano (${fmtData(dados.data_fabricacao)} é o dia ${Number(dia)}).`);
       form.querySelector('[name="lote"]').focus();
       return null;
     }
@@ -5480,6 +5566,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       dados.leite_litros = dados.leite_compartilhado ? null : lerNum(form.querySelector('[name="leite"]').value);
       const pc = lerNum(form.querySelector('[name="pecas"]').value);
       dados.pecas = pc == null ? null : Math.round(pc);
+      if (form.querySelector('[name="somar"]').checked) {
+        const ps = partes(form).filter((x) => x.pecas || x.leite);
+        if (ps.some((x) => (x.pecas != null && (x.pecas < 0 || x.pecas !== Math.round(x.pecas))) || (x.leite != null && x.leite < 0))) { toast('Confira as partes: peças em número inteiro e nada negativo.'); return null; }
+        if (!dados.leite_compartilhado && ps.some((x) => !(x.leite > 0) || !(x.pecas > 0))) { toast('Cada parte da soma precisa do leite e das peças (ou tire a parte vazia).'); return null; }
+        const t = textoSoma(form, dados.leite_compartilhado);
+        if (t && !dados.observacao.includes(t)) dados.observacao = dados.observacao ? dados.observacao + '\n' + t : t;
+      }
       if (dados.leite_compartilhado) { if (!(dados.pecas > 0)) { toast('Informe o número de peças.'); return null; } }
       else if (!(dados.leite_litros > 0) || !(dados.pecas > 0)) { toast('Informe o volume de leite e o número de peças.'); return null; }
     } else {
@@ -5494,7 +5587,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <label>Produto<select name="produto" required>${''}</select></label>
       <div class="two">
         <label>Data de fabricação<input type="date" name="data" value="${l.data_fabricacao || hojeISO()}" required></label>
-        <label>Lote<input type="text" name="lote" value="${esc(l.lote || '')}" placeholder="Começa com o dia do ano" required autocomplete="off"></label>
+        <label>Lote<input type="text" name="lote" value="${esc(l.lote || '')}" placeholder="Dia do ano" maxlength="${String(l.lote || '').length > 3 ? 30 : 3}" inputmode="numeric" required autocomplete="off"></label>
       </div>
       <p class="pr-lote-dia" data-lote-dia aria-live="polite"></p>
       <p class="pr-aviso" data-lote-aviso hidden></p>
@@ -5503,6 +5596,12 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <div class="two">
           <label data-bloco-leite>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
           <label>Número de peças<input type="number" name="pecas" min="0" step="1" inputmode="numeric" value="${l.pecas == null ? '' : l.pecas}" placeholder="0"></label>
+        </div>
+        <label class="check pr-somar"><input type="checkbox" name="somar"> Somar vários volumes de leite e peças (ex.: um por tanque)</label>
+        <div class="pr-soma" data-soma hidden>
+          <div data-partes></div>
+          <button type="button" class="link-btn" data-mais-parte>+ Outra parte</button>
+          <p class="pr-soma-total" data-soma-total aria-live="polite"></p>
         </div>
       </div>
       <div data-campos="creme" hidden>
@@ -5516,6 +5615,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     sel.innerHTML = '<option value="">Escolha o produto</option>' + opcoesProdutos(selecionado, false);
     if (selecionado) sel.value = selecionado;
     ligarLoteNaData(form);
+    ligarSoma(form);
     form.addEventListener('input', () => ajustarCampos(form));
     form.addEventListener('change', () => ajustarCampos(form));
     ajustarCampos(form);
@@ -5632,6 +5732,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   function limparFormulario(form) {
     ['lote', 'leite', 'pecas', 'peso', 'obs'].forEach((n) => { form.querySelector(`[name="${n}"]`).value = ''; });
     form.querySelector('[name="compartilhado"]').checked = false;
+    limparSoma(form);
     form.querySelector('[name="lote"]').value = loteNovo(form.querySelector('[name="data"]').value);
     delete form.dataset.semConferir;
     ajustarCampos(form);
@@ -5748,7 +5849,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   function editar(id) {
     const l = lancamentos.find((x) => x.id === id); if (!l) return;
-    SN.ui.openModal('Editar lançamento', `<form class="form" id="prEditForm" data-id="${l.id}">${camposHTML(l)}
+    SN.ui.openModal('Editar lançamento', `<form class="form" id="prEditForm" data-id="${l.id}" data-lote-antigo="${esc(String(l.lote || '').length > 3 ? l.lote : '')}">${camposHTML(l)}
       <div class="modal-actions"><button type="button" class="btn btn-ghost" id="prEditCancelar">Cancelar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div></form>`, (root) => {
       const form = root.querySelector('#prEditForm');
       ligarFormulario(form, l.produto_id);
@@ -6749,7 +6850,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         <div class="qj-ini-top"><b>Lote ${i}</b><button type="button" class="icon-btn" data-tirar aria-label="Tirar este lote" title="Tirar este lote"><svg class="i"><use href="#i-trash"/></svg></button></div>
         <div class="two">
           <label>Queijo<select name="produto">${opcoes}</select></label>
-          <label>Lote<input type="text" name="lote" maxlength="30" autocomplete="off" inputmode="numeric" placeholder="Ex.: 28011"></label>
+          <label>Lote<input type="text" name="lote" maxlength="3" autocomplete="off" inputmode="numeric" placeholder="Ex.: 280"></label>
         </div>
         <label class="check"><input type="checkbox" name="variados"> Lotes variados (sem número de lote)</label>
         <div class="three">
@@ -6810,7 +6911,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
         if (e.target.name === 'variados') {
           const campo = el.querySelector('[name="lote"]'), dt = el.querySelector('[name="fabricacao"]');
           campo.disabled = e.target.checked;
-          campo.placeholder = e.target.checked ? 'Lotes variados' : 'Ex.: 28011';
+          campo.placeholder = e.target.checked ? 'Lotes variados' : 'Ex.: 280';
           if (e.target.checked) { campo.dataset.antes = campo.value; campo.value = ''; if (!dt.dataset.mexeu) dt.value = ''; }
           else { campo.value = campo.dataset.antes || ''; }
           el.querySelector('[data-rot-fab]').textContent = e.target.checked ? 'Data de fabricação (a mais antiga, se souber)' : 'Data de fabricação';
@@ -6843,6 +6944,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
           const nome = 'Lote ' + (linhas().indexOf(x.el) + 1);
           if (!x.produto_id) { toast(nome + ': escolha o queijo.'); x.el.querySelector('[name="produto"]').focus(); return; }
           if (!x.lote) { toast(nome + ': informe o número do lote (ou marque "Lotes variados").'); x.el.querySelector('[name="lote"]').focus(); return; }
+          if (!x.variados && !/^\d{3}$/.test(x.lote)) { toast(nome + ': o lote tem 3 números, o dia do ano (ex.: 280).'); x.el.querySelector('[name="lote"]').focus(); return; }
           if (x.variados && !x.data_fabricacao) x.data_fabricacao = q.slice(0, 10); // sem data: fica a da entrada no estoque
           if (!x.data_fabricacao) { toast(nome + ': informe a data de fabricação.'); x.el.querySelector('[name="fabricacao"]').focus(); return; }
           if (x.data_fabricacao > localInput(new Date()).slice(0, 10)) { toast(nome + ': a data de fabricação está no futuro.'); return; }
