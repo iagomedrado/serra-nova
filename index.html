@@ -695,9 +695,9 @@
   .pr-compartilhado input { margin-top: 2px; flex: none; }
   .pr-junto { margin: 6px 0 0; font-size: .85rem; color: var(--muted); }
   .pr-rend-aviso { color: var(--warn); font-weight: 600; }
-  .pr-somar { align-items: flex-start; line-height: 1.35; }
-  .pr-somar input { margin-top: 2px; flex: none; }
-  .pr-soma { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .pr-soma { display: grid; gap: 8px; }
+  .pr-soma.varias { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .pr-soma:not(.varias) .pr-parte-n { display: none; }
   .pr-soma[hidden], .pr-parte [hidden] { display: none !important; }
   .pr-soma .link-btn { justify-self: start; }
   .pr-parte { display: grid; grid-template-columns: 1fr 1fr auto; gap: 4px 10px; align-items: end; }
@@ -5439,8 +5439,8 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     const compart = tipo === 'queijo' && form.querySelector('[name="compartilhado"]').checked;
     form.querySelector('[data-bloco-leite]').hidden = compart;
     ajustarSoma(form, tipo === 'queijo', compart);
-    form.querySelector('[name="pecas"]').required = tipo === 'queijo';
-    form.querySelector('[name="leite"]').required = tipo === 'queijo' && !compart;
+    form.querySelectorAll('[name="parte_pecas"]').forEach((i) => { i.required = tipo === 'queijo'; });
+    form.querySelectorAll('[name="parte_leite"]').forEach((i) => { i.required = tipo === 'queijo' && !compart; });
     form.querySelectorAll('[data-campos="creme"] input').forEach((i) => { i.required = tipo === 'creme'; });
     const leite = lerNum(form.querySelector('[name="leite"]').value), pecas = lerNum(form.querySelector('[name="pecas"]').value);
     const rend = form.querySelector('[data-rend]');
@@ -5471,29 +5471,27 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
   }
   /* ---------- Somar leite e peças (pedido do Iago, 27/11/2026) ----------
      Com o lote só com o dia do ano, um lote pode juntar o leite de vários tanques.
-     A caixa "Somar vários volumes" abre uma linha por parte (leite e peças); os campos
-     principais passam a mostrar a soma e ficam travados. No banco grava só o total; as
+     O leite e as peças são lançados sempre em partes (pedido do Iago: sem caixa para marcar):
+     começa com uma parte e "+ Outra parte" acrescenta mais; os campos escondidos leite/pecas
+     recebem a soma. No banco grava só o total; as
      partes vão para a observação (ex.: "Soma: 5.000 L + 5.317 L; 80 + 90 peças"). */
   function parteHTML(n) {
     return `<div class="pr-parte" data-parte>
       <b class="pr-parte-n">Parte ${n}</b>
-      <label data-parte-leite>Leite (litros)<input type="number" name="parte_leite" min="0" step="any" inputmode="decimal" placeholder="0"></label>
-      <label>Peças<input type="number" name="parte_pecas" min="0" step="1" inputmode="numeric" placeholder="0"></label>
+      <label data-parte-leite>Volume de leite (litros)<input type="number" name="parte_leite" min="0" step="any" inputmode="decimal" placeholder="0"></label>
+      <label>Número de peças<input type="number" name="parte_pecas" min="0" step="1" inputmode="numeric" placeholder="0"></label>
       <button type="button" class="icon-btn" data-tirar-parte aria-label="Tirar esta parte" title="Tirar esta parte"><svg class="i"><use href="#i-trash"/></svg></button>
     </div>`;
   }
   const partes = (form) => [...form.querySelectorAll('[data-parte]')].map((el) => ({ el, leite: lerNum(el.querySelector('[name="parte_leite"]').value), pecas: lerNum(el.querySelector('[name="parte_pecas"]').value) }));
   function ajustarSoma(form, queijo, compart) {
-    const caixa = form.querySelector('[name="somar"]'), bloco = form.querySelector('[data-soma]');
-    const ligado = queijo && caixa.checked;
-    bloco.hidden = !ligado;
+    const bloco = form.querySelector('[data-soma]');
+    if (!queijo) return;
     const leite = form.querySelector('[name="leite"]'), pecas = form.querySelector('[name="pecas"]');
-    leite.readOnly = pecas.readOnly = ligado;
-    if (!ligado) return;
     const lista = form.querySelector('[data-partes]');
     if (!lista.children.length) {
-      // Acabou de marcar: o que já estava digitado vira a parte 1.
-      lista.innerHTML = parteHTML(1) + parteHTML(2);
+      // Começa com uma parte; na edição, ela vem com o que já estava gravado.
+      lista.innerHTML = parteHTML(1);
       const pr = lista.querySelector('[data-parte]');
       pr.querySelector('[name="parte_leite"]').value = leite.value; pr.querySelector('[name="parte_pecas"]').value = pecas.value;
     }
@@ -5501,22 +5499,18 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     ps.forEach((p, i) => {
       p.el.querySelector('.pr-parte-n').textContent = 'Parte ' + (i + 1);
       p.el.querySelector('[data-parte-leite]').hidden = compart;
-      p.el.querySelector('[data-tirar-parte]').hidden = ps.length < 3;
+      p.el.querySelector('[data-tirar-parte]').hidden = ps.length < 2;
     });
+    bloco.classList.toggle('varias', ps.length > 1);
     const L = ps.reduce((a, p) => a + (p.leite > 0 ? p.leite : 0), 0), P = ps.reduce((a, p) => a + (p.pecas > 0 ? p.pecas : 0), 0);
     leite.value = compart || !L ? '' : Math.round(L * 1000) / 1000;
     pecas.value = P ? Math.round(P) : '';
     const usadas = ps.filter((p) => p.pecas > 0 || (!compart && p.leite > 0)).length;
-    form.querySelector('[data-soma-total]').innerHTML = usadas
-      ? `Total${usadas > 1 ? ' de ' + usadas + ' partes' : ''}: ${compart ? '' : '<strong>' + fmtNum(L) + ' L</strong> e '}<strong>${fmtNum(P, 0)} peças</strong>`
-      : 'Preencha cada parte. A soma aparece aqui e nos campos de cima.';
+    form.querySelector('[data-soma-total]').innerHTML = ps.length < 2 ? ''
+      : (usadas ? `Total${usadas > 1 ? ' de ' + usadas + ' partes' : ''}: ${compart ? '' : '<strong>' + fmtNum(L) + ' L</strong> e '}<strong>${fmtNum(P, 0)} peças</strong>` : 'Preencha cada parte. A soma aparece aqui.');
   }
   function ligarSoma(form) {
-    const caixa = form.querySelector('[name="somar"]'), lista = form.querySelector('[data-partes]');
-    caixa.addEventListener('change', () => {
-      if (!caixa.checked) return;
-      setTimeout(() => { const v = [...lista.querySelectorAll('input')].find((i) => !i.value && !i.closest('[hidden]')); if (v) v.focus(); }, 0);
-    });
+    const lista = form.querySelector('[data-partes]');
     form.querySelector('[data-mais-parte]').addEventListener('click', () => {
       lista.insertAdjacentHTML('beforeend', parteHTML(lista.children.length + 1));
       ajustarCampos(form);
@@ -5525,12 +5519,10 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
     lista.addEventListener('click', (e) => { const b = e.target.closest('[data-tirar-parte]'); if (!b) return; b.closest('[data-parte]').remove(); ajustarCampos(form); });
   }
   function limparSoma(form) {
-    form.querySelector('[name="somar"]').checked = false;
     form.querySelector('[data-partes]').innerHTML = '';
   }
   // Texto das partes para a observação; vazio se houver menos de 2 partes preenchidas.
   function textoSoma(form, compart) {
-    if (!form.querySelector('[name="somar"]').checked) return '';
     const ps = partes(form).filter((p) => p.pecas > 0 || (!compart && p.leite > 0));
     if (ps.length < 2) return '';
     const l = compart ? '' : ps.map((p) => fmtNum(p.leite || 0) + ' L').join(' + ') + '; ';
@@ -5566,7 +5558,7 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       dados.leite_litros = dados.leite_compartilhado ? null : lerNum(form.querySelector('[name="leite"]').value);
       const pc = lerNum(form.querySelector('[name="pecas"]').value);
       dados.pecas = pc == null ? null : Math.round(pc);
-      if (form.querySelector('[name="somar"]').checked) {
+      {
         const ps = partes(form).filter((x) => x.pecas || x.leite);
         if (ps.some((x) => (x.pecas != null && (x.pecas < 0 || x.pecas !== Math.round(x.pecas))) || (x.leite != null && x.leite < 0))) { toast('Confira as partes: peças em número inteiro e nada negativo.'); return null; }
         if (!dados.leite_compartilhado && ps.some((x) => !(x.leite > 0) || !(x.pecas > 0))) { toast('Cada parte da soma precisa do leite e das peças (ou tire a parte vazia).'); return null; }
@@ -5593,14 +5585,13 @@ window.SN_Livro = { iniciar(ctx) { if (iniciado) return; iniciado = true; init(c
       <p class="pr-aviso" data-lote-aviso hidden></p>
       <div data-campos="queijo" hidden class="pr-queijo">
         <label class="check pr-compartilhado"><input type="checkbox" name="compartilhado" ${l.leite_compartilhado ? 'checked' : ''}> Feito com o leite de outro queijo deste lote (ex.: Meia Cura com o leite do Tropical)</label>
-        <div class="two">
-          <label data-bloco-leite>Volume de leite (litros)<input type="number" name="leite" min="0" step="any" inputmode="decimal" value="${l.leite_litros == null ? '' : l.leite_litros}" placeholder="0"></label>
-          <label>Número de peças<input type="number" name="pecas" min="0" step="1" inputmode="numeric" value="${l.pecas == null ? '' : l.pecas}" placeholder="0"></label>
+        <div class="two" hidden>
+          <span data-bloco-leite><input type="hidden" name="leite" value="${l.leite_litros == null ? '' : l.leite_litros}"></span>
+          <input type="hidden" name="pecas" value="${l.pecas == null ? '' : l.pecas}">
         </div>
-        <label class="check pr-somar"><input type="checkbox" name="somar"> Somar vários volumes de leite e peças (ex.: um por tanque)</label>
-        <div class="pr-soma" data-soma hidden>
+        <div class="pr-soma" data-soma>
           <div data-partes></div>
-          <button type="button" class="link-btn" data-mais-parte>+ Outra parte</button>
+          <button type="button" class="link-btn" data-mais-parte>+ Somar outro volume de leite e peças</button>
           <p class="pr-soma-total" data-soma-total aria-live="polite"></p>
         </div>
       </div>
